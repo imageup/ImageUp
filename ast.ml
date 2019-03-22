@@ -12,8 +12,8 @@ type bind = string * typ
 type expr =
     Literal of int     (* integer *)
   | Fliteral of string (* float *)
-  | CLiteral of char   (* char type *)
-  | SLiteral of string (* string type*)
+  | Cliteral of char   (* char type *)
+  | Siteral of string (* string type*)
   | BoolLit of bool    (* boolean *)
   | Id of string       (* variable name *)
   | BiTuple of expr * expr
