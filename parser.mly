@@ -83,7 +83,6 @@ stmt:
   | LBRACE stmt_list RBRACE                 { Block(List.rev $2)    }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
   | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7)        }
-  (*| IF LPAREN expr RPAREN stmt ELSE IF stmt { If($3, $5, $7)        }*)
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
                                             { For($3, $5, $7, $9)   }
   | WHILE LPAREN expr RPAREN stmt           { While($3, $5)         }
@@ -117,11 +116,9 @@ expr:
   | expr AND    expr { Binop($1, And,   $3)   }
   | expr OR     expr { Binop($1, Or,    $3)   }
   | expr MOD    expr { Binop($1, Mod,   $3)   }
-(*   | expr ARROW  expr { Binop($1, Arrow, $3) } *)
   | MINUS expr %prec NOT { Unop(Neg, $2)      }
   | NOT expr         { Unop(Not, $2)          }
   | expr ASSIGN expr   { Assign($1, $3)         }
- (* | ID LPAREN args_opt RPAREN { Call($1, $3)  } *)
   | ID COLON typ    { TypeAsn($1, $3) }
   | LPAREN expr RPAREN { $2                   }
   | expr COMMA expr {   CommaCombine($1, $3)     }
