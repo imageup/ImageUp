@@ -35,7 +35,6 @@ rule token = parse
 | "else"   { ELSE }
 | "for"    { FOR }
 | "while"  { WHILE }
-| "in"     { IN }  (* NEW *)
 | "return" { RETURN }
 | "int"    { INT }
 | "bool"   { BOOL }
