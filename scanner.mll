@@ -1,4 +1,4 @@
-let = ['0' - '9']
+let digit = ['0' - '9']
 let digits = digit+
 
 rule token = parse
