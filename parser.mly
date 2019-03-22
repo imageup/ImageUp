@@ -4,12 +4,12 @@
 %token TRUE FALSE
 %token RETURN STOP GO IF ELSE FOR WHILE INT BOOL VOID FLOAT TUPLE STRING CHAR MATRIX IMAGE
 
-%token <int> INT_LIT
-%token <char> CHAR_LIT
-%token <string> STRING_LIT 
+%token <int> Literal
+%token <char> Cliteral
+%token <string> Sliteral 
 %token <string> ID
-%token <float> FLOAT_LIT
-%token <bool> BOOL_LIT
+%token <float> Fliteral
+%token <bool> Bliteral
 
 
 
@@ -100,8 +100,8 @@ expr:
     LITERAL          { Literal($1)            }
   | FLIT             { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
-  | CHARLIT          { CLiteral($1)           }
-  | STRINGLIT        { SLiteral($1)           }
+  | CHARLIT          { Cliteral($1)           }
+  | STRINGLIT        { Sliteral($1)           }
   | ID               { Id($1)                 }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
