@@ -132,7 +132,7 @@ expr:
 
 
 tuple_typ:
-    typ LPERCENT INT_LIT RPERCENT { TupleTyp($1, $3) }
+    typ LPERCENT LITERAL RPERCENT { TupleTyp($1, $3) }
 
 args_opt:
     /* nothing */ { [] }
