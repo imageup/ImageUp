@@ -1,21 +1,15 @@
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA BAR COLON LSQBRACE RSQBRACE LPERCENT RPERCENT SEPARATOR 
-%token PLUS MINUS TIMES DIVIDE MOD ASSIGN ARROW NOT ATASSIGN NULL
+%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA COLON LSQBRACE RSQBRACE LPERCENT RPERCENT SEPARATOR 
+%token PLUS MINUS TIMES DIVIDE MOD ASSIGN ARROW NOT 
 %token EQ NEQ LT LEQ GT GEQ AND OR 
 %token TRUE FALSE
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID FLOAT TUPLE STRING CHAR
+%token RETURN STOP GO IF ELSE FOR WHILE INT BOOL VOID FLOAT TUPLE STRING CHAR MATRIX IMAGE
 
 %token <int> INT_LIT
+%token <char> CHAR_LIT
 %token <string> STRING_LIT 
 %token <string> ID
 %token <float> FLOAT_LIT
-
-%token DEF
-%token IN
-%token DOT
-%token LENGTH WIDTH TYPE
-%token EOF
-
-
+%token <bool> BOOL_LIT
 
 
 
@@ -45,7 +39,7 @@ decls:
  | decls vdecl { (($2 :: fst $1), snd $1) }
  | decls fdecl { (fst $1, ($2 :: snd $1)) }
 
-max(x: int, y: int) -> int
+max(x: int; y: int) -> int
 
 fdecl:
     ID LPAREN formals_opt RPAREN ARROW typ LBRACE vdecl_list stmt_list RBRACE
@@ -60,21 +54,26 @@ formals_opt:
   | formal_list   { $1 }
 
 formal_list:
-    ID typ                   { [($2,$1)]     }
-  | formal_list COMMA ID typ { ($4,$3) :: $1 }
+    ID COLON typ                   { [($1, $3)]     }
+  | formal_list COMMA ID COLON typ { ($3, $5) :: $1 }
 
 typ:
-    INT   { Int   }
-  | BOOL  { Bool  }
-  | FLOAT { Float }
-  | VOID  { Void  }
+    INT     { Int   }
+  | BOOL    { Bool  }
+  | FLOAT   { Float }
+  | VOID    { Void  }
+  | CHAR    { Char  }
+  | STRING  { String}
+  | TUPLE   { Tuple }
+  | MATRIX  { Matrix}
+  | IMAGE   { Image }
 
 vdecl_list:
     /* nothing */    { [] }
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-   ID COLON typ SEMI { ($1, $2) }
+   ID COLON typ SEMI { ($1, $3) }
 
 stmt_list:
     /* nothing */  { [] }
@@ -90,12 +89,15 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
                                             { For($3, $5, $7, $9)   }
   | WHILE LPAREN expr RPAREN stmt           { While($3, $5)         }
-  
+  | STOP SEMI                               { Break($1) }
+  | GO SEMI                                 { Conti($1) }
   
 
 expr_opt:
     /* nothing */ { Noexpr }
   | expr          { $1 }
+  
+
 
 expr:
     LITERAL          { Literal($1)            }
@@ -126,8 +128,8 @@ expr:
   | LPAREN expr RPAREN { $2                   }
   | expr COMMA expr {   CommaCombine($1, $3)     }
   | expr SEPARATOR expr {   Separator($1, $3)     }
-  | ID LPAREN expr COMMA expr RPAREN { BiTuple($2, $4) }
-  | ID LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
+  | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4) }
+  | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
   | ID LSQBRACE LITERAL RSQBRACE LSQBRACE LITERAL RSQBRACE {MatrixAccess($1, $3, $6)}
 
 
@@ -144,4 +146,3 @@ args_opt:
 args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
-
