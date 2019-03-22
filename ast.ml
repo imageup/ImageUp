@@ -13,7 +13,7 @@ type expr =
     Literal of int     (* integer *)
   | Fliteral of string (* float *)
   | Cliteral of char   (* char type *)
-  | Siteral of string (* string type*)
+  | Sliteral of string (* string type*)
   | BoolLit of bool    (* boolean *)
   | Id of string       (* variable name *)
   | BiTuple of expr * expr
