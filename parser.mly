@@ -4,12 +4,12 @@
 %token TRUE FALSE
 %token RETURN STOP GO IF ELSE FOR WHILE INT BOOL VOID FLOAT TUPLE STRING CHAR MATRIX IMAGE
 
-%token <int> Literal
-%token <char> Cliteral
-%token <string> Sliteral 
+%token <int> LITERAL
+%token <char> CHARLIT
+%token <string> STRINGLIT 
 %token <string> ID
-%token <float> Fliteral
-%token <bool> Bliteral
+%token <float> FLIT
+%token <bool> BLIT
 
 
 
