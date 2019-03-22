@@ -86,8 +86,8 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
                                             { For($3, $5, $7, $9)   }
   | WHILE LPAREN expr RPAREN stmt           { While($3, $5)         }
-  | STOP SEMI                               { Break($1) }
-  | GO SEMI                                 { Conti($1) }
+  | STOP SEMI                               { Break }
+  | GO SEMI                                 { Conti }
   
 
 expr_opt:
