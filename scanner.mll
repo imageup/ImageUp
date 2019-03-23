@@ -39,6 +39,7 @@ rule token = parse
 | "int"    { INT }
 | "bool"   { BOOL }
 | "float"  { FLOAT }
+| "function" { FUNCTION } (* NEW *)
 | "char"   { CHAR } (* NEW *)
 | "string" { STRING } (* NEW??? *)
 | "tuple"  { TUPLE } (* NEW *)
