@@ -96,14 +96,13 @@ expr_opt:
   | expr          { $1 }
   
 
-term: ID             { Id($1) }
-
 expr:
     LITERAL               { Literal($1)            }
   | FLIT                  { Fliteral($1)           }
   | BLIT                  { BoolLit($1)            }
   | CHARLIT               { Cliteral($1)           }
   | STRINGLIT             { Sliteral($1)           }
+  | ID                    { Id($1)                 }
   | expr PLUS   expr      { Binop($1, Add,   $3)   }
   | expr MINUS  expr      { Binop($1, Sub,   $3)   }
   | expr TIMES  expr      { Binop($1, Mult,  $3)   }
