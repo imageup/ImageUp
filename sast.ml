@@ -13,8 +13,8 @@ and sx =
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
   | SAssign of string * sexpr
-  | SCommaCombine of expr * expr
-  | SMatrixAccess of string * expr * expr
+  | SCommaCombine of sexpr * sexpr
+  | SMatrixAccess of string * sexpr * sexpr
   | SSeparator of sexpr * sexpr 
   | SCall of string * sexpr list
   | SNoexpr
