@@ -20,7 +20,6 @@ type expr =
   | TriTuple of expr * expr * expr 
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | TypeAsn of string * expr (* arr : int *)
   | Assign of expr * expr  (* = *)
   | CommaCombine of expr * expr (* 1,2 *)
   | Separator of expr * expr (* [1,2,3 | 3,2,1] *)
@@ -30,6 +29,8 @@ type expr =
   
 type stmt =
     Block of stmt list
+  | DeclAsn of bind * expr
+  | TypeAsn of bind
   | Expr of expr
   | Return of expr
   | For of expr * expr * expr * stmt
@@ -42,7 +43,6 @@ type func_decl = {
     typ : typ;
     fname : string;
     formals : bind list;
-    locals : bind list;
     body : stmt list;
   }
 
@@ -82,7 +82,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
-  | TypeAsn(s, e) -> s ^ " : " ^ string_of_expr e
+
   | CommaCombine(e1, e2) -> string_of_expr e1 ^ " , " ^ string_of_expr e2
   | Separator(e1, e2) -> " [ " ^ string_of_expr e1 ^ " | " ^ string_of_expr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
   | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_expr e1 ^ " ] " ^ " [ " ^ stirng_of_expr e2 ^ " ] "
@@ -94,6 +94,8 @@ let rec string_of_stmt = function
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
   | Expr(expr) -> string_of_expr expr ^ ";\n";
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
+  | DeclAsn((t, s),e) -> string_of_typ t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n";
+  | TypeAsn((t, e)) -> e ^ " : " ^ string_of_typ t ^ ";\n";
   | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2

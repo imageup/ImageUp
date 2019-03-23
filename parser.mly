@@ -43,12 +43,11 @@ decls:
  | decls fdecl { (fst $1, ($2 :: snd $1)) }
 
 fdecl:
-    FUNCTION ID LPAREN formals_opt RPAREN ARROW typ LBRACE vdecl_list stmt_list RBRACE
+    FUNCTION ID LPAREN formals_opt RPAREN ARROW typ LBRACE stmt_list RBRACE
      { { typ = $7;
    fname = $2;
    formals = List.rev $4;
-   locals = List.rev $9;
-   body = List.rev $10 } }
+   body = List.rev $9 } }
 
 formals_opt:
     /* nothing */ { [] }
@@ -71,9 +70,6 @@ typ:
   | MATRIX  { Matrix}
   | IMAGE   { Image }
 
-vdecl_list:
-    /* nothing */    { [] }
-  | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
    /*ID COLON typ SEMI { ($1, $3) }*/
@@ -85,6 +81,8 @@ stmt_list:
 
 stmt:
   | expr SEMI                               { Expr $1               }
+  | typ COLON ID ASSIGN expr SEMI           { DeclAsn($1, $3), $5) }
+  | typ COLON ID SEMI                       { TypeAsn($1, $3) }
   | RETURN expr_opt SEMI                    { Return $2             }
   | LBRACE stmt_list RBRACE                 { Block(List.rev $2)    }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
