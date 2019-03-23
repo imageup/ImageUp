@@ -119,13 +119,13 @@ expr:
   | MINUS expr %prec NOT  { Unop(Neg, $2)          }
   | NOT expr              { Unop(Not, $2)          }
   | expr ASSIGN expr      { Assign($1, $3)         }
-  | term COLON typ        { TypeAsn($1, $3)        }
+  | ID COLON typ        { TypeAsn($1, $3)        }
   | LPAREN expr RPAREN    { $2                     }
   | expr COMMA expr       { CommaCombine($1, $3)   }
   | expr SEPARATOR expr   { Separator($1, $3)      }
   | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4)}
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
-  | term LSQBRACE LITERAL RSQBRACE LSQBRACE LITERAL RSQBRACE {MatrixAccess($1, $3, $6)}
+  | ID LSQBRACE LITERAL RSQBRACE LSQBRACE LITERAL RSQBRACE {MatrixAccess($1, $3, $6)}
 
 
 tuple_typ:
