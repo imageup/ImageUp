@@ -1,4 +1,4 @@
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA COLON LSQBRACE RSQBRACE LPERCENT RPERCENT SEPARATOR EOF
+%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA COLON LSQBRACE RSQBRACE LPERCENT RPERCENT SEPARATOR EOF FUNCTION
 %token PLUS MINUS TIMES DIVIDE MOD ASSIGN ARROW NOT 
 %token EQ NEQ LT LEQ GT GEQ AND OR 
 %token TRUE FALSE
@@ -16,10 +16,12 @@
 
 %nonassoc NOELSE
 %nonassoc ELSE
+%left SEMI
 %right ARROW
 %right ASSIGN
 %right COLON
 %left RPAREN
+%right LPAREN
 %left SEPARATOR
 %left COMMA
 %left OR
@@ -41,20 +43,22 @@ decls:
  | decls fdecl { (fst $1, ($2 :: snd $1)) }
 
 fdecl:
-    ID LPAREN formals_opt RPAREN ARROW typ LBRACE vdecl_list stmt_list RBRACE
-     { { typ = $6;
-   fname = $1;
-   formals = List.rev $3;
-   locals = List.rev $8;
-   body = List.rev $9 } }
+    FUNCTION ID LPAREN formals_opt RPAREN ARROW typ LBRACE vdecl_list stmt_list RBRACE
+     { { typ = $7;
+   fname = $2;
+   formals = List.rev $4;
+   locals = List.rev $9;
+   body = List.rev $10 } }
 
 formals_opt:
     /* nothing */ { [] }
   | formal_list   { $1 }
 
 formal_list:
-    ID COLON typ                   { [($1, $3)]     }
-  | formal_list COMMA ID COLON typ { ($3, $5) :: $1 }
+    /*ID COLON typ                   { [($1, $3)]     }*/
+    typ COLON ID                   { [($1, $3)]     }
+  | formal_list COMMA typ COLON ID { ($3, $5) :: $1 }
+  /*| formal_list COMMA ID COLON typ { ($3, $5) :: $1 }*/
 
 typ:
     INT     { Int   }
@@ -72,20 +76,20 @@ vdecl_list:
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-   ID COLON typ SEMI { ($1, $3) }
+   /*ID COLON typ SEMI { ($1, $3) }*/
+   typ COLON ID SEMI { ($1, $3) }
 
 stmt_list:
     /* nothing */  { [] }
   | stmt_list stmt { $2 :: $1 }
 
 stmt:
-    expr SEMI                               { Expr $1               }
+  | expr SEMI                               { Expr $1               }
   | RETURN expr_opt SEMI                    { Return $2             }
   | LBRACE stmt_list RBRACE                 { Block(List.rev $2)    }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
   | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7)        }
-  | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
-                                            { For($3, $5, $7, $9)   }
+  | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt { For($3, $5, $7, $9)   }
   | WHILE LPAREN expr RPAREN stmt           { While($3, $5)         }
   | STOP SEMI                               { Break }
   | GO SEMI                                 { Conti }
@@ -119,7 +123,7 @@ expr:
   | MINUS expr %prec NOT  { Unop(Neg, $2)          }
   | NOT expr              { Unop(Not, $2)          }
   | expr ASSIGN expr      { Assign($1, $3)         }
-  | ID COLON typ        { TypeAsn($1, $3)        }
+  /*| ID COLON typ        { TypeAsn($1, $3)        }*/
   | LPAREN expr RPAREN    { $2                     }
   | expr COMMA expr       { CommaCombine($1, $3)   }
   | expr SEPARATOR expr   { Separator($1, $3)      }
@@ -127,14 +131,16 @@ expr:
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
   | ID LSQBRACE LITERAL RSQBRACE LSQBRACE LITERAL RSQBRACE {MatrixAccess($1, $3, $6)}
 
-
+/*
 tuple_typ:
     typ LPERCENT LITERAL RPERCENT { TupleTyp($1, $3) }
 
 args_opt:
-    /* nothing */ { [] }
+    *//* nothing */ /*{ [] }
   | args_list  { List.rev $1 }
 
 args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
+
+*/
