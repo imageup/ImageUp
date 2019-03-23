@@ -94,8 +94,8 @@ let rec string_of_stmt = function
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
   | Expr(expr) -> string_of_expr expr ^ ";\n";
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
-  | DeclAsn((t, s),e) -> string_of_typ t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n";
-  | TypeAsn((t, e)) -> e ^ " : " ^ string_of_typ t ^ ";\n";
+  | DeclAsn((t, s),e) -> string_of_typ t ^ " : " ^ s ^ " = " ^ string_of_expr e ^ ";\n";
+  | TypeAsn((t, e)) -> string_of_typ t ^ " : " ^ e ^ ";\n";
   | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
