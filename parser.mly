@@ -19,6 +19,7 @@
 %right ARROW
 %right ASSIGN
 %right COLON
+%left RPAREN
 %left SEPARATOR
 %left COMMA
 %left OR
@@ -95,40 +96,37 @@ expr_opt:
   | expr          { $1 }
   
 
+term: ID             { Id($1) }
 
 expr:
-    LITERAL          { Literal($1)            }
-  | FLIT             { Fliteral($1)           }
-  | BLIT             { BoolLit($1)            }
-  | CHARLIT          { Cliteral($1)           }
-  | STRINGLIT        { Sliteral($1)           }
-  | ID               { Id($1)                 }
-  | expr PLUS   expr { Binop($1, Add,   $3)   }
-  | expr MINUS  expr { Binop($1, Sub,   $3)   }
-  | expr TIMES  expr { Binop($1, Mult,  $3)   }
-  | expr DIVIDE expr { Binop($1, Div,   $3)   }
-  | expr EQ     expr { Binop($1, Equal, $3)   }
-  | expr NEQ    expr { Binop($1, Neq,   $3)   }
-  | expr LT     expr { Binop($1, Less,  $3)   }
-  | expr LEQ    expr { Binop($1, Leq,   $3)   }
-  | expr GT     expr { Binop($1, Greater, $3) }
-  | expr GEQ    expr { Binop($1, Geq,   $3)   }
-  | expr AND    expr { Binop($1, And,   $3)   }
-  | expr OR     expr { Binop($1, Or,    $3)   }
-  | expr MOD    expr { Binop($1, Mod,   $3)   }
-  | MINUS expr %prec NOT { Unop(Neg, $2)      }
-  | NOT expr         { Unop(Not, $2)          }
-  | expr ASSIGN expr   { Assign($1, $3)         }
-  | ID COLON typ    { TypeAsn($1, $3) }
-  | LPAREN expr RPAREN { $2                   }
-  | expr COMMA expr {   CommaCombine($1, $3)     }
-  | expr SEPARATOR expr {   Separator($1, $3)     }
-  | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4) }
+    LITERAL               { Literal($1)            }
+  | FLIT                  { Fliteral($1)           }
+  | BLIT                  { BoolLit($1)            }
+  | CHARLIT               { Cliteral($1)           }
+  | STRINGLIT             { Sliteral($1)           }
+  | expr PLUS   expr      { Binop($1, Add,   $3)   }
+  | expr MINUS  expr      { Binop($1, Sub,   $3)   }
+  | expr TIMES  expr      { Binop($1, Mult,  $3)   }
+  | expr DIVIDE expr      { Binop($1, Div,   $3)   }
+  | expr EQ     expr      { Binop($1, Equal, $3)   }
+  | expr NEQ    expr      { Binop($1, Neq,   $3)   }
+  | expr LT     expr      { Binop($1, Less,  $3)   }
+  | expr LEQ    expr      { Binop($1, Leq,   $3)   }
+  | expr GT     expr      { Binop($1, Greater, $3) }
+  | expr GEQ    expr      { Binop($1, Geq,   $3)   }
+  | expr AND    expr      { Binop($1, And,   $3)   }
+  | expr OR     expr      { Binop($1, Or,    $3)   }
+  | expr MOD    expr      { Binop($1, Mod,   $3)   }
+  | MINUS expr %prec NOT  { Unop(Neg, $2)          }
+  | NOT expr              { Unop(Not, $2)          }
+  | expr ASSIGN expr      { Assign($1, $3)         }
+  | term COLON typ        { TypeAsn($1, $3)        }
+  | LPAREN expr RPAREN    { $2                     }
+  | expr COMMA expr       { CommaCombine($1, $3)   }
+  | expr SEPARATOR expr   { Separator($1, $3)      }
+  | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4)}
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
-  | ID LSQBRACE LITERAL RSQBRACE LSQBRACE LITERAL RSQBRACE {MatrixAccess($1, $3, $6)}
-
-
-
+  | term LSQBRACE LITERAL RSQBRACE LSQBRACE LITERAL RSQBRACE {MatrixAccess($1, $3, $6)}
 
 
 tuple_typ:
