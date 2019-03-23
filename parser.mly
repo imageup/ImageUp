@@ -11,8 +11,6 @@
 %token <float> FLIT
 %token <bool> BLIT
 
-
-
 %start program
 %type <Ast.program> program
 
@@ -21,6 +19,8 @@
 %right ARROW
 %right ASSIGN
 %right COLON
+%left SEPARATOR
+%left COMMA
 %left OR
 %left AND
 %left EQ NEQ
