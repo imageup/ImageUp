@@ -4,8 +4,6 @@ type uop = Neg | Not
 
 type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
-type breakType = Stop 
-type contType = Go
 
 type bind =  typ * string
 
@@ -33,10 +31,11 @@ type stmt =
   | TypeAsn of bind
   | Expr of expr
   | Return of expr
+  | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
-  | Break of breakType
-  | Conti of contType
+  | Break  
+  | Conti 
 
 
 type func_decl = {
@@ -74,19 +73,30 @@ let rec string_of_expr = function
   | Fliteral(l) -> l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
-  | Cliteral(c) -> c
+  | Cliteral(c) -> String.make 1 c
   | Sliteral(s) -> s
   | BiTuple(e1, e2) -> " ( " ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ " ) "
   | TriTuple(e1, e2, e3) -> "(" ^ string_of_expr e1 ^ " , " ^ string_of_expr e2 ^ " , " ^ string_of_expr e3 ^ " ) "
   | Id(s) -> s
   | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Assign(v, e) -> v ^ " = " ^ string_of_expr e
+  | Assign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
   | CommaCombine(e1, e2) -> string_of_expr e1 ^ " , " ^ string_of_expr e2
   | Separator(e1, e2) -> " [ " ^ string_of_expr e1 ^ " | " ^ string_of_expr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
-  | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_expr e1 ^ " ] " ^ " [ " ^ stirng_of_expr e2 ^ " ] "
+  | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_expr e1 ^ " ] " ^ " [ " ^ string_of_expr e2 ^ " ] "
   | Call(f, el) -> f ^ " ( " ^ String.concat ", " (List.map string_of_expr el) ^ " ) "
   | Noexpr -> ""
+
+let string_of_typ = function
+    Int -> "int"
+  | Bool -> "bool"
+  | Float -> "float"
+  | Void -> "void"
+  | Char -> "char"
+  | String -> "string"
+  | Matrix -> "matrix"
+  | Tuple -> "tuple"
+  | Image -> "image"
 
 let rec string_of_stmt = function
     Block(stmts) -> "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
@@ -103,20 +113,8 @@ let rec string_of_stmt = function
   | Break -> "stop"
   | Conti -> "go"
   
-let string_of_typ = function
-    Int -> "int"
-  | Bool -> "bool"
-  | Float -> "float"
-  | Void -> "void"
-  | Char -> "char"
-  | String -> "string"
-  | Matrix -> "matrix"
-  | Tuple -> "tuple"
-  | Image -> "image"
 
 let string_of_vdecl (t, id) =  string_of_typ t ^ " : " ^ id ^ ";\n"
-
-
 
 let string_of_fdecl fdecl =
   "function" ^ " " ^ fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")" ^ "->" ^ string_of_typ fdecl.typ  

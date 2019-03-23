@@ -2,3 +2,4 @@ parser.ml
 parser.mli
 scanner.ml
 parser.output
+_build/

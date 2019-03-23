@@ -120,7 +120,7 @@ expr:
   | expr MOD    expr      { Binop($1, Mod,   $3)   }
   | MINUS expr %prec NOT  { Unop(Neg, $2)          }
   | NOT expr              { Unop(Not, $2)          }
-  | ID ASSIGN expr      { Assign($1, $3)         }
+  | expr ASSIGN expr      { Assign($1, $3)         }
   /*| ID COLON typ        { TypeAsn($1, $3)        }*/
   | LPAREN expr RPAREN    { $2                     }
   | expr COMMA expr       { CommaCombine($1, $3)   }

@@ -10,9 +10,11 @@ and sx =
   | SCliteral of string
   | SBoolLit of bool
   | SId of string
+  | SBiTuple of sexpr * sexpr
+  | STriTuple of sexpr * sexpr * sexpr
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
-  | SAssign of string * sexpr
+  | SAssign of sexpr * sexpr
   | SCommaCombine of sexpr * sexpr
   | SMatrixAccess of string * sexpr * sexpr
   | SSeparator of sexpr * sexpr 
@@ -28,8 +30,8 @@ type sstmt =
   | SIf of sexpr * sstmt * sstmt
   | SFor of sexpr * sexpr * sexpr * sstmt
   | SWhile of sexpr * sstmt
-  | SBreak of breakType
-  | SConti of contType
+  | SBreak  
+  | SConti  
 
 type sfunc_decl = {
     styp : typ;
@@ -57,10 +59,10 @@ let rec string_of_sexpr (t, e) =
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
   | SUnop(o, e) -> string_of_uop o ^ string_of_sexpr e
-  | SAssign(v, e) -> v ^ " = " ^ string_of_sexpr e
+  | SAssign(v, e) -> string_of_sexpr v ^ " = " ^ string_of_sexpr e
   | SCommaCombine(e1, e2) -> string_of_sexpr e1 ^ " , " ^ string_of_sexpr e2
   | SSeparator(e1, e2) -> " [ " ^ string_of_sexpr e1 ^ " | " ^ string_of_sexpr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
-  | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_sexpr e1 ^ " ] " ^ " [ " ^ stirng_of_sexpr e2 ^ " ] "
+  | SMatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_sexpr e1 ^ " ] " ^ " [ " ^ string_of_sexpr e2 ^ " ] "
   | SCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
   | SNoexpr -> ""
@@ -81,9 +83,11 @@ let rec string_of_sstmt = function
       "for (" ^ string_of_sexpr e1  ^ " ; " ^ string_of_sexpr e2 ^ " ; " ^
       string_of_sexpr e3  ^ ") " ^ string_of_sstmt s
   | SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
+  | SBreak
+  | SConti
 
 let string_of_sfdecl fdecl =
-  "function" ^ " " ^ fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals)     ^ ")" ^ "->" ^ string_of_typ fdecl.typ
+  "function" ^ " " ^ fdecl.fname ^ "(" ^ String.concat " , " (List.map snd fdecl.formals)     ^ ")" ^ "->" ^ string_of_typ fdecl.typ
   ^ "\n{\n" ^ String.concat "" (List.map string_of_sstmt fdecl.body) ^ "}\n"
 
 
