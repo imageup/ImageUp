@@ -7,7 +7,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 type breakType = Stop 
 type contType = Go
 
-type bind = string * typ
+type bind =  typ * string
 
 type expr =
     Literal of int     (* integer *)
@@ -115,7 +115,7 @@ let string_of_typ = function
   | Tuple -> "tuple"
   | Image -> "image"
 
-let string_of_vdecl (id, t) = id ^ " : " ^ string_of_typ t ^ ";\n"
+(* let string_of_vdecl (id, t) = id ^ " : " ^ string_of_typ t ^ ";\n" *)
 
 (*
 let string_of_fdecl fdecl =
