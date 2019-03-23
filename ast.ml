@@ -114,14 +114,15 @@ let string_of_typ = function
   | Tuple -> "tuple"
   | Image -> "image"
 
-let string_of_vdecl (id, t) = id ^ " : " ^ string_of_typ t ^ ";\n"
+let string_of_vdecl (t, id) =  string_of_typ t ^ " : " ^ id ^ ";\n"
 
-function max (int :x )-> int{}
+
 
 let string_of_fdecl fdecl =
   "function" ^ " " ^ fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")" ^ "->" ^ string_of_typ fdecl.typ  
   ^ "\n{\n" ^ String.concat "" (List.map string_of_stmt fdecl.body) ^ "}\n"
 
 let string_of_program (vars, funcs) =
+  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)
 
