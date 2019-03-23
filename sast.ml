@@ -83,12 +83,12 @@ let rec string_of_sstmt = function
       "for (" ^ string_of_sexpr e1  ^ " ; " ^ string_of_sexpr e2 ^ " ; " ^
       string_of_sexpr e3  ^ ") " ^ string_of_sstmt s
   | SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
-  | SBreak
-  | SConti
+  | SBreak -> "stop"
+  | SConti -> "go"
 
 let string_of_sfdecl fdecl =
-  "function" ^ " " ^ fdecl.fname ^ "(" ^ String.concat " , " (List.map snd fdecl.formals)     ^ ")" ^ "->" ^ string_of_typ fdecl.typ
-  ^ "\n{\n" ^ String.concat "" (List.map string_of_sstmt fdecl.body) ^ "}\n"
+  "function" ^ " " ^ fdecl.sfname ^ "(" ^ String.concat ", " (List.map snd fdecl.sformals)     ^ ")" ^ "->" ^ string_of_typ fdecl.styp
+  ^ "\n{\n" ^ String.concat "" (List.map string_of_sstmt fdecl.sbody) ^ "}\n"
 
 
 let string_of_sprogram (vars, funcs) =
