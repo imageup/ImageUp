@@ -81,7 +81,7 @@ stmt_list:
 
 stmt:
   | expr SEMI                               { Expr $1               }
-  | typ COLON ID ASSIGN expr SEMI           { DeclAsn($1, $3), $5) }
+  | typ COLON ID ASSIGN expr SEMI           { DeclAsn(($1, $3), $5) }
   | typ COLON ID SEMI                       { TypeAsn($1, $3) }
   | RETURN expr_opt SEMI                    { Return $2             }
   | LBRACE stmt_list RBRACE                 { Block(List.rev $2)    }
