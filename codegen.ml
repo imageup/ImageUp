@@ -24,13 +24,16 @@ let translate (globals, functions) =
   
   (* Create the LLVM compilation module into which
      we will generate code *)
-  let the_module = L.create_module context "MicroC" in
+  let the_module = L.create_module context "ImageUp" in
 
   (* Get types from the context *)
   let i32_t      = L.i32_type    context
   and i8_t       = L.i8_type     context
   and i1_t       = L.i1_type     context
   and float_t    = L.double_type context
+  and string_t   = L.pointer_type (L.i8_type context) 
+  and array_t n  = (L.array_type (L.double_type context) n)
+  and matrix_t m n = (L.array_type (L.array_type (L.double_type context) n) m)
   and void_t     = L.void_type   context in
 
   (* Return the LLVM type for a MicroC type *)
@@ -39,8 +42,17 @@ let translate (globals, functions) =
     | A.Bool  -> i1_t
     | A.Float -> float_t
     | A.Void  -> void_t
+    | A.Char  -> i8_t
+    | A.String -> string_t
+    | A.Tuple -> array_t 3
+    | A.Matrix -> L.pointer_type (matrix_t 200 200)
+    | A.Image -> L.pointer_type (L.array_type (matrix_t 200 200) 3)
   in
+(* 
 
+type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
+
+ *)
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
     let global_var m (t, n) = 
