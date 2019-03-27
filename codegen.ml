@@ -67,10 +67,10 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       let printf_func : L.llvalue = 
           L.declare_function "printf" printf_t the_module in
 
-      let printbig_t : L.lltype =
+(*       let printbig_t : L.lltype =
           L.function_type i32_t [| i32_t |] in
       let printbig_func : L.llvalue =
-          L.declare_function "printbig" printbig_t the_module in
+          L.declare_function "printbig" printbig_t the_module in *)
 
   (* Define each function (arguments and return type) so we can 
      call it even before we've created its body *)
@@ -103,14 +103,24 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
     (* Allocate space for any locally declared variables and add the
      * resulting registers to our map *)
-    and add_local m (t, n) =
+    and add_local m stmt =
+      match stmt with 
+      | DeclAsn((t, n), value) -> 
+      (
+        let local = L.build_alloca (ltype_of_typ t) n builder in
+        ignore (L.build_store p local builder);
+        StringMap.add name local m
+      )
+      | _ -> m
+(* 
   	let local_var = L.build_alloca (ltype_of_typ t) n builder
   	in StringMap.add n local_var m 
-    in
+    in *)
 
     let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals
-        (Array.to_list (L.params the_function)) in
-    List.fold_left add_local formals fdecl.slocals 
+        (Array.to_list (L.params the_function)) 
+    in
+    List.fold_left add_local formals fdecl.sbody
     in
 
     (* Return the value for a variable or formal argument.
