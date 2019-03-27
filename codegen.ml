@@ -105,10 +105,10 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
      * resulting registers to our map *)
     and add_local m stmt =
       match stmt with 
-      | DeclAsn((t, n), value) -> 
+      | DeclAsn((t, n), valuex) -> 
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in
-        ignore (L.build_store p local builder);
+        ignore (L.build_store valuex local builder);
         StringMap.add name local m
       )
       | _ -> m
