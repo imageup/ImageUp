@@ -1,5 +1,5 @@
 # ImageUp
-This is the repo for PLT project
+This is the repo for PLT final project
 
 
 $ ocamllex scanner.mll # create scanner.ml
