@@ -182,6 +182,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 	  | A.Neg                  -> L.build_neg
     | A.Not                  -> L.build_not) e' "tmp" builder
     | SCall ("print", [e]) | SCall ("printb", [e]) ->
+	  print_string("called function here");
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
     | SCall ("printf", [e]) -> 
