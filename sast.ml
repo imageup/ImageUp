@@ -15,7 +15,7 @@ and sx =
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
   | SAssign of string * sexpr
-  | SMatAssign of string * expr * expr * expr
+  | SMatAssign of string * sexpr * sexpr * sexpr
   | SCommaCombine of sexpr * sexpr
   | SMatrixAccess of string * sexpr * sexpr
   | SSeparator of sexpr * sexpr 
