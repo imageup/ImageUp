@@ -105,13 +105,14 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
      * resulting registers to our map *)
     and add_local m stmt =
       match stmt with 
-      | DeclAsn((t, n), valuex) -> 
+      | SDeclAsn((t, n), valuex) -> 
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in
         ignore (L.build_store valuex local builder);
         StringMap.add name local m
       )
       | _ -> m
+    in
 (* 
   	let local_var = L.build_alloca (ltype_of_typ t) n builder
   	in StringMap.add n local_var m 
@@ -134,6 +135,8 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       SLiteral i  -> L.const_int i32_t i
     | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
     | SFliteral l -> L.const_float_of_string float_t l
+    | SCliteral c -> L.const_string i8_t c
+    | SSliteral s -> L.build_global_stringptr s "system_string" !builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
     | SAssign (s, e) -> let e' = expr builder e in
@@ -146,6 +149,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 	  | A.Sub     -> L.build_fsub
 	  | A.Mult    -> L.build_fmul
 	  | A.Div     -> L.build_fdiv 
+    | A.Mod     -> L.build_srem
 	  | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
 	  | A.Neq     -> L.build_fcmp L.Fcmp.One
 	  | A.Less    -> L.build_fcmp L.Fcmp.Olt
