@@ -14,7 +14,8 @@ and sx =
   | STriTuple of sexpr * sexpr * sexpr
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
-  | SAssign of sexpr * sexpr
+  | SAssign of string * sexpr
+  | SMatAssign of string * expr * expr * expr
   | SCommaCombine of sexpr * sexpr
   | SMatrixAccess of string * sexpr * sexpr
   | SSeparator of sexpr * sexpr 
@@ -25,6 +26,7 @@ type sstmt =
     SBlock of sstmt list
   | SExpr of sexpr
   | SDeclAsn of bind * sexpr
+  | SMatDeclAsn of matbind * expr  (* Matrix : mat(2,2) = [1,2|3,4]; *)
   | STypeAsn of bind
   | SReturn of sexpr
   | SIf of sexpr * sstmt * sstmt
@@ -59,7 +61,8 @@ let rec string_of_sexpr (t, e) =
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
   | SUnop(o, e) -> string_of_uop o ^ string_of_sexpr e
-  | SAssign(v, e) -> string_of_sexpr v ^ " = " ^ string_of_sexpr e
+  | SMatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_sexpr e1 ^"][" ^string_of_sexpr e2 ^"]"^ " = " ^ string_of_sexpr e3
+  | SAssign(v, e) -> v ^ " = " ^ string_of_sexpr e
   | SCommaCombine(e1, e2) -> string_of_sexpr e1 ^ " , " ^ string_of_sexpr e2
   | SSeparator(e1, e2) -> " [ " ^ string_of_sexpr e1 ^ " | " ^ string_of_sexpr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
   | SMatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_sexpr e1 ^ " ] " ^ " [ " ^ string_of_sexpr e2 ^ " ] "

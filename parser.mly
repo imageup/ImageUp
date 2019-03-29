@@ -18,12 +18,14 @@
 %nonassoc ELSE
 %left SEMI
 %right ARROW
-%right ASSIGN
 %right COLON
+%left RSQBRACE
+%right LSQBRACE
+%left SEPARATOR
 %left RPAREN
 %right LPAREN
-%left SEPARATOR
 %left COMMA
+%right ASSIGN
 %left OR
 %left AND
 %left EQ NEQ
@@ -120,15 +122,15 @@ expr:
   | expr MOD    expr      { Binop($1, Mod,   $3)   }
   | MINUS expr %prec NOT  { Unop(Neg, $2)          }
   | NOT expr              { Unop(Not, $2)          }
-  | expr ASSIGN expr      { Assign($1, $3)         }
-  /*| ID COLON typ        { TypeAsn($1, $3)        }*/
+  | ID ASSIGN expr      { Assign($1, $3)         }
+  | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE ASSIGN expr      { MatAssign($1, $3, $6, $9)         }
   | LPAREN expr RPAREN    { $2                     }
   | expr COMMA expr       { CommaCombine($1, $3)   }
   | expr SEPARATOR expr   { Separator($1, $3)      }
   | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4)}
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
-  | ID LSQBRACE LITERAL RSQBRACE LSQBRACE LITERAL RSQBRACE {MatrixAccess($1, $3, $6)}
-
+  | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE {MatrixAccess($1, $3, $6)}
+  | LSQBRACE expr RSQBRACE    { $2                     }
 /*
 tuple_typ:
     typ LPERCENT LITERAL RPERCENT { TupleTyp($1, $3) }

@@ -6,6 +6,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
 
 type bind =  typ * string
+type matbind = typ * string * int * int
 
 type expr =
     Literal of int     (* integer *)
@@ -14,14 +15,15 @@ type expr =
   | Sliteral of string (* string type*)
   | BoolLit of bool    (* boolean *)
   | Id of string       (* variable name *)
-  | BiTuple of expr * expr
+  | BiTuple of expr * expr (*  *)
   | TriTuple of expr * expr * expr 
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Assign of expr * expr  (* = *)
+  | Assign of string * expr (* Matrix : mat(2,2) = [1,2|1,2]; *)
+  | MatrixAccess of string * expr * expr (* mat[2][3+i] *) (* expr here must be a tuple of int *)
+  | MatAssign of string * expr * expr * expr
   | CommaCombine of expr * expr (* 1,2 *)
   | Separator of expr * expr (* [1,2,3 | 3,2,1] *)
-  | MatrixAccess of string * expr * expr (* mat[2][3+i] *) (* expr here must be a tuple of int *)
   | Call of string * expr list
   | Noexpr
   
@@ -29,6 +31,7 @@ type stmt =
     Block of stmt list
   | DeclAsn of bind * expr
   | TypeAsn of bind
+  | MatDeclAsn of  matbind * expr  (* Matrix : mat(2,2) = [1,2|3,4]; *)
   | Expr of expr
   | Return of expr
   | If of expr * stmt * stmt
@@ -80,7 +83,8 @@ let rec string_of_expr = function
   | Id(s) -> s
   | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Assign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
+  | MatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_expr e1 ^"][" ^string_of_expr e2 ^"]"^ " = " ^ string_of_expr e3
+  | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | CommaCombine(e1, e2) -> string_of_expr e1 ^ " , " ^ string_of_expr e2
   | Separator(e1, e2) -> " [ " ^ string_of_expr e1 ^ " | " ^ string_of_expr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
   | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_expr e1 ^ " ] " ^ " [ " ^ string_of_expr e2 ^ " ] "
@@ -103,6 +107,7 @@ let rec string_of_stmt = function
   | Expr(expr) -> string_of_expr expr ^ ";\n";
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
   | DeclAsn((t, s),e) -> string_of_typ t ^ " : " ^ s ^ " = " ^ string_of_expr e ^ ";\n";
+  | MatDeclAsn((t, s, e1, e2), e3) -> string_of_typ t ^ ":" ^s ^"("^ string_of_int e1^","^string_of_int e2^")"^"=" ^string_of_expr e3^";\n"; 
   | TypeAsn((t, e)) -> string_of_typ t ^ " : " ^ e ^ ";\n";
   | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
