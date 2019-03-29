@@ -8,7 +8,7 @@
 %token <char> CHARLIT
 %token <string> STRINGLIT 
 %token <string> ID
-%token <float> FLIT
+%token <string> FLIT
 %token <bool> BLIT
 
 %start program
