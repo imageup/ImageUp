@@ -62,6 +62,13 @@ let rec string_of_sexpr (t, e) =
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
   | SUnop(o, e) -> string_of_uop o ^ string_of_sexpr e
   | SMatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_sexpr e1 ^"][" ^string_of_sexpr e2 ^"]"^ " = " ^ string_of_sexpr e3
+(*
+
+
+
+ | MatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_expr e1 ^"][" ^string_of_expr e2 ^"]"^ " = " ^     string_of_expr e3
+
+*)
   | SAssign(v, e) -> v ^ " = " ^ string_of_sexpr e
   | SCommaCombine(e1, e2) -> string_of_sexpr e1 ^ " , " ^ string_of_sexpr e2
   | SSeparator(e1, e2) -> " [ " ^ string_of_sexpr e1 ^ " | " ^ string_of_sexpr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
