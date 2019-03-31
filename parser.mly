@@ -15,8 +15,7 @@ open Ast
 %token <string> FLIT
 %token <bool> BLIT
 
-%start program
-%type <Ast.program> program
+
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -29,6 +28,7 @@ open Ast
 %left RPAREN
 %right LPAREN
 %left COMMA
+
 %right ASSIGN
 %left OR
 %left AND
@@ -37,6 +37,10 @@ open Ast
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
 %right NOT 
+
+
+%start program
+%type <Ast.program> program
 
 %%
 
@@ -129,22 +133,31 @@ expr:
   | ID ASSIGN expr      { Assign($1, $3)         }
   | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE ASSIGN expr      { MatAssign($1, $3, $6, $9)         }
   | LPAREN expr RPAREN    { $2                     }
-  | expr COMMA expr       { CommaCombine($1, $3)   }
+  /*| expr COMMA expr       { CommaCombine($1, $3)   } */
   | expr SEPARATOR expr   { Separator($1, $3)      }
   | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4)}
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
   | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE {MatrixAccess($1, $3, $6)}
+  | ID LPAREN args_opt RPAREN { Call($1, $3)  }
   | LSQBRACE expr RSQBRACE    { $2                     }
-/*
-tuple_typ:
-    typ LPERCENT LITERAL RPERCENT { TupleTyp($1, $3) }
+
 
 args_opt:
-    *//* nothing */ /*{ [] }
+    /* nothing */ { [] }
   | args_list  { List.rev $1 }
 
 args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
+
+/*
+tuple_typ:
+    typ LPERCENT LITERAL RPERCENT { TupleTyp($1, $3) }
+
+
+
+
+
+
 
 */
