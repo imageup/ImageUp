@@ -9,7 +9,7 @@ imageupmake :
 	ocamlc -o imageup parser.cmo scanner.cmo imageup.cmo	
 
 imp :
-	ocamlbuild -r -pkgs llvm imageup.native
+	ocamlbuild -r -pkgs llvm -pkgs llvm.analysis imageup.native
 
 .PHONY : clean
 clean :
