@@ -67,7 +67,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       let printf_func : L.llvalue = 
           L.declare_function "printf" printf_t the_module in
       let prints_t : L.lltype = 
-	  L.var_arg_function_type string_t [| L.pointer_type i8_t |] in
+	  L.function_type string_t [| string_t; string_t |] in  
       let prints_func : L.llvalue =
 	  L.declare_function "prints" prints_t the_module in
 	  
@@ -94,7 +94,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder 
-    and	string_format_str = L.build_global_stringptr "%s\n" "fmt_str" builder in
+    and	string_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
   (* Construct the function's "locals": formal arguments and locally
      declared variables.  Allocate each on the stack, initialize their
      value, if appropriate, and remember their values in the "locals" map *)
@@ -191,9 +191,14 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SCall ("printf", [e]) -> 
 	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
 	    "printf" builder
-    | SCall ("prints", [e]) ->
+    (*| SCall ("prints", [e]) ->
 	  L.build_call prints_func [| string_format_str ; (expr builder e) |]
+	    "printf" builder*)
+    | SCall ("prints", [e]) ->        
+	  L.build_call printf_func [| string_format_str ; (expr builder e) |] 
 	    "printf" builder
+
+
     | SCall (f, args) ->
     let (fdef, fdecl) = StringMap.find f function_decls in
     let llargs = List.rev (List.map (expr builder) (List.rev args)) in

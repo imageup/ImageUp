@@ -9,10 +9,10 @@ main:                                   # @main
 	pushq	%rax
 .Ltmp0:
 	.cfi_def_cfa_offset 16
-	leaq	.Lfmt_str(%rip), %rdi
+	leaq	.Lfmt.2(%rip), %rdi
 	leaq	.Lsystem_string(%rip), %rsi
 	xorl	%eax, %eax
-	callq	prints@PLT
+	callq	printf@PLT
 	xorl	%eax, %eax
 	popq	%rcx
 	retq
@@ -31,10 +31,10 @@ main:                                   # @main
 	.asciz	"%g\n"
 	.size	.Lfmt.1, 4
 
-	.type	.Lfmt_str,@object       # @fmt_str
-.Lfmt_str:
+	.type	.Lfmt.2,@object         # @fmt.2
+.Lfmt.2:
 	.asciz	"%s\n"
-	.size	.Lfmt_str, 4
+	.size	.Lfmt.2, 4
 
 	.type	.Lsystem_string,@object # @system_string
 .Lsystem_string:
