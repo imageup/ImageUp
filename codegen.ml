@@ -66,7 +66,11 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
       let printf_func : L.llvalue = 
           L.declare_function "printf" printf_t the_module in
-
+      let prints_t : L.lltype = 
+	  L.var_arg_function_type string_t [| L.pointer_type i8_t |] in
+      let prints_func : L.llvalue =
+	  L.declare_function "prints" prints_t the_module in
+	  
 (*       let printbig_t : L.lltype =
           L.function_type i32_t [| i32_t |] in
       let printbig_func : L.llvalue =
@@ -89,8 +93,8 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
-    and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder in
-
+    and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder 
+    and	string_format_str = L.build_global_stringptr "%s\n" "fmt_str" builder in
   (* Construct the function's "locals": formal arguments and locally
      declared variables.  Allocate each on the stack, initialize their
      value, if appropriate, and remember their values in the "locals" map *)
@@ -182,11 +186,13 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 	  | A.Neg                  -> L.build_neg
     | A.Not                  -> L.build_not) e' "tmp" builder
     | SCall ("print", [e]) | SCall ("printb", [e]) ->
-	  print_string("called function here");
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
     | SCall ("printf", [e]) -> 
 	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
+	    "printf" builder
+    | SCall ("prints", [e]) ->
+	  L.build_call prints_func [| string_format_str ; (expr builder e) |]
 	    "printf" builder
     | SCall (f, args) ->
     let (fdef, fdecl) = StringMap.find f function_decls in
