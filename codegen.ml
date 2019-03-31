@@ -211,6 +211,8 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
     let rec stmt builder = function
 	      SBlock sl -> List.fold_left stmt builder sl
+      | SDeclAsn ((type_of_id, id), exprs) -> let e' = expr builder exprs in
+                        ignore(L.build_store e' (lookup id) builder); builder
       | SExpr e -> ignore(expr builder e); builder 
       | SReturn e -> ignore(match fdecl.styp with
                             (* Special "return nothing" instr *)

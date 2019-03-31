@@ -93,6 +93,8 @@ let check (globals, functions) =
     let rec expr = function
         Literal  l -> (Int, SLiteral l)
       | Fliteral l -> (Float, SFliteral l)
+      | Cliteral l -> (Char, SCliteral l)
+      | Sliteral l -> (String, SSliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
@@ -155,6 +157,10 @@ let check (globals, functions) =
     let rec check_stmt = function
         Expr e -> SExpr (expr e)
       | If(p, b1, b2) -> SIf(check_bool_expr p, check_stmt b1, check_stmt b2)
+      | DeclAsn((t, s), e) -> SDeclAsn((t, s), expr e)
+      | TypeAsn((t, e)) -> STypeAsn((t, e))
+      | Break -> SBreak
+      | Conti -> SConti
       | For(e1, e2, e3, st) ->
 	  SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)

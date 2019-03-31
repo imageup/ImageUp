@@ -7,7 +7,7 @@ and sx =
     SLiteral of int
   | SFliteral of string
   | SSliteral of string
-  | SCliteral of string
+  | SCliteral of char
   | SBoolLit of bool
   | SId of string
   | SBiTuple of sexpr * sexpr
@@ -51,7 +51,7 @@ let rec string_of_sexpr (t, e) =
     SLiteral(l) -> string_of_int l
   | SBoolLit(true) -> "true"
   | SBoolLit(false) -> "false"
-  | SCliteral(c) -> c
+  | SCliteral(c) -> String.make 1 c
   | SSliteral(s) -> s
   | SBiTuple(e1, e2) -> "(" ^ string_of_sexpr e1 ^ "," ^ string_of_sexpr e2 ^ ")"
   | STriTuple(e1, e2, e3) -> "(" ^ string_of_sexpr e1 ^","^ string_of_sexpr e2 ^","^
