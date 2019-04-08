@@ -71,16 +71,17 @@ let check (globals, functions) =
   let check_function func =
     (* Make sure no formals or locals are void or duplicates *)
     check_binds "formal" func.formals;
-    print_string("check function func");
+    (* print_string("check function func"); *)
     let rec generate_locals = function
       | [] -> []
       | head :: tail -> 
       (
         match head with 
-        | SDeclAsn((t, n), valuex) -> 
+        | DeclAsn((t, n), valuex) -> 
         (
           let tmp = (t, n) in tmp :: generate_locals tail
         )
+        | _ -> generate_locals tail
       )
     in
     let local_vars = generate_locals func.body 

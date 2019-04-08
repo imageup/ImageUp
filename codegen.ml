@@ -108,12 +108,12 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     (* Allocate space for any locally declared variables and add the
      * resulting registers to our map *)
     and add_local m stmt =
-print_string("enter local val\n");
+(* print_string("enter local val\n"); *)
       match stmt with 
       | SDeclAsn((t, n), valuex) -> 
       (
-	print_string("pushing to map");
-	print_string(n);
+	(* print_string("pushing to map"); *)
+	(* print_string(n); *)
         let local = L.build_alloca (ltype_of_typ t) n builder in
 	 StringMap.add n local m
       )

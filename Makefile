@@ -15,4 +15,4 @@ imp :
 
 .PHONY : clean
 clean :
-	rm -rf ast.cmi ast.cmo parser.cmi parser.cmo scanner.cmi scanner.cmo parser.mli scanner.ml parser.ml	
+	rm -rf ast.cmi ast.cmo parser.cmi parser.cmo scanner.cmi scanner.cmo parser.mli scanner.ml parser.ml test.ll test.s imageup.native	
