@@ -71,7 +71,20 @@ let check (globals, functions) =
   let check_function func =
     (* Make sure no formals or locals are void or duplicates *)
     check_binds "formal" func.formals;
-
+    print_string("check function func");
+    let rec generate_locals = function
+      | [] -> []
+      | head :: tail -> 
+      (
+        match head with 
+        | SDeclAsn((t, n), valuex) -> 
+        (
+          let tmp = (t, n) in tmp :: generate_locals tail
+        )
+      )
+    in
+    let local_vars = generate_locals func.body 
+    in
     (* Raise an exception if the given rvalue type cannot be assigned to
        the given lvalue type *)
     let check_assign lvaluet rvaluet err =
@@ -80,7 +93,7 @@ let check (globals, functions) =
 
     (* Build local symbol table of variables for this function *)
     let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
-	                StringMap.empty (globals @ func.formals )
+	                StringMap.empty (globals @ func.formals @ local_vars)
     in
 
     (* Return a variable from our local symbol table *)
