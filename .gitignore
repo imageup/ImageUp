@@ -5,3 +5,5 @@ test.exe
 imageup.native
 parser.output
 _build/
+test.ll
+test.s
