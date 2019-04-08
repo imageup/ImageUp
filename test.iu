@@ -8,6 +8,6 @@ function main() -> int
 		i = i + 1;
 	}
 
-	tuple : x = (2.0, 2.0);
+	tuple : x = (2.0, 2.0, 3.3);
 	return 0;
 }

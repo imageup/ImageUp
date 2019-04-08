@@ -160,6 +160,21 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
             in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
           | _ -> raise(Failure ("only suppurt int or float tuple"))
     )
+    | STriTuple((s1, e1), (s2, e2), (s3, e3)) ->
+	(
+		match (e1, e2, e3) with
+		| (SLiteral i, SLiteral j, SLiteral k) ->
+			let e1' = L.const_int i32_t i
+			and e2' = L.const_int i32_t j
+			and e3' = L.const_int i32_t k
+			in L.const_array i32_t (Array.of_list(e1'::e2'::[e3']))
+		| (SFliteral i, SFliteral j, SFliteral k) ->
+			let e1' = L.const_float_of_string float_t i
+			and e2' = L.const_float_of_string float_t j
+			and e3' = L.const_float_of_string float_t k
+			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
+		| _ -> raise(Failure ("only support int or float tuple"))
+	)
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
