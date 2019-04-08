@@ -44,7 +44,7 @@ let translate (globals, functions) =
     | A.Void  -> void_t
     | A.Char  -> i8_t
     | A.String -> string_t
-    | A.Tuple -> array_t 3
+    | A.Tuple -> L.array_type float_t 3
     | A.Matrix -> L.pointer_type (matrix_t 200 200)
     | A.Image -> L.pointer_type (L.array_type (matrix_t 200 200) 3)
   in
@@ -108,12 +108,9 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     (* Allocate space for any locally declared variables and add the
      * resulting registers to our map *)
     and add_local m stmt =
-(* print_string("enter local val\n"); *)
       match stmt with 
       | SDeclAsn((t, n), valuex) -> 
       (
-	(* print_string("pushing to map"); *)
-	(* print_string(n); *)
         let local = L.build_alloca (ltype_of_typ t) n builder in
 	 StringMap.add n local m
       )
@@ -145,13 +142,13 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
     | SBiTuple ((s1, e1), (s2, e2)) -> 
-    (
-    (* only int or float, not 3 + 2 *)
+      (
+      (* only int or float, not 3 + 2 *)
         match (e1, e2) with 
           | (SLiteral i, SLiteral j) -> 
-            let e1_t = L.const_int i32_t i
-            and e2_t = L.const_int i32_t j
-            and e3_t = L.const_int i32_t 0
+            let e1_t = L.const_float_of_string float_t (string_of_int i)
+            and e2_t = L.const_float_of_string float_t (string_of_int j)
+            and e3_t = L.const_float_of_string float_t (string_of_int 0)
             in L.const_array i32_t (Array.of_list(e1_t::e2_t::[e3_t]))
           | (SFliteral i, SFliteral j) ->
             let e1_t = L.const_float_of_string float_t i
@@ -159,22 +156,22 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
             and e3_t = L.const_float_of_string float_t "0.0"
             in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
           | _ -> raise(Failure ("only suppurt int or float tuple"))
-    )
+      )
     | STriTuple((s1, e1), (s2, e2), (s3, e3)) ->
-	(
-		match (e1, e2, e3) with
-		| (SLiteral i, SLiteral j, SLiteral k) ->
-			let e1' = L.const_int i32_t i
-			and e2' = L.const_int i32_t j
-			and e3' = L.const_int i32_t k
-			in L.const_array i32_t (Array.of_list(e1'::e2'::[e3']))
-		| (SFliteral i, SFliteral j, SFliteral k) ->
-			let e1' = L.const_float_of_string float_t i
-			and e2' = L.const_float_of_string float_t j
-			and e3' = L.const_float_of_string float_t k
-			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
-		| _ -> raise(Failure ("only support int or float tuple"))
-	)
+    	(
+    		match (e1, e2, e3) with
+    		| (SLiteral i, SLiteral j, SLiteral k) ->
+    			let e1' = L.const_int i32_t i
+    			and e2' = L.const_int i32_t j
+    			and e3' = L.const_int i32_t k
+    			in L.const_array i32_t (Array.of_list(e1'::e2'::[e3']))
+    		| (SFliteral i, SFliteral j, SFliteral k) ->
+    			let e1' = L.const_float_of_string float_t i
+    			and e2' = L.const_float_of_string float_t j
+    			and e3' = L.const_float_of_string float_t k
+    			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
+    		| _ -> raise(Failure ("only support int or float tuple"))
+    	)
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
