@@ -24,6 +24,7 @@ type expr =
   | MatAssign of string * expr * expr * expr
   | CommaCombine of expr * expr (* 1,2 *)
   | Separator of expr * expr (* [1,2,3 | 3,2,1] *)
+  | TupleAccess of string * expr
   | Call of string * expr list
   | Noexpr
   
@@ -89,6 +90,7 @@ let rec string_of_expr = function
   | Separator(e1, e2) -> " [ " ^ string_of_expr e1 ^ " | " ^ string_of_expr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
   | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_expr e1 ^ " ] " ^ " [ " ^ string_of_expr e2 ^ " ] "
   | Call(f, el) -> f ^ " ( " ^ String.concat ", " (List.map string_of_expr el) ^ " ) "
+  | TupleAccess(s, e1) -> s ^ "[" ^ string_of_expr e1 ^ "]"
   | Noexpr -> ""
 
 let string_of_typ = function

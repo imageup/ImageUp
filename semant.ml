@@ -127,6 +127,12 @@ let check (globals, functions) =
         if (string_of_typ t1) = (string_of_typ t2) && (string_of_typ t1) = (string_of_typ t3)
         then (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
         else raise (Failure ("Trituple type mismatch"))
+      | TupleAccess(s, e1) ->
+        (
+          match e1 with
+          | Literal i -> (Int, STupleAccess(s, (Int, SLiteral i)))
+          | _ -> raise(Failure("Tuple can only be accessed by integer index"))
+        )
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var
           and (rt, e') = expr e in

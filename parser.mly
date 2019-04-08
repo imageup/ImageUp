@@ -138,6 +138,7 @@ expr:
   | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4)}
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
   | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE {MatrixAccess($1, $3, $6)}
+  | ID LSQBRACE expr RSQBRACE { TupleAccess($1, $3) }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }
   | LSQBRACE expr RSQBRACE    { $2                     }
 
