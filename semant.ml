@@ -112,6 +112,21 @@ let check (globals, functions) =
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
+      | BiTuple (e1, e2) -> 
+        let (t1, e1') = expr e1
+        and (t2, e2') = expr e2
+        in
+        if (string_of_typ t1) = (string_of_typ t2)
+        then (Tuple, SBiTuple ((t1, e1'), (t2, e2')))
+        else raise (Failure ("Bituple type mismatch"))
+      | TriTuple (e1, e2, e3) -> 
+        let (t1, e1') = expr e1
+        and (t2, e2') = expr e2
+        and (t3, e3') = expr e3
+        in
+        if (string_of_typ t1) = (string_of_typ t2) && (string_of_typ t1) = (string_of_typ t3)
+        then (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
+        else raise (Failure ("Trituple type mismatch"))
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var
           and (rt, e') = expr e in

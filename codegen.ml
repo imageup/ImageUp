@@ -144,6 +144,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
+    | SBiTuple ((s1, e1), (s2, e2)) -> (expr builder (s1, e1), expr builder (s2, e2))
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
