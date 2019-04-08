@@ -145,17 +145,19 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
     | SBiTuple ((s1, e1), (s2, e2)) -> 
+    (
     (* only int or float, not 3 + 2 *)
-        match e1 with 
-          | SLiteral i -> 
-            let e1_t = L.const_int i32_t e1
-            and e2_t = L.const_int i32_t e2
-            in L.const_array (array_t 2) Array.of_list([e1_t, e2_t])
-          | SFliteral l ->
-            let e1_t = L.const_int i32_t e1
-            and e2_t = L.const_int i32_t e2
-            in L.const_array (array_t 2) Array.of_list([e1_t,e2_t])
+        match (e1, e2) with 
+          | (SLiteral i, SLiteral j) -> 
+            let e1_t = L.const_int i32_t i
+            and e2_t = L.const_int i32_t j
+            in L.const_array i32_t (Array.of_list(e1_t::[e2_t]))
+          | (SFliteral i, SFliteral j) ->
+            let e1_t = L.const_float_of_string float_t i
+            and e2_t = L.const_float_of_string float_t j
+            in L.const_array float_t (Array.of_list(e1_t::[e2_t]))
           | _ -> raise(Failure ("only suppurt int or float tuple"))
+    )
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
