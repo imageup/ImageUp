@@ -161,10 +161,10 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     	(
     		match (e1, e2, e3) with
     		| (SLiteral i, SLiteral j, SLiteral k) ->
-    			let e1' = L.const_int i32_t i
-    			and e2' = L.const_int i32_t j
-    			and e3' = L.const_int i32_t k
-    			in L.const_array i32_t (Array.of_list(e1'::e2'::[e3']))
+          let e1' = L.const_float_of_string float_t (string_of_int i)
+          and e2' = L.const_float_of_string float_t (string_of_int j)
+          and e3' = L.const_float_of_string float_t (string_of_int k)
+    			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
     		| (SFliteral i, SFliteral j, SFliteral k) ->
     			let e1' = L.const_float_of_string float_t i
     			and e2' = L.const_float_of_string float_t j
@@ -172,6 +172,12 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
     		| _ -> raise(Failure ("only support int or float tuple"))
     	)
+    | STupleAccess(s, (Int, SLiteral l)) ->
+    (
+      let s' = L.build_load (lookup s) s builder in
+      (* print_string() *)
+      s'
+    )
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
