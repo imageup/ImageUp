@@ -116,10 +116,6 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       )
       | _ -> m
     in
-(* 
-  	let local_var = L.build_alloca (ltype_of_typ t) n builder
-  	in StringMap.add n local_var m 
-    in *)
 
     let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals
         (Array.to_list (L.params the_function)) 
@@ -173,54 +169,54 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     		| _ -> raise(Failure ("only support int or float tuple"))
     	)
     | STupleAccess(s, (Int, SLiteral l)) ->
-    (
-      let s' = L.build_load (lookup s) s builder in
-      (* print_string() *)
-      s'
-    )
+      (
+        (* let s' = L.build_load (lookup s) s builder in *)
+        let value = StringMap.find s local_vars in
+        L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
+      )
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
-	  let e1' = expr builder e1
-	  and e2' = expr builder e2 in
-	  (match op with 
-	    A.Add     -> L.build_fadd
-	  | A.Sub     -> L.build_fsub
-	  | A.Mult    -> L.build_fmul
-	  | A.Div     -> L.build_fdiv 
-    | A.Mod     -> L.build_srem
-	  | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
-	  | A.Neq     -> L.build_fcmp L.Fcmp.One
-	  | A.Less    -> L.build_fcmp L.Fcmp.Olt
-	  | A.Leq     -> L.build_fcmp L.Fcmp.Ole
-	  | A.Greater -> L.build_fcmp L.Fcmp.Ogt
-	  | A.Geq     -> L.build_fcmp L.Fcmp.Oge
-	  | A.And | A.Or ->
-	      raise (Failure "internal error: semant should have rejected and/or on float")
-	  ) e1' e2' "tmp" builder
-      | SBinop (e1, op, e2) ->
-	  let e1' = expr builder e1
-	  and e2' = expr builder e2 in
-	  (match op with
-	    A.Add     -> L.build_add
-	  | A.Sub     -> L.build_sub
-	  | A.Mult    -> L.build_mul
-          | A.Div     -> L.build_sdiv
-	  | A.And     -> L.build_and
-	  | A.Or      -> L.build_or
-	  | A.Equal   -> L.build_icmp L.Icmp.Eq
-	  | A.Neq     -> L.build_icmp L.Icmp.Ne
-	  | A.Less    -> L.build_icmp L.Icmp.Slt
-	  | A.Leq     -> L.build_icmp L.Icmp.Sle
-	  | A.Greater -> L.build_icmp L.Icmp.Sgt
-	  | A.Geq     -> L.build_icmp L.Icmp.Sge
-	  ) e1' e2' "tmp" builder
-      | SUnop(op, ((t, _) as e)) ->
+  	  let e1' = expr builder e1
+  	  and e2' = expr builder e2 in
+  	  (match op with 
+  	    A.Add     -> L.build_fadd
+  	  | A.Sub     -> L.build_fsub
+  	  | A.Mult    -> L.build_fmul
+  	  | A.Div     -> L.build_fdiv 
+      | A.Mod     -> L.build_srem
+  	  | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
+  	  | A.Neq     -> L.build_fcmp L.Fcmp.One
+  	  | A.Less    -> L.build_fcmp L.Fcmp.Olt
+  	  | A.Leq     -> L.build_fcmp L.Fcmp.Ole
+  	  | A.Greater -> L.build_fcmp L.Fcmp.Ogt
+  	  | A.Geq     -> L.build_fcmp L.Fcmp.Oge
+  	  | A.And | A.Or ->
+  	      raise (Failure "internal error: semant should have rejected and/or on float")
+  	  ) e1' e2' "tmp" builder
+    | SBinop (e1, op, e2) ->
+  	  let e1' = expr builder e1
+  	  and e2' = expr builder e2 in
+  	  (match op with
+  	    A.Add     -> L.build_add
+  	  | A.Sub     -> L.build_sub
+  	  | A.Mult    -> L.build_mul
+      | A.Div     -> L.build_sdiv
+  	  | A.And     -> L.build_and
+  	  | A.Or      -> L.build_or
+  	  | A.Equal   -> L.build_icmp L.Icmp.Eq
+  	  | A.Neq     -> L.build_icmp L.Icmp.Ne
+  	  | A.Less    -> L.build_icmp L.Icmp.Slt
+  	  | A.Leq     -> L.build_icmp L.Icmp.Sle
+  	  | A.Greater -> L.build_icmp L.Icmp.Sgt
+  	  | A.Geq     -> L.build_icmp L.Icmp.Sge
+  	  ) e1' e2' "tmp" builder
+    | SUnop(op, ((t, _) as e)) ->
           let e' = expr builder e in
-	  (match op with
-	    A.Neg when t = A.Float -> L.build_fneg 
-	  | A.Neg                  -> L.build_neg
-    | A.Not                  -> L.build_not) e' "tmp" builder
+  	  (match op with
+  	    A.Neg when t = A.Float -> L.build_fneg 
+  	  | A.Neg                  -> L.build_neg
+      | A.Not                  -> L.build_not) e' "tmp" builder
     | SCall ("print", [e]) | SCall ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder

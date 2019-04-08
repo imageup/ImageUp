@@ -8,9 +8,8 @@ function main() -> int
 		i = i + 1;
 	}
 
-	tuple : x = (2.0, 2.0);
-	tuple : y = (2, 2, 2);
-	float : z = x[0];
+	tuple : y = (2.0, 2.0, 2.0);
+	float : z = y[0];
 	printf(z);
 	return 0;
 }
