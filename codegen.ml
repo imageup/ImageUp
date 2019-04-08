@@ -144,7 +144,18 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
-    | SBiTuple ((s1, e1), (s2, e2)) -> (expr builder (s1, e1), expr builder (s2, e2))
+    | SBiTuple ((s1, e1), (s2, e2)) -> 
+    (* only int or float, not 3 + 2 *)
+        match e1 with 
+          | SLiteral i -> 
+            let e1_t = L.const_int i32_t e1
+            and e2_t = L.const_int i32_t e2
+            in L.const_array (array_t 2) Array.of_list([e1_t, e2_t])
+          | SFliteral l ->
+            let e1_t = L.const_int i32_t e1
+            and e2_t = L.const_int i32_t e2
+            in L.const_array (array_t 2) Array.of_list([e1_t,e2_t])
+          | _ -> raise(Failure ("only suppurt int or float tuple"))
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
