@@ -1,7 +1,13 @@
 function main() -> int
 {
 	int : a = 3 + 5;
-	print(a);
-	prints("hello world!");
+	int : i = 0;
+	while(i < 10)
+	{
+		print(i);
+		i = i + 1;
+	}
+
+	tuple : x = (2.0, 2.0);
 	return 0;
 }

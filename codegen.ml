@@ -151,11 +151,13 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           | (SLiteral i, SLiteral j) -> 
             let e1_t = L.const_int i32_t i
             and e2_t = L.const_int i32_t j
-            in L.const_array i32_t (Array.of_list(e1_t::[e2_t]))
+            and e3_t = L.const_int i32_t 0
+            in L.const_array i32_t (Array.of_list(e1_t::e2_t::[e3_t]))
           | (SFliteral i, SFliteral j) ->
             let e1_t = L.const_float_of_string float_t i
             and e2_t = L.const_float_of_string float_t j
-            in L.const_array float_t (Array.of_list(e1_t::[e2_t]))
+            and e3_t = L.const_float_of_string float_t "0.0"
+            in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
           | _ -> raise(Failure ("only suppurt int or float tuple"))
     )
     | SAssign (s, e) -> let e' = expr builder e in
