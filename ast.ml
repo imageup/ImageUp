@@ -80,6 +80,7 @@ let rec string_of_expr = function
   | BoolLit(false) -> "false"
   | Cliteral(c) -> String.make 1 c
   | Sliteral(s) -> s
+  | MatLit (el) -> "[" ^ String.concat "| " (List.map (fun e2 -> String.concat ", " (List.map string_of_expr e2)) el) ^ "|]"
   | BiTuple(e1, e2) -> " ( " ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ " ) "
   | TriTuple(e1, e2, e3) -> "(" ^ string_of_expr e1 ^ " , " ^ string_of_expr e2 ^ " , " ^ string_of_expr e3 ^ " ) "
   | Id(s) -> s

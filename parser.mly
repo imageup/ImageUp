@@ -3,7 +3,7 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA COLON LSQBRACE RSQBRACE LPERCENT RPERCENT SEPARATOR EOF FUNCTION
-%token PLUS MINUS TIMES DIVIDE MOD ASSIGN ARROW NOT 
+%token PLUS MINUS TIMES DIVIDE MOD ASSIGN ARROW NOT NEG
 %token EQ NEQ LT LEQ GT GEQ AND OR 
 %token TRUE FALSE
 %token RETURN STOP GO IF ELSE FOR WHILE INT BOOL VOID FLOAT TUPLE STRING CHAR MATRIX IMAGE
@@ -19,6 +19,7 @@ open Ast
 
 %nonassoc NOELSE
 %nonassoc ELSE
+%nonassoc NEG
 %left SEMI
 %right ARROW
 %right COLON
@@ -37,7 +38,6 @@ open Ast
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
 %right NOT 
-
 
 %start program
 %type <Ast.program> program
@@ -93,9 +93,11 @@ stmt:
   | expr SEMI                               { Expr $1               }
   | typ COLON ID ASSIGN expr SEMI           { DeclAsn(($1, $3), $5) }
   | typ COLON ID SEMI                       { TypeAsn($1, $3) }
-  | RETURN expr_opt SEMI                    { Return $2             }
+  | RETURN expr_opt SEMI                    { Return $2             } 
   | LBRACE stmt_list RBRACE                 { Block(List.rev $2)    }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
+  | typ COLON ID LPAREN LITERAL COMMA LITERAL RPAREN ASSIGN expr SEMI { MatDeclAsn(($1, $3, $5, $7), $10) }
+  /* | typ COLON ID LPAREN LITERAL COMMA LITERAL RPAREN SEMI {} */
   | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7)        }
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt { For($3, $5, $7, $9)   }
   | WHILE LPAREN expr RPAREN stmt           { While($3, $5)         }
@@ -109,33 +111,31 @@ expr_opt:
   
 
 expr:
-    LITERAL               { Literal($1)            }
-  | FLIT                  { Fliteral($1)           }
-  | BLIT                  { BoolLit($1)            }
-  | CHARLIT               { Cliteral($1)           }
-  | STRINGLIT             { Sliteral($1)           }
-  | ID                    { Id($1)                 }
-  | expr PLUS   expr      { Binop($1, Add,   $3)   }
-  | expr MINUS  expr      { Binop($1, Sub,   $3)   }
-  | expr TIMES  expr      { Binop($1, Mult,  $3)   }
-  | expr DIVIDE expr      { Binop($1, Div,   $3)   }
-  | expr EQ     expr      { Binop($1, Equal, $3)   }
-  | expr NEQ    expr      { Binop($1, Neq,   $3)   }
-  | expr LT     expr      { Binop($1, Less,  $3)   }
-  | expr LEQ    expr      { Binop($1, Leq,   $3)   }
-  | expr GT     expr      { Binop($1, Greater, $3) }
-  | expr GEQ    expr      { Binop($1, Geq,   $3)   }
-  | expr AND    expr      { Binop($1, And,   $3)   }
-  | expr OR     expr      { Binop($1, Or,    $3)   }
-  | expr MOD    expr      { Binop($1, Mod,   $3)   }
-  | MINUS expr %prec NOT  { Unop(Neg, $2)          }
-  | NOT expr              { Unop(Not, $2)          }
-  | ID ASSIGN expr      { Assign($1, $3)         }
+    LITERAL                   { Literal($1)            }
+  | FLIT                      { Fliteral($1)           }
+  | BLIT                      { BoolLit($1)            }
+  | CHARLIT                   { Cliteral($1)           }
+  | STRINGLIT                 { Sliteral($1)           }
+  | ID                        { Id($1)                 }
+  | expr PLUS   expr          { Binop($1, Add,   $3)   }
+  | expr MINUS  expr          { Binop($1, Sub,   $3)   }
+  | expr TIMES  expr          { Binop($1, Mult,  $3)   }
+  | expr DIVIDE expr          { Binop($1, Div,   $3)   }
+  | expr EQ     expr          { Binop($1, Equal, $3)   }
+  | expr NEQ    expr          { Binop($1, Neq,   $3)   }
+  | expr LT     expr          { Binop($1, Less,  $3)   }
+  | expr LEQ    expr          { Binop($1, Leq,   $3)   }
+  | expr GT     expr          { Binop($1, Greater, $3) }
+  | expr GEQ    expr          { Binop($1, Geq,   $3)   }
+  | expr AND    expr          { Binop($1, And,   $3)   }
+  | expr OR     expr          { Binop($1, Or,    $3)   }
+  | expr MOD    expr          { Binop($1, Mod,   $3)   }
+  | MINUS expr %prec NOT      { Unop(Neg, $2)          }
+  | NOT expr                  { Unop(Not, $2)          }
+  | ID ASSIGN expr            { Assign($1, $3)         }
   | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE ASSIGN expr      { MatAssign($1, $3, $6, $9)         }
-  | LPAREN expr RPAREN    { $2                     }
-  /*| expr COMMA expr       { CommaCombine($1, $3)   } */
-  /*| expr SEPARATOR expr   { Separator($1, $3)      } */
-  | LSQBRACE rows SEPARATOR RSQBRACE       { MatLit(List.rev $2) }
+  | LPAREN expr RPAREN        { $2                     }
+  | matrix_literal            { MatLit($1) }
   | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4)}
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
   | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE {MatrixAccess($1, $3, $6)}
@@ -152,27 +152,16 @@ args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
 
+matrix_literal:
+   LSQBRACE RSQBRACE                { [[]] } /* Empty matrix */
+ | LSQBRACE matrix_body RSQBRACE    { List.rev $2 }
 
-actuals_opt:
-    /* nothing */ { [] }
-  | actuals_list  { List.rev $1 }
+matrix_body:
+    matrix_row                   { [List.rev $1] }
+  | matrix_body SEPARATOR matrix_row  { $3 :: $1 }
 
-actuals_list:
-    expr                    { [$1] }
-  | actuals_list COMMA expr { $3 :: $1 }
-      
-rows:
-    actuals_opt            { [$1] }
-  | rows SEPARATOR actuals_opt  { $3 :: $1 }
-
-/*
-tuple_typ:
-    typ LPERCENT LITERAL RPERCENT { TupleTyp($1, $3) }
-
-
-
-
-
-
-
-*/
+matrix_row:
+    FLIT                                            { [Fliteral($1)] }
+  | MINUS FLIT %prec NEG                            { [Unop(Neg, Fliteral($2))] }
+  | matrix_row COMMA FLIT                           { Fliteral($3) :: $1 }
+  | matrix_row COMMA MINUS FLIT %prec NEG           { Unop(Neg, Fliteral($4)) :: $1 }

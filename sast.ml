@@ -9,6 +9,7 @@ and sx =
   | SSliteral of string
   | SCliteral of char
   | SBoolLit of bool
+  | SMatlit of sexpr list list
   | SId of string
   | SBiTuple of sexpr * sexpr
   | STriTuple of sexpr * sexpr * sexpr
@@ -55,6 +56,7 @@ let rec string_of_sexpr (t, e) =
   | SBoolLit(false) -> "false"
   | SCliteral(c) -> String.make 1 c
   | SSliteral(s) -> s
+  | SMatLit (el) -> "[" ^ String.concat "; " (List.map (fun e2 -> String.concat ", " (List.map string_of_sexpr e2)) el) ^ ";]"
   | SBiTuple(e1, e2) -> "(" ^ string_of_sexpr e1 ^ "," ^ string_of_sexpr e2 ^ ")"
   | STriTuple(e1, e2, e3) -> "(" ^ string_of_sexpr e1 ^","^ string_of_sexpr e2 ^","^
         string_of_sexpr e3^")"

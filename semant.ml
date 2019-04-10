@@ -112,6 +112,7 @@ let check (globals, functions) =
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
+      (* | MatLit el  -> (Matrix, SMatLit el) *)
       | BiTuple (e1, e2) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2

@@ -166,7 +166,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       )
         
         (* todo *)
-        | A.Matassign (s, r, c, v) -> let r1 = expr builder r and c1 = 
+       (*  | A.Matassign (s, r, c, v) -> let r1 = expr builder r and c1 = 
           expr builder c and s1 = expr builder s and v1 = expr builder v in
         if (L.type_of r1 = i32_t && L.type_of c1 = i32_t) 
         (* directly put when index r and c are ints *)
@@ -179,7 +179,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         and c2 = (if (L.type_of c1) != sequence_t then
           build_seq_of_int c1 builder else c1)
         in build_funcall "massign" [| s1 ; r2 ; c2; v1 |] builder
-
+ *)
 
 
 
