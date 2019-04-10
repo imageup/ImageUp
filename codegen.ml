@@ -1,5 +1,6 @@
 (* IMPORTANT!!!!! *)
 (* check bituple or trituple *)
+(* L.pointer type matrix, + matrix size 200 * 200 *)
 
 
 module L = Llvm
@@ -35,7 +36,7 @@ let translate (globals, functions) =
     | A.Char  -> i8_t
     | A.String -> string_t
     | A.Tuple -> L.array_type float_t 3
-    | A.Matrix -> L.pointer_type (matrix_t 2 2)
+    | A.Matrix -> matrix_t 2 2
     | A.Image -> L.pointer_type (L.array_type (matrix_t 200 200) 3)
   in
 (* 
@@ -118,7 +119,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
     (* Return the value for a variable or formal argument.
        Check local names first, then global names *)
-    let lookup n = print_string("looking\n"); try StringMap.find n local_vars
+    let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
     in
 
@@ -148,7 +149,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           )
           | [] -> []
           | _ -> raise(Failure("invalid matlit"))
-        in print_string("reach here and working\n"); L.const_array (array_t col) (Array.of_list(recompute_out el))
+        in L.const_array (array_t col) (Array.of_list(recompute_out el))
     )
     | SBiTuple ((s1, e1), (s2, e2)) -> 
       (
@@ -295,8 +296,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
       | SMatDeclAsn((ty, s, e1, e2), exprs) ->
       (
-        let e' = expr builder exprs in 
-        print_string(string_of_sexpr(exprs));
+        let e' = expr builder exprs in
         ignore(L.build_store e' (lookup s) builder); builder
       )
 
