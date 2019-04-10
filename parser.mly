@@ -96,7 +96,7 @@ stmt:
   | RETURN expr_opt SEMI                    { Return $2             } 
   | LBRACE stmt_list RBRACE                 { Block(List.rev $2)    }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
-  | typ COLON ID LPAREN LITERAL COMMA LITERAL RPAREN ASSIGN expr SEMI { MatDeclAsn(($1, $3, $5, $7), $10) }
+  | typ COLON ID LPAREN expr COMMA expr RPAREN ASSIGN expr SEMI { MatDeclAsn(($1, $3, $5, $7), $10) }
   /* | typ COLON ID LPAREN LITERAL COMMA LITERAL RPAREN SEMI {} */
   | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7)        }
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt { For($3, $5, $7, $9)   }
@@ -160,6 +160,6 @@ matrix_body:
 
 matrix_row:
     FLIT                                            { [Fliteral($1)] }
-  | MINUS FLIT %prec NEG                            { [Unop(Neg, Fliteral($2))] }
+  /*| MINUS FLIT %prec NEG                            { [Unop(Neg, Fliteral($2))] }*/
   | matrix_row COMMA FLIT                           { Fliteral($3) :: $1 }
-  | matrix_row COMMA MINUS FLIT %prec NEG           { Unop(Neg, Fliteral($4)) :: $1 }
+  /*| matrix_row COMMA MINUS FLIT %prec NEG           { Unop(Neg, Fliteral($4)) :: $1 }*/

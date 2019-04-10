@@ -119,13 +119,14 @@ let check (globals, functions) =
         in
         let rec parse_outer = function 
           | [[]] -> [[]]
+          | [] -> []
           | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
           | _ -> raise(Failure("invalid matrix"))
         in
         let result_t = parse_outer el in
         if List.length el = 0
-        then (Matrix, SMatLitDim ((Matrix, SMatLit result_t), 0, 0))
-        else (Matrix, SMatLitDim ((Matrix, SMatLit result_t), List.length el, List.length (List.hd el)))
+        then (Matrix, SMatLitDim (result_t, 0, 0))
+        else (Matrix, SMatLitDim (result_t, List.length el, List.length (List.hd el)))
       | BiTuple (e1, e2) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
@@ -210,15 +211,12 @@ let check (globals, functions) =
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak
       | Conti -> SConti
-      | For(e1, e2, e3, st) ->
-	  SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
+      | MatDeclAsn((ty, s, e1, e2), e3) -> SMatDeclAsn((ty, s, e1, e2), expr e3)
+      | For(e1, e2, e3, st) -> SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
       | Return e -> let (t, e') = expr e in
         if t = func.typ then SReturn (t, e') 
-        else raise (
-	  Failure ("return gives " ^ string_of_typ t ^ " expected " ^
-		   string_of_typ func.typ ^ " in " ^ string_of_expr e))
-	    
+        else raise ( Failure ("return gives " ^ string_of_typ t ^ " expected " ^string_of_typ func.typ ^ " in " ^ string_of_expr e))
 	    (* A block is correct if each statement is correct and nothing
 	       follows any Return statement.  Nested blocks are flattened. *)
       | Block sl -> 

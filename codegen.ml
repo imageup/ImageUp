@@ -101,8 +101,11 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       match stmt with 
       | SDeclAsn((t, n), valuex) -> 
       (
-        let local = L.build_alloca (ltype_of_typ t) n builder in
-	 StringMap.add n local m
+        let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
+      )
+      | SMatDeclAsn((t, n, i, j), valuex) ->
+      (
+        let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
       | _ -> m
     in
@@ -115,7 +118,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
     (* Return the value for a variable or formal argument.
        Check local names first, then global names *)
-    let lookup n = try StringMap.find n local_vars
+    let lookup n = print_string("looking\n"); try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
     in
 
@@ -127,6 +130,26 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
+    | SMatLitDim (el, row, col) -> 
+    (
+        let rec recompute_in = function
+          | [] -> []
+          | head :: tail -> let res = expr builder head in res :: recompute_in tail 
+          (* [L.const_float_of_string float_t "1.0"] *)
+        in 
+        let rec recompute_out = function
+          | [[]] -> let x = L.const_array float_t (Array.of_list([])) in [x]
+          | head::tail -> 
+          (
+            (* inner *)
+            let tmp = Array.of_list(recompute_in head) in 
+            let res = L.const_array float_t tmp in
+            res :: recompute_out tail
+          )
+          | [] -> []
+          | _ -> raise(Failure("invalid matlit"))
+        in print_string("reach here and working\n"); L.const_array (array_t col) (Array.of_list(recompute_out el))
+    )
     | SBiTuple ((s1, e1), (s2, e2)) -> 
       (
       (* only int or float, not 3 + 2 *)
@@ -135,7 +158,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
             let e1_t = L.const_float_of_string float_t (string_of_int i)
             and e2_t = L.const_float_of_string float_t (string_of_int j)
             and e3_t = L.const_float_of_string float_t (string_of_int 0)
-            in L.const_array i32_t (Array.of_list(e1_t::e2_t::[e3_t]))
+            in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
           | (SFliteral i, SFliteral j) ->
             let e1_t = L.const_float_of_string float_t i
             and e2_t = L.const_float_of_string float_t j
@@ -158,31 +181,12 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
     		| _ -> raise(Failure ("only support int or float tuple"))
     	)
-    | STupleAccess(s, (Int, SLiteral l)) ->
+    | STupleAccess(s, (s1, SLiteral l)) ->
       (
         (* let s' = L.build_load (lookup s) s builder in *)
         let value = StringMap.find s local_vars in
         L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
       )
-        
-        (* todo *)
-       (*  | A.Matassign (s, r, c, v) -> let r1 = expr builder r and c1 = 
-          expr builder c and s1 = expr builder s and v1 = expr builder v in
-        if (L.type_of r1 = i32_t && L.type_of c1 = i32_t) 
-        (* directly put when index r and c are ints *)
-        then (ignore(build_funcall "checkmatrc" [| s1; r1; c1|] builder);
-              ignore(build_funcall "checkmatscalar" [| v1 |] builder);
-              let v2 = build_get v1 zero_32t builder
-              in ignore(build_putrc s1 r1 c1 v2 builder); v1)
-        else let r2 = (if (L.type_of r1) != sequence_t then
-          build_seq_of_int r1 builder else r1)
-        and c2 = (if (L.type_of c1) != sequence_t then
-          build_seq_of_int c1 builder else c1)
-        in build_funcall "massign" [| s1 ; r2 ; c2; v1 |] builder
- *)
-
-
-
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
@@ -206,19 +210,20 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SBinop (e1, op, e2) ->
   	  let e1' = expr builder e1
   	  and e2' = expr builder e2 in
-  	  (match op with
-  	    A.Add     -> L.build_add
-  	  | A.Sub     -> L.build_sub
-  	  | A.Mult    -> L.build_mul
-      | A.Div     -> L.build_sdiv
-  	  | A.And     -> L.build_and
-  	  | A.Or      -> L.build_or
-  	  | A.Equal   -> L.build_icmp L.Icmp.Eq
-  	  | A.Neq     -> L.build_icmp L.Icmp.Ne
-  	  | A.Less    -> L.build_icmp L.Icmp.Slt
-  	  | A.Leq     -> L.build_icmp L.Icmp.Sle
-  	  | A.Greater -> L.build_icmp L.Icmp.Sgt
-  	  | A.Geq     -> L.build_icmp L.Icmp.Sge
+  	  (
+        match op with
+    	    A.Add     -> L.build_add
+    	  | A.Sub     -> L.build_sub
+    	  | A.Mult    -> L.build_mul
+        | A.Div     -> L.build_sdiv
+    	  | A.And     -> L.build_and
+    	  | A.Or      -> L.build_or
+    	  | A.Equal   -> L.build_icmp L.Icmp.Eq
+    	  | A.Neq     -> L.build_icmp L.Icmp.Ne
+    	  | A.Less    -> L.build_icmp L.Icmp.Slt
+    	  | A.Leq     -> L.build_icmp L.Icmp.Sle
+    	  | A.Greater -> L.build_icmp L.Icmp.Sgt
+    	  | A.Geq     -> L.build_icmp L.Icmp.Sge
   	  ) e1' e2' "tmp" builder
     | SUnop(op, ((t, _) as e)) ->
           let e' = expr builder e in
@@ -287,6 +292,15 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
       	 ignore(L.build_cond_br bool_val then_bb else_bb builder);
       	 L.builder_at_end context merge_bb
+
+      | SMatDeclAsn((ty, s, e1, e2), exprs) ->
+      (
+        let e' = expr builder exprs in 
+        print_string(string_of_sexpr(exprs));
+        ignore(L.build_store e' (lookup s) builder); builder
+      )
+
+      | SExpr e -> ignore(expr builder e); builder 
 
       | SWhile (predicate, body) ->
     	  let pred_bb = L.append_block context "while" the_function in
