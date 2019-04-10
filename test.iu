@@ -1,18 +1,5 @@
 function main() -> int
 {
-	int : a = 3 + 5;
-	int : i = 0;
-	while(i < 10)
-	{
-		print(i);
-
-		i = i + 1;
-	}
-
-matrix : x(2,2) = [1.0,1.0|2.0,2.0];
-
-	tuple : y = (2.0, 2.0, 2.0);
-	float : z = y[0];
-	printf(z);
+matrix : ab(2,2) = [1.0,1.0|2.1,2.2];
 	return 0;
 }

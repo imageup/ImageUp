@@ -30,6 +30,7 @@ type expr =
 
 type matbind = typ * string * expr * expr
   
+type matbind = typ * string * expr * expr
 type stmt =
     Block of stmt list
   | DeclAsn of bind * expr
