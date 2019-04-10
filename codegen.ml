@@ -35,7 +35,7 @@ let translate (globals, functions) =
     | A.Char  -> i8_t
     | A.String -> string_t
     | A.Tuple -> L.array_type float_t 3
-    | A.Matrix -> L.pointer_type (matrix_t 200 200)
+    | A.Matrix -> L.pointer_type (matrix_t 2 2)
     | A.Image -> L.pointer_type (L.array_type (matrix_t 200 200) 3)
   in
 (* 
