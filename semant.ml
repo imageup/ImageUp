@@ -116,17 +116,17 @@ let check (globals, functions) =
         let rec parse_expr = function
           | [] -> []
           | h1 :: t1 -> let tmp = expr h1 in tmp :: parse_expr t1
-          
+          | _ -> raise(Failure("invalid mat")) 
         in
         let rec parse_outer = function 
-          | [] -> [[]]
+            | [[]] -> [[]]
           | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
           | _ -> raise(Failure("invalid matrix"))
         in
         let result_t = parse_outer el in
         if List.length el = 0
-        then (Matrix, SMatLitDim ((Matrix, SMatLit result_t), 0, 0))
-        else (Matrix, SMatLitDim ((Matrix, SMatLit result_t), List.length el, List.length (List.hd el)))
+        then (Matrix, SMatLitDim (result_t, 0, 0))
+        else (Matrix, SMatLitDim ( result_t, List.length el, List.length (List.hd el)))
       | BiTuple (e1, e2) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2

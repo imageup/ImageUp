@@ -23,7 +23,7 @@ and sx =
   | SCall of string * sexpr list
   | SNoexpr
   | SMatLit of sexpr list list
-  | SMatLitDim of sexpr * int * int
+  | SMatLitDim of sexpr list list * int * int
 
 type sstmt =
     SBlock of sstmt list

@@ -104,6 +104,11 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         let local = L.build_alloca (ltype_of_typ t) n builder in
 	 StringMap.add n local m
       )
+      | SMatDeclAsn((t, n, e1, e2), valuex) -> 
+      (
+        let local = L.build_alloca (ltype_of_typ t) n builder in
+	 StringMap.add n local m
+      )
       | _ -> m
     in
 
@@ -127,7 +132,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
-    | SMatLitDim ((_, SMatLit el), r, c) ->
+    | SMatLitDim (el,  r, c) ->
             let m0 = List.map (List.map (fun e ->  (expr  builder e))) el in
         let m1 = List.map Array.of_list m0 in
         let m2 = List.map (L.const_array float_t) m1 in
@@ -273,8 +278,8 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       | SDeclAsn ((type_of_id, id), exprs) -> let e' = expr builder exprs in
                         ignore(L.build_store e' (lookup id) builder); builder
       | SExpr e -> ignore(expr builder e); builder 
-      | SMatDeclAsn((t, s, e1, e2), exprs) ->  let e' = expr builder exprs in
-                              ignore(L.build_store e' (lookup s) builder); builder
+      | SMatDeclAsn ((t, s, e1, e2), exprs) -> let e' = expr builder exprs in
+                        ignore(L.build_store e' (lookup s) builder); builder
       | SReturn e -> ignore(match fdecl.styp with
                             (* Special "return nothing" instr *)
                             A.Void -> L.build_ret_void builder 
