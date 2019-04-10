@@ -123,7 +123,9 @@ let check (globals, functions) =
           | _ -> raise(Failure("invalid matrix"))
         in
         let result_t = parse_outer el in
-        (Matrix, SMatLitDim ((Matrix, SMatLit result_t), 0, 0))
+        if List.length el = 0
+        then (Matrix, SMatLitDim ((Matrix, SMatLit result_t), 0, 0))
+        else (Matrix, SMatLitDim ((Matrix, SMatLit result_t), List.length el, List.length (List.hd el)))
       | BiTuple (e1, e2) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
