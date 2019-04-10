@@ -9,7 +9,6 @@ and sx =
   | SSliteral of string
   | SCliteral of char
   | SBoolLit of bool
-  | SMatlit of sexpr list list
   | SId of string
   | SBiTuple of sexpr * sexpr
   | STriTuple of sexpr * sexpr * sexpr
