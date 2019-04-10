@@ -162,4 +162,4 @@ matrix_row:
     FLIT                                            { [Fliteral($1)] }
   /*| MINUS FLIT %prec NEG                            { [Unop(Neg, Fliteral($2))] }*/
   | matrix_row COMMA FLIT                           { Fliteral($3) :: $1 }
-  | matrix_row COMMA MINUS FLIT %prec NEG           { Unop(Neg, Fliteral($4)) :: $1 }
+  /*| matrix_row COMMA MINUS FLIT %prec NEG           { Unop(Neg, Fliteral($4)) :: $1 }*/

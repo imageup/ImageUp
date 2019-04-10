@@ -15,12 +15,12 @@ let check (globals, functions) =
   (* Verify a list of bindings has no void types or duplicate names *)
   let check_binds (kind : string) (binds : bind list) =
     List.iter (function
-	(Void, b) -> raise (Failure ("illegal void " ^ kind ^ " " ^ b))
+  (Void, b) -> raise (Failure ("illegal void " ^ kind ^ " " ^ b))
       | _ -> ()) binds;
     let rec dups = function
         [] -> ()
-      |	((_,n1) :: (_,n2) :: _) when n1 = n2 ->
-	  raise (Failure ("duplicate " ^ kind ^ " " ^ n1))
+      | ((_,n1) :: (_,n2) :: _) when n1 = n2 ->
+    raise (Failure ("duplicate " ^ kind ^ " " ^ n1))
       | _ :: t -> dups t
     in dups (List.sort (fun (_,a) (_,b) -> compare a b) binds)
   in
@@ -39,9 +39,9 @@ let check (globals, functions) =
       formals = [(ty, "x")];
        body = [] } map
     in List.fold_left add_bind StringMap.empty [ ("print", Int);
-			                         ("printb", Bool);
-			                         ("printf", Float);
-			                         ("prints", String) ]
+                               ("printb", Bool);
+                               ("printf", Float);
+                               ("prints", String) ]
   in
 
   (* Add function name to symbol table *)
@@ -94,7 +94,7 @@ let check (globals, functions) =
 
     (* Build local symbol table of variables for this function *)
     let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
-	                StringMap.empty (globals @ func.formals @ local_vars)
+                  StringMap.empty (globals @ func.formals @ local_vars)
     in
 
     (* Return a variable from our local symbol table *)
@@ -116,17 +116,17 @@ let check (globals, functions) =
         let rec parse_expr = function
           | [] -> []
           | h1 :: t1 -> let tmp = expr h1 in tmp :: parse_expr t1
-          
         in
         let rec parse_outer = function 
-          | [] -> [[]]
+          | [[]] -> [[]]
+          | [] -> []
           | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
           | _ -> raise(Failure("invalid matrix"))
         in
         let result_t = parse_outer el in
         if List.length el = 0
-        then (Matrix, SMatLitDim ((Matrix, SMatLit result_t), 0, 0))
-        else (Matrix, SMatLitDim ((Matrix, SMatLit result_t), List.length el, List.length (List.hd el)))
+        then (Matrix, SMatLitDim (result_t, 0, 0))
+        else (Matrix, SMatLitDim (result_t, List.length el, List.length (List.hd el)))
       | BiTuple (e1, e2) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
@@ -177,7 +177,7 @@ let check (globals, functions) =
                      when same && (t1 = Int || t1 = Float) -> Bool
           | And | Or when same && t1 = Bool -> Bool
           | _ -> raise (
-	      Failure ("illegal binary operator " ^
+        Failure ("illegal binary operator " ^
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
@@ -210,19 +210,15 @@ let check (globals, functions) =
       | DeclAsn((t, s), e) -> SDeclAsn((t, s), expr e)
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak
-      | MatDeclAsn ((t, s, e1, e2), e3) -> SMatDeclAsn((t, s, e1, e2), expr e3)
       | Conti -> SConti
-      | For(e1, e2, e3, st) ->
-	  SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
+      | MatDeclAsn((ty, s, e1, e2), e3) -> SMatDeclAsn((ty, s, e1, e2), expr e3)
+      | For(e1, e2, e3, st) -> SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
       | Return e -> let (t, e') = expr e in
         if t = func.typ then SReturn (t, e') 
-        else raise (
-	  Failure ("return gives " ^ string_of_typ t ^ " expected " ^
-		   string_of_typ func.typ ^ " in " ^ string_of_expr e))
-	    
-	    (* A block is correct if each statement is correct and nothing
-	       follows any Return statement.  Nested blocks are flattened. *)
+        else raise ( Failure ("return gives " ^ string_of_typ t ^ " expected " ^string_of_typ func.typ ^ " in " ^ string_of_expr e))
+      (* A block is correct if each statement is correct and nothing
+         follows any Return statement.  Nested blocks are flattened. *)
       | Block sl -> 
           let rec check_stmt_list = function
               [Return _ as s] -> [check_stmt s]
@@ -237,7 +233,7 @@ let check (globals, functions) =
       sfname = func.fname;
       sformals = func.formals;
       sbody = match check_stmt (Block func.body) with
-	SBlock(sl) -> sl
+  SBlock(sl) -> sl
       | _ -> raise (Failure ("internal error: block didn't become a block?"))
     }
   in (globals, List.map check_function functions)

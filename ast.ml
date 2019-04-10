@@ -22,13 +22,14 @@ type expr =
   | Assign of string * expr (* Matrix : mat(2,2) = [1,2|1,2]; *)
   | MatrixAccess of string * expr * expr (* mat[2][3+i] *) (* expr here must be a tuple of int *)
   | MatAssign of string * expr * expr * expr
-  | CommaCombine of expr * expr (* 1,2 *)
+  (* | CommaCombine of expr * expr (* 1,2 *) *)
   | Separator of expr * expr (* [1,2,3 | 3,2,1] *)
   | TupleAccess of string * expr
   | Call of string * expr list
   | Noexpr
-  
+
 type matbind = typ * string * expr * expr
+  
 type stmt =
     Block of stmt list
   | DeclAsn of bind * expr
@@ -80,7 +81,7 @@ let rec string_of_expr = function
   | BoolLit(false) -> "false"
   | Cliteral(c) -> String.make 1 c
   | Sliteral(s) -> s
-  | MatLit (el) -> "[" ^ String.concat "| " (List.map (fun e2 -> String.concat ", " (List.map string_of_expr e2)) el) ^ "|]"
+  | MatLit (el) -> "[" ^ String.concat "| " (List.map (fun e2 -> String.concat ", " (List.map string_of_expr e2)) el) ^ ";]"
   | BiTuple(e1, e2) -> " ( " ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ " ) "
   | TriTuple(e1, e2, e3) -> "(" ^ string_of_expr e1 ^ " , " ^ string_of_expr e2 ^ " , " ^ string_of_expr e3 ^ " ) "
   | Id(s) -> s
@@ -88,7 +89,7 @@ let rec string_of_expr = function
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | MatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_expr e1 ^"][" ^string_of_expr e2 ^"]"^ " = " ^ string_of_expr e3
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
-  | CommaCombine(e1, e2) -> string_of_expr e1 ^ " , " ^ string_of_expr e2
+  (* | CommaCombine(e1, e2) -> string_of_expr e1 ^ " , " ^ string_of_expr e2 *)
   | Separator(e1, e2) -> " [ " ^ string_of_expr e1 ^ " | " ^ string_of_expr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
   | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_expr e1 ^ " ] " ^ " [ " ^ string_of_expr e2 ^ " ] "
   | Call(f, el) -> f ^ " ( " ^ String.concat ", " (List.map string_of_expr el) ^ " ) "
