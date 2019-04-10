@@ -164,6 +164,25 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         let value = StringMap.find s local_vars in
         L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
       )
+        
+        (* todo *)
+        | A.Matassign (s, r, c, v) -> let r1 = expr builder r and c1 = 
+          expr builder c and s1 = expr builder s and v1 = expr builder v in
+        if (L.type_of r1 = i32_t && L.type_of c1 = i32_t) 
+        (* directly put when index r and c are ints *)
+        then (ignore(build_funcall "checkmatrc" [| s1; r1; c1|] builder);
+              ignore(build_funcall "checkmatscalar" [| v1 |] builder);
+              let v2 = build_get v1 zero_32t builder
+              in ignore(build_putrc s1 r1 c1 v2 builder); v1)
+        else let r2 = (if (L.type_of r1) != sequence_t then
+          build_seq_of_int r1 builder else r1)
+        and c2 = (if (L.type_of c1) != sequence_t then
+          build_seq_of_int c1 builder else c1)
+        in build_funcall "massign" [| s1 ; r2 ; c2; v1 |] builder
+
+
+
+
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->

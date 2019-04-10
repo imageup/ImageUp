@@ -14,6 +14,7 @@ type expr =
   | Cliteral of char   (* char type *)
   | Sliteral of string (* string type*)
   | BoolLit of bool    (* boolean *)
+  | MatLit of expr list list
   | Id of string       (* variable name *)
   | BiTuple of expr * expr (*  *)
   | TriTuple of expr * expr * expr 

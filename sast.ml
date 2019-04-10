@@ -22,6 +22,7 @@ and sx =
   | STupleAccess of string * sexpr
   | SCall of string * sexpr list
   | SNoexpr
+  | SMatLit of sexpr list list
 
 type sstmt =
     SBlock of sstmt list

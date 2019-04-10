@@ -134,7 +134,8 @@ expr:
   | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE ASSIGN expr      { MatAssign($1, $3, $6, $9)         }
   | LPAREN expr RPAREN    { $2                     }
   /*| expr COMMA expr       { CommaCombine($1, $3)   } */
-  | expr SEPARATOR expr   { Separator($1, $3)      }
+  /*| expr SEPARATOR expr   { Separator($1, $3)      } */
+  | LSQBRACE rows SEPARATOR RSQBRACE       { MatLit(List.rev $2) }
   | LPAREN expr COMMA expr RPAREN { BiTuple($2, $4)}
   | LPAREN expr COMMA expr COMMA expr RPAREN { TriTuple($2, $4, $6) }
   | ID LSQBRACE expr RSQBRACE LSQBRACE expr RSQBRACE {MatrixAccess($1, $3, $6)}
@@ -150,6 +151,19 @@ args_opt:
 args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
+
+
+actuals_opt:
+    /* nothing */ { [] }
+  | actuals_list  { List.rev $1 }
+
+actuals_list:
+    expr                    { [$1] }
+  | actuals_list COMMA expr { $3 :: $1 }
+      
+rows:
+    actuals_opt            { [$1] }
+  | rows SEPARATOR actuals_opt  { $3 :: $1 }
 
 /*
 tuple_typ:
