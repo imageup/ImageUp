@@ -127,6 +127,12 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
+    | SMatLitDim (el, r, c) ->
+        let m1 = List.map Array.of_list el in
+        let m2 = List.map (L.const_array float_t) m1 in
+        let m3 = Array.of_list m2 in
+        ((L.const_array (array_t c) m3), r, c)
+        
     | SBiTuple ((s1, e1), (s2, e2)) -> 
       (
       (* only int or float, not 3 + 2 *)
