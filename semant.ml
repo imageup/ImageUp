@@ -116,9 +116,10 @@ let check (globals, functions) =
         let rec parse_expr = function
           | [] -> []
           | h1 :: t1 -> let tmp = expr h1 in tmp :: parse_expr t1
+          
         in
         let rec parse_outer = function 
-          | [[]] -> [[]]
+          | [] -> [[]]
           | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
           | _ -> raise(Failure("invalid matrix"))
         in
@@ -209,6 +210,7 @@ let check (globals, functions) =
       | DeclAsn((t, s), e) -> SDeclAsn((t, s), expr e)
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak
+      | MatDeclAsn ((t, s, e1, e2), e3) -> SMatDeclAsn((t, s, e1, e2), expr e3)
       | Conti -> SConti
       | For(e1, e2, e3, st) ->
 	  SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)

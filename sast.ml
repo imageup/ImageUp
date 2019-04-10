@@ -29,7 +29,7 @@ type sstmt =
     SBlock of sstmt list
   | SExpr of sexpr
   | SDeclAsn of bind * sexpr
-  | SMatDeclAsn of matbind * expr  (* Matrix : mat(2,2) = [1,2|3,4]; *)
+  | SMatDeclAsn of matbind * sexpr  (* Matrix : mat(2,2) = [1,2|3,4]; *)
   | STypeAsn of bind
   | SReturn of sexpr
   | SIf of sexpr * sstmt * sstmt

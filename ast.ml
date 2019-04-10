@@ -6,7 +6,6 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
 
 type bind =  typ * string
-type matbind = typ * string * int * int
 
 type expr =
     Literal of int     (* integer *)
@@ -29,6 +28,7 @@ type expr =
   | Call of string * expr list
   | Noexpr
   
+type matbind = typ * string * expr * expr
 type stmt =
     Block of stmt list
   | DeclAsn of bind * expr
@@ -111,7 +111,7 @@ let rec string_of_stmt = function
   | Expr(expr) -> string_of_expr expr ^ ";\n";
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
   | DeclAsn((t, s),e) -> string_of_typ t ^ " : " ^ s ^ " = " ^ string_of_expr e ^ ";\n";
-  | MatDeclAsn((t, s, e1, e2), e3) -> string_of_typ t ^ ":" ^s ^"("^ string_of_int e1^","^string_of_int e2^")"^"=" ^string_of_expr e3^";\n"; 
+  | MatDeclAsn((t, s, e1, e2), e3) -> string_of_typ t ^ ":" ^s ^"("^ string_of_expr e1^","^string_of_expr e2^")"^"=" ^string_of_expr e3^";\n"; 
   | TypeAsn((t, e)) -> string_of_typ t ^ " : " ^ e ^ ";\n";
   | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^

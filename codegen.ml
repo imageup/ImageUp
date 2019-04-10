@@ -127,11 +127,12 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
-    | SMatLitDim (el, r, c) ->
-        let m1 = List.map Array.of_list el in
+    | SMatLitDim ((_, SMatLit el), r, c) ->
+            let m0 = List.map (List.map (fun e ->  (expr  builder e))) el in
+        let m1 = List.map Array.of_list m0 in
         let m2 = List.map (L.const_array float_t) m1 in
         let m3 = Array.of_list m2 in
-        ((L.const_array (array_t c) m3), r, c)
+        (L.const_array (array_t c) m3)
         
     | SBiTuple ((s1, e1), (s2, e2)) -> 
       (
@@ -272,6 +273,8 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       | SDeclAsn ((type_of_id, id), exprs) -> let e' = expr builder exprs in
                         ignore(L.build_store e' (lookup id) builder); builder
       | SExpr e -> ignore(expr builder e); builder 
+      | SMatDeclAsn((t, s, e1, e2), exprs) ->  let e' = expr builder exprs in
+                              ignore(L.build_store e' (lookup s) builder); builder
       | SReturn e -> ignore(match fdecl.styp with
                             (* Special "return nothing" instr *)
                             A.Void -> L.build_ret_void builder 
