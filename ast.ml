@@ -28,7 +28,6 @@ type expr =
   | Call of string * expr list
   | Noexpr
 
-type matbind = typ * string * expr * expr
   
 type matbind = typ * string * expr * expr
 type stmt =
