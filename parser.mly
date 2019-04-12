@@ -156,10 +156,12 @@ matrix_literal:
 
 matrix_body:
     matrix_row                   { [List.rev $1] }
-  | matrix_body SEPARATOR matrix_row  { $3 :: $1 }
+  | matrix_body SEPARATOR matrix_row  { List.rev $3 :: $1 }
 
 matrix_row:
     FLIT                                            { [Fliteral($1)] }
+  | LITERAL                                         { [Fliteral(string_of_int $1)] }
   /*| MINUS FLIT %prec NEG                            { [Unop(Neg, Fliteral($2))] }*/
   | matrix_row COMMA FLIT                           { Fliteral($3) :: $1 }
+  | matrix_row COMMA LITERAL                        { Fliteral(string_of_int $3) :: $1 }
   /*| matrix_row COMMA MINUS FLIT %prec NEG           { Unop(Neg, Fliteral($4)) :: $1 }*/

@@ -3,6 +3,14 @@ function main() -> int
 int : x = 2;
 int : y = 2;
 matrix: test_m(x,y);
-matrix : ab(x,y) = [1.0,1.0|2.1,2.2];
+matrix : mat(x,y) = [0,1|2,3];
+float : out0 = mat[0][0];
+float : out1 = mat[0][1];
+float : out2 = mat[1][0];
+float : out3 = mat[1][1];
+        printf(out0);
+        printf(out1);
+        printf(out2);
+        printf(out3);
 	return 0;
 }

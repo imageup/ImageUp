@@ -146,16 +146,45 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
+    | SBiTuple ((s1, e1), (s2, e2)) -> 
+    (
+    (* only int or float, not 3 + 2 *)
+      match (e1, e2) with 
+        | (SLiteral i, SLiteral j) -> 
+          let e1_t = L.const_float_of_string float_t (string_of_int i)
+          and e2_t = L.const_float_of_string float_t (string_of_int j)
+          and e3_t = L.const_float_of_string float_t (string_of_int 0)
+          in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
+        | (SFliteral i, SFliteral j) ->
+          let e1_t = L.const_float_of_string float_t i
+          and e2_t = L.const_float_of_string float_t j
+          and e3_t = L.const_float_of_string float_t "0.0"
+          in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
+        | _ -> raise(Failure ("only suppurt int or float tuple"))
+    )
+    | STriTuple((s1, e1), (s2, e2), (s3, e3)) ->
+  	(
+  		match (e1, e2, e3) with
+  		| (SLiteral i, SLiteral j, SLiteral k) ->
+        let e1' = L.const_float_of_string float_t (string_of_int i)
+        and e2' = L.const_float_of_string float_t (string_of_int j)
+        and e3' = L.const_float_of_string float_t (string_of_int k)
+  			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
+  		| (SFliteral i, SFliteral j, SFliteral k) ->
+  			let e1' = L.const_float_of_string float_t i
+  			and e2' = L.const_float_of_string float_t j
+  			and e3' = L.const_float_of_string float_t k
+  			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
+  		| _ -> raise(Failure ("only support int or float tuple"))
+  	)
+    | STupleAccess(s, (s1, SLiteral l)) ->
+    (
+      (* let s' = L.build_load (lookup s) s builder in *)
+      let value = StringMap.find s local_vars in
+      L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
+    )
     | SMatLitDim (el, row, col) -> 
     (
-        (* let r_t = expr builder row in *)
-(*         let tmp = L.float_of_const (expr builder col) in
-        print_string(string_of_sexpr(col));
-        let c_t = match tmp with
-        | Some x -> int_of_float(x)
-        | None -> raise(Failure("option value failure"))
-        in
-        print_int(c_t); *)
         let rec recompute_in = function
           | [] -> []
           | head :: tail -> let res = expr builder head in res :: recompute_in tail 
@@ -174,43 +203,13 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           (* | _ -> raise(Failure("invalid matlit")) *)
         in L.const_array (array_t col) (Array.of_list(recompute_out el))
     )
-    | SBiTuple ((s1, e1), (s2, e2)) -> 
-      (
-      (* only int or float, not 3 + 2 *)
-        match (e1, e2) with 
-          | (SLiteral i, SLiteral j) -> 
-            let e1_t = L.const_float_of_string float_t (string_of_int i)
-            and e2_t = L.const_float_of_string float_t (string_of_int j)
-            and e3_t = L.const_float_of_string float_t (string_of_int 0)
-            in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
-          | (SFliteral i, SFliteral j) ->
-            let e1_t = L.const_float_of_string float_t i
-            and e2_t = L.const_float_of_string float_t j
-            and e3_t = L.const_float_of_string float_t "0.0"
-            in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
-          | _ -> raise(Failure ("only suppurt int or float tuple"))
-      )
-    | STriTuple((s1, e1), (s2, e2), (s3, e3)) ->
-    	(
-    		match (e1, e2, e3) with
-    		| (SLiteral i, SLiteral j, SLiteral k) ->
-          let e1' = L.const_float_of_string float_t (string_of_int i)
-          and e2' = L.const_float_of_string float_t (string_of_int j)
-          and e3' = L.const_float_of_string float_t (string_of_int k)
-    			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
-    		| (SFliteral i, SFliteral j, SFliteral k) ->
-    			let e1' = L.const_float_of_string float_t i
-    			and e2' = L.const_float_of_string float_t j
-    			and e3' = L.const_float_of_string float_t k
-    			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
-    		| _ -> raise(Failure ("only support int or float tuple"))
-    	)
-    | STupleAccess(s, (s1, SLiteral l)) ->
-      (
-        (* let s' = L.build_load (lookup s) s builder in *)
-        let value = StringMap.find s local_vars in
-        L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
-      )
+    | SMatrixAccess (s, e1, e2) -> 
+    (
+      let row_t = expr builder e1 in
+      let col_t = expr builder e2 in
+      let value = StringMap.find s local_vars in
+      L.build_load (L.build_gep (value) [| L.const_int i32_t 0; row_t; col_t|] s builder) s builder
+    )
     | SAssign (s, e) -> let e' = expr builder e in
                         ignore(L.build_store e' (lookup s) builder); e'
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
