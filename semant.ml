@@ -121,7 +121,6 @@ let check (globals, functions) =
           | [[]] -> [[]]
           | [] -> []
           | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
-          | _ -> raise(Failure("invalid matrix"))
         in
         let result_t = parse_outer el in
         if List.length el = 0
@@ -211,7 +210,8 @@ let check (globals, functions) =
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak
       | Conti -> SConti
-      | MatDeclAsn((ty, s, e1, e2), e3) -> SMatDeclAsn((ty, s, e1, e2), expr e3)
+      | MatDecl(ty, s, e1, e2) -> SMatDecl(ty, s, expr e1, expr e2)
+      | MatDeclAsn(ty, s, e1, e2, e3) -> SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
       | For(e1, e2, e3, st) -> SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
       | Return e -> let (t, e') = expr e in

@@ -1,5 +1,8 @@
 function main() -> int
 {
-matrix : ab(2,2) = [1.0,1.0|2.1,2.2];
+int : x = 2;
+int : y = 2;
+matrix: test_m(x,y);
+matrix : ab(x,y) = [1.0,1.0|2.1,2.2];
 	return 0;
 }

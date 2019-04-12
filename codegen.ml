@@ -57,10 +57,10 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
       let printf_func : L.llvalue = 
           L.declare_function "printf" printf_t the_module in
-      let prints_t : L.lltype = 
-	  L.function_type string_t [| string_t; string_t |] in  
-      let prints_func : L.llvalue =
-	  L.declare_function "prints" prints_t the_module in
+      (* let prints_t : L.lltype = 
+	  L.function_type string_t [| string_t; string_t |] in   *)
+(*       let prints_func : L.llvalue =
+	  L.declare_function "prints" prints_t the_module in *)
 	  
 (*       let printbig_t : L.lltype =
           L.function_type i32_t [| i32_t |] in
@@ -86,6 +86,20 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder 
     and	string_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
+
+  (* need to add global matrix in function formal *)
+  (* need to add global matrix in function formal *)
+  (* need to add global matrix in function formal *)
+  (* need to add global matrix in function formal *)
+  (* need to add global matrix in function formal *)
+  let matrix_map =
+    let find_matrix_and_add m stmt = 
+      match stmt with 
+        | SMatDeclAsn(t, n, i, j, valuex) -> StringMap.add n ((L.const_int i32_t 0), (L.const_int i32_t 0)) m
+        | SMatDecl(t, n, i, j) -> StringMap.add n ((L.const_int i32_t 0), (L.const_int i32_t 0)) m
+        | _ -> m
+    in List.fold_left find_matrix_and_add StringMap.empty fdecl.sbody
+  in
   (* Construct the function's "locals": formal arguments and locally
      declared variables.  Allocate each on the stack, initialize their
      value, if appropriate, and remember their values in the "locals" map *)
@@ -104,7 +118,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
-      | SMatDeclAsn((t, n, i, j), valuex) ->
+      | SMatDeclAsn(t, n, i, j, valuex) ->
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
@@ -126,6 +140,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) = match e with
       SLiteral i  -> L.const_int i32_t i
+    | SCliteral c -> L.build_global_stringptr (String.make 1 c) "system_string" builder
     | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
     | SFliteral l -> L.const_float_of_string float_t l
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
@@ -133,6 +148,14 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SId s       -> L.build_load (lookup s) s builder
     | SMatLitDim (el, row, col) -> 
     (
+        (* let r_t = expr builder row in *)
+(*         let tmp = L.float_of_const (expr builder col) in
+        print_string(string_of_sexpr(col));
+        let c_t = match tmp with
+        | Some x -> int_of_float(x)
+        | None -> raise(Failure("option value failure"))
+        in
+        print_int(c_t); *)
         let rec recompute_in = function
           | [] -> []
           | head :: tail -> let res = expr builder head in res :: recompute_in tail 
@@ -148,7 +171,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
             res :: recompute_out tail
           )
           | [] -> []
-          | _ -> raise(Failure("invalid matlit"))
+          (* | _ -> raise(Failure("invalid matlit")) *)
         in L.const_array (array_t col) (Array.of_list(recompute_out el))
     )
     | SBiTuple ((s1, e1), (s2, e2)) -> 
@@ -294,10 +317,22 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       	 ignore(L.build_cond_br bool_val then_bb else_bb builder);
       	 L.builder_at_end context merge_bb
 
-      | SMatDeclAsn((ty, s, e1, e2), exprs) ->
+      | SMatDeclAsn(ty, s, e1, e2, exprs) ->
       (
+        let e1' = expr builder e1 in
+        let e2' = expr builder e2 in
+        let size = (e1', e2') in
         let e' = expr builder exprs in
+        matrix_map = StringMap.add s size matrix_map;
         ignore(L.build_store e' (lookup s) builder); builder
+      )
+
+      | SMatDecl(ty, s, e1, e2) ->
+      (
+        let e1' = expr builder e1 in
+        let e2' = expr builder e2 in
+        let size = (e1', e2') in
+        matrix_map = StringMap.add s size matrix_map; builder
       )
 
       | SExpr e -> ignore(expr builder e); builder 

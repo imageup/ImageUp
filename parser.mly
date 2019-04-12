@@ -96,8 +96,8 @@ stmt:
   | RETURN expr_opt SEMI                    { Return $2             } 
   | LBRACE stmt_list RBRACE                 { Block(List.rev $2)    }
   | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
-  | typ COLON ID LPAREN expr COMMA expr RPAREN ASSIGN expr SEMI { MatDeclAsn(($1, $3, $5, $7), $10) }
-  /* | typ COLON ID LPAREN LITERAL COMMA LITERAL RPAREN SEMI {} */
+  | typ COLON ID LPAREN expr COMMA expr RPAREN ASSIGN expr SEMI { MatDeclAsn($1, $3, $5, $7, $10) }
+  | typ COLON ID LPAREN expr COMMA expr RPAREN SEMI { MatDecl($1, $3, $5, $7) }
   | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7)        }
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt { For($3, $5, $7, $9)   }
   | WHILE LPAREN expr RPAREN stmt           { While($3, $5)         }
