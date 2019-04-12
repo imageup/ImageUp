@@ -1,5 +1,7 @@
 function main() -> int
 {
-matrix : ab(2,2) = [1.0,1.0|2.1,2.2];
+    int : a;
+    a = 2;
+    matrix : ab(2,2) = [1.0,1.0|1.0,1.0];
 	return 0;
 }
