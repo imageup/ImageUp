@@ -1,16 +1,11 @@
 function main() -> int
 {
-int : x = 2;
-int : y = 2;
-matrix: test_m(x,y);
-matrix : mat(x,y) = [0,1|2,3];
-float : out0 = mat[0][0];
-float : out1 = mat[0][1];
-float : out2 = mat[1][0];
-float : out3 = mat[1][1];
-        printf(out0);
-        printf(out1);
-        printf(out2);
-        printf(out3);
+	matrix : mat(3,3) = [0,1,2|3,4,5|6,7,8];
+	int : x = 3;
+	int : y = 4;
+	matrix: mat1(x, y);
+	float : a = mat[2][2];
+	mat[2][2] = 10.0;
+	printf(mat[2][2]);
 	return 0;
 }

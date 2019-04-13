@@ -17,7 +17,6 @@ and sx =
   | SAssign of string * sexpr
   | SMatAssign of string * sexpr * sexpr * sexpr
   | SMatrixAccess of string * sexpr * sexpr
-  (* | SSeparator of sexpr * sexpr  *)
   | STupleAccess of string * sexpr
   | SCall of string * sexpr list
   | SNoexpr

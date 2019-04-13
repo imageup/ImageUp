@@ -81,9 +81,27 @@ let check (globals, functions) =
         (
           let tmp = (t, n) in tmp :: generate_locals tail
         )
+        | MatDeclAsn(t, n, i, j, valuex) ->
+        (
+          let tmp = (t, n) in tmp :: generate_locals tail
+        )
+        | MatDecl (t, n, i, j) ->
+        (
+          let tmp = (t, n) in tmp :: generate_locals tail
+        )
         | _ -> generate_locals tail
       )
     in
+
+(*     let matrix_map =
+      let find_matrix_and_add m stmt = 
+        match stmt with 
+          | MatDeclAsn(t, n, i, j, valuex) -> StringMap.add n (i, j) m
+          | MatDecl(t, n, i, j) -> StringMap.add n (i, j) m
+          | _ -> m
+      in List.fold_left find_matrix_and_add StringMap.empty func.body
+    in *)
+
     let local_vars = generate_locals func.body 
     in
     (* Raise an exception if the given rvalue type cannot be assigned to
@@ -148,9 +166,16 @@ let check (globals, functions) =
         then (Matrix, SMatLitDim (result_t, 0, 0))
         else (Matrix, SMatLitDim (result_t, List.length el, List.length (List.hd el)))
       | MatrixAccess (s, e1, e2) ->
-        let e1' = expr e1 in
-        let e2' = expr e2 in
+      (
+        let e1' = expr e1 
+        and e2' = expr e2 in
         (Float, SMatrixAccess (s, e1', e2'))
+      )
+      | MatAssign (s, e1, e2, e3) ->
+        let e1' = expr e1
+        and e2' = expr e2
+        and e3' = expr e3 in
+        (Float, SMatAssign (s, e1', e2', e3'))
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var
           and (rt, e') = expr e in

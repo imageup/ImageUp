@@ -104,7 +104,7 @@ let string_of_typ = function
   | Void -> "void"
   | Char -> "char"
   | String -> "string"
-  | Matrix -> "matrix"
+  | Matrix-> "matrix"
   | Tuple -> "tuple"
   | Image -> "image"
 
