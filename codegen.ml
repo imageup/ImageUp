@@ -1,6 +1,6 @@
 (* IMPORTANT!!!!! *)
 (* check bituple or trituple *)
-(* matrix index check is needed *)
+(* matrix index & check is needed *)
 (* matrix 200 * 200 store memory junk *)
 (* need to add global matrix in function formal as function parameter *)
 
@@ -234,7 +234,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         L.build_load (L.build_gep (matrix_var) [| L.const_int i32_t 0; row_t; col_t|] s builder) s builder
       )
     )
-    | SMatAssign (s, e1, e2, (ty3, e3)) ->
+    | SMatAssign (s, e1, e2, e3) ->
     (
       let e3' = expr builder e3 in
 (*       let get_value val_in = 
