@@ -85,9 +85,27 @@ let check (globals, functions) =
         (
           let tmp = (t, n) in tmp :: generate_locals tail
         )
+        | MatDeclAsn(t, n, i, j, valuex) ->
+        (
+          let tmp = (t, n) in tmp :: generate_locals tail
+        )
+        | MatDecl (t, n, i, j) ->
+        (
+          let tmp = (t, n) in tmp :: generate_locals tail
+        )
         | _ -> generate_locals tail
       )
     in
+
+(*     let matrix_map =
+      let find_matrix_and_add m stmt = 
+        match stmt with 
+          | MatDeclAsn(t, n, i, j, valuex) -> StringMap.add n (i, j) m
+          | MatDecl(t, n, i, j) -> StringMap.add n (i, j) m
+          | _ -> m
+      in List.fold_left find_matrix_and_add StringMap.empty func.body
+    in *)
+
     let local_vars = generate_locals func.body 
     in
     (* Raise an exception if the given rvalue type cannot be assigned to
@@ -116,21 +134,6 @@ let check (globals, functions) =
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
-      | MatLit el  ->  
-        let rec parse_expr = function
-          | [] -> []
-          | h1 :: t1 -> let tmp = expr h1 in tmp :: parse_expr t1
-        in
-        let rec parse_outer = function 
-          | [[]] -> [[]]
-          | [] -> []
-          | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
-          | _ -> raise(Failure("invalid matrix"))
-        in
-        let result_t = parse_outer el in
-        if List.length el = 0
-        then (Matrix, SMatLitDim (result_t, 0, 0))
-        else (Matrix, SMatLitDim (result_t, List.length el, List.length (List.hd el)))
       | BiTuple (e1, e2) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
@@ -152,6 +155,31 @@ let check (globals, functions) =
           | Literal i -> (Int, STupleAccess(s, (Int, SLiteral i)))
           | _ -> raise(Failure("Tuple can only be accessed by integer index"))
         )
+      | MatLit el  ->  
+        let rec parse_expr = function
+          | [] -> []
+          | h1 :: t1 -> let tmp = expr h1 in tmp :: parse_expr t1
+        in
+        let rec parse_outer = function 
+          | [[]] -> [[]]
+          | [] -> []
+          | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
+        in
+        let result_t = parse_outer el in
+        if List.length el = 0
+        then (Matrix, SMatLitDim (result_t, 0, 0))
+        else (Matrix, SMatLitDim (result_t, List.length el, List.length (List.hd el)))
+      | MatrixAccess (s, e1, e2) ->
+      (
+        let e1' = expr e1 
+        and e2' = expr e2 in
+        (Float, SMatrixAccess (s, e1', e2'))
+      )
+      | MatAssign (s, e1, e2, e3) ->
+        let e1' = expr e1
+        and e2' = expr e2
+        and e3' = expr e3 in
+        (Float, SMatAssign (s, e1', e2', e3'))
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var
           and (rt, e') = expr e in
@@ -215,7 +243,8 @@ let check (globals, functions) =
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak
       | Conti -> SConti
-      | MatDeclAsn((ty, s, e1, e2), e3) -> SMatDeclAsn((ty, s, e1, e2), expr e3)
+      | MatDecl(ty, s, e1, e2) -> SMatDecl(ty, s, expr e1, expr e2)
+      | MatDeclAsn(ty, s, e1, e2, e3) -> SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
       | For(e1, e2, e3, st) -> SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
       | Return e -> let (t, e') = expr e in
