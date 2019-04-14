@@ -120,7 +120,12 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
-      | SMatDeclAsn(t, n, i, j, valuex) ->
+
+      | STypeAsn(t, n) ->
+      (
+        let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
+      )
+      | SMatDeclAsn((t, n, i, j), valuex) ->
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
@@ -344,6 +349,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
     let rec stmt builder = function
 	      SBlock sl -> List.fold_left stmt builder sl
+      | STypeAsn (type_of_id, id) -> builder
       | SDeclAsn ((type_of_id, id), exprs) -> let e' = expr builder exprs in
                         ignore(L.build_store e' (lookup id) builder); builder
       | SExpr e -> ignore(expr builder e); builder 

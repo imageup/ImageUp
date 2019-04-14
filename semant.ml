@@ -81,6 +81,10 @@ let check (globals, functions) =
         (
           let tmp = (t, n) in tmp :: generate_locals tail
         )
+        | TypeAsn(t, n) -> 
+        (
+          let tmp = (t, n) in tmp :: generate_locals tail
+        )
         | MatDeclAsn(t, n, i, j, valuex) ->
         (
           let tmp = (t, n) in tmp :: generate_locals tail
