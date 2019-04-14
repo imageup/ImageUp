@@ -125,7 +125,7 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
-      | SMatDeclAsn((t, n, i, j), valuex) ->
+      | SMatDeclAsn(t, n, i, j, valuex) ->
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
