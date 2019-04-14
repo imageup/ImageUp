@@ -1,13 +1,12 @@
 function main() -> int
 {
 
-    int : a;
-    a = 2;
-    matrix : ab(2,2) = [1.0,1.0|1.0,1.0];
-
-	matrix : mat(3,3) = [0,1,2|3,4,5|6,7,8];
+	matrix: aa(2,3)=[1.0,3.0,4.5|5.1,2.0,5.0];
+    int : bbb;
+    bbb = 3;
 	int : x = 3;
 	int : y = 4;
+	matrix: mat(3,4) = [1,2,3,4|4,5,6,1|7,8,9,2];
 	matrix: mat1(x, y);
 	float : a = mat[2][2];
 	mat[2][2] = 10.0;
@@ -18,7 +17,7 @@ function main() -> int
 	{
 		if(i == 0)
 		{
-			mat[i][i] = tu[0];
+			mat[i][i+1] = tu[0];
 		}
 		else
 		{
