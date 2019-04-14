@@ -17,7 +17,6 @@ and sx =
   | SAssign of string * sexpr
   | SMatAssign of string * sexpr * sexpr * sexpr
   | SMatrixAccess of string * sexpr * sexpr
-  | SSeparator of sexpr * sexpr 
   | STupleAccess of string * sexpr
   | SCall of string * sexpr list
   | SNoexpr
@@ -28,7 +27,8 @@ type sstmt =
     SBlock of sstmt list
   | SExpr of sexpr
   | SDeclAsn of bind * sexpr
-  | SMatDeclAsn of matbind * sexpr  (* Matrix : mat(2,2) = [1,2|3,4]; *)
+  | SMatDeclAsn of typ * string * sexpr * sexpr * sexpr  (* Matrix : mat(2,2) = [1,2|3,4]; *)
+  | SMatDecl of typ * string * sexpr * sexpr
   | STypeAsn of bind
   | SReturn of sexpr
   | SIf of sexpr * sstmt * sstmt
@@ -68,7 +68,7 @@ let rec string_of_sexpr (t, e) =
   | SMatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_sexpr e1 ^"][" ^string_of_sexpr e2 ^"]"^ " = " ^ string_of_sexpr e3
   | SAssign(v, e) -> v ^ " = " ^ string_of_sexpr e
   (* | SCommaCombine(e1, e2) -> string_of_sexpr e1 ^ " , " ^ string_of_sexpr e2 *)
-  | SSeparator(e1, e2) -> " [ " ^ string_of_sexpr e1 ^ " | " ^ string_of_sexpr e2 ^ " ] "(* [1,2,3 | 3,2,1] *)
+  (* | SSeparator(e1, e2) -> " [ " ^ string_of_sexpr e1 ^ " | " ^ string_of_sexpr e2 ^ " ] "(* [1,2,3 | 3,2,1] *) *)
   | SMatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_sexpr e1 ^ " ] " ^ " [ " ^ string_of_sexpr e2 ^ " ] "
   | SMatLitDim (el, i, j) -> "[" ^ String.concat "; " (List.map (fun e2 -> String.concat ", " (List.map string_of_sexpr e2)) el) ^ ";]"
   | SCall(f, el) ->
@@ -81,7 +81,8 @@ let rec string_of_sstmt = function
       "{\n" ^ String.concat "" (List.map string_of_sstmt stmts) ^ "}\n"
   | SExpr(expr) -> string_of_sexpr expr ^ ";\n";
   | SReturn(expr) -> "return " ^ string_of_sexpr expr ^ ";\n";
-  | SMatDeclAsn ((t, s, i, j), e) -> "[not implemented yet;]"
+  | SMatDeclAsn (t, s, i, j, e) -> "[not implemented yet;]"
+  | SMatDecl(t, s, e1, e2) -> string_of_typ t ^ ":" ^s ^"("^ string_of_sexpr e1^","^string_of_sexpr e2^");\n"; 
   | SIf(e, s, SBlock([])) ->
       "if (" ^ string_of_sexpr e ^ ")\n" ^ string_of_sstmt s
   | SDeclAsn((t, s),e) -> string_of_typ t ^ " : " ^ s ^ " = " ^ string_of_sexpr e ^ ";\n"

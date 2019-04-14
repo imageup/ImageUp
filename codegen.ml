@@ -1,7 +1,8 @@
 (* IMPORTANT!!!!! *)
 (* check bituple or trituple *)
-(* L.pointer type matrix, + matrix size 200 * 200 *)
-
+(* matrix index & check is needed *)
+(* matrix 200 * 200 store memory junk *)
+(* need to add global matrix in function formal as function parameter *)
 
 module L = Llvm
 module A = Ast
@@ -36,7 +37,7 @@ let translate (globals, functions) =
     | A.Char  -> i8_t
     | A.String -> string_t
     | A.Tuple -> L.array_type float_t 3
-    | A.Matrix -> matrix_t 2 2
+    | A.Matrix -> L.pointer_type (matrix_t 200 200)
     | A.Image -> L.pointer_type (L.array_type (matrix_t 200 200) 3)
   in
 (* 
@@ -57,10 +58,10 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
       let printf_func : L.llvalue = 
           L.declare_function "printf" printf_t the_module in
-      let prints_t : L.lltype = 
-	  L.function_type string_t [| string_t; string_t |] in  
-      let prints_func : L.llvalue =
-	  L.declare_function "prints" prints_t the_module in
+      (* let prints_t : L.lltype = 
+	  L.function_type string_t [| string_t; string_t |] in   *)
+(*       let prints_func : L.llvalue =
+	  L.declare_function "prints" prints_t the_module in *)
 	  
 (*       let printbig_t : L.lltype =
           L.function_type i32_t [| i32_t |] in
@@ -86,6 +87,17 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder 
     and	string_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
+
+  let rec range i j = if i > j then [] else i :: (range (i+1) j) in
+
+  let matrix_map =
+    let find_matrix_and_add m stmt = 
+      match stmt with 
+        | SMatDeclAsn(t, n, i, j, valuex) -> StringMap.add n ((L.const_int i32_t 0), (L.const_int i32_t 0)) m
+        | SMatDecl(t, n, i, j) -> StringMap.add n ((L.const_int i32_t 0), (L.const_int i32_t 0)) m
+        | _ -> m
+    in List.fold_left find_matrix_and_add StringMap.empty fdecl.sbody
+  in
   (* Construct the function's "locals": formal arguments and locally
      declared variables.  Allocate each on the stack, initialize their
      value, if appropriate, and remember their values in the "locals" map *)
@@ -100,10 +112,15 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
      * resulting registers to our map *)
     and add_local m stmt =
       match stmt with 
+      | STypeAsn(t, n) ->
+      (
+        let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
+      )
       | SDeclAsn((t, n), valuex) -> 
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
+
       | STypeAsn(t, n) ->
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
@@ -130,70 +147,129 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) = match e with
       SLiteral i  -> L.const_int i32_t i
+    | SCliteral c -> L.build_global_stringptr (String.make 1 c) "system_string" builder
     | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
     | SFliteral l -> L.const_float_of_string float_t l
     | SSliteral s -> L.build_global_stringptr s "system_string" builder
     | SNoexpr     -> L.const_int i32_t 0
     | SId s       -> L.build_load (lookup s) s builder
-    | SMatLitDim (el, row, col) -> 
-    (
-        let rec recompute_in = function
-          | [] -> []
-          | head :: tail -> let res = expr builder head in res :: recompute_in tail 
-          (* [L.const_float_of_string float_t "1.0"] *)
-        in 
-        let rec recompute_out = function
-          | [[]] -> let x = L.const_array float_t (Array.of_list([])) in [x]
-          | head::tail -> 
-          (
-            (* inner *)
-            let tmp = Array.of_list(recompute_in head) in 
-            let res = L.const_array float_t tmp in
-            res :: recompute_out tail
-          )
-          | [] -> []
-          | _ -> raise(Failure("invalid matlit"))
-        in L.const_array (array_t col) (Array.of_list(recompute_out el))
-    )
     | SBiTuple ((s1, e1), (s2, e2)) -> 
-      (
-      (* only int or float, not 3 + 2 *)
-        match (e1, e2) with 
-          | (SLiteral i, SLiteral j) -> 
-            let e1_t = L.const_float_of_string float_t (string_of_int i)
-            and e2_t = L.const_float_of_string float_t (string_of_int j)
-            and e3_t = L.const_float_of_string float_t (string_of_int 0)
-            in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
-          | (SFliteral i, SFliteral j) ->
-            let e1_t = L.const_float_of_string float_t i
-            and e2_t = L.const_float_of_string float_t j
-            and e3_t = L.const_float_of_string float_t "0.0"
-            in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
-          | _ -> raise(Failure ("only suppurt int or float tuple"))
-      )
+    (
+    (* only int or float, not 3 + 2 *)
+      match (e1, e2) with 
+        | (SLiteral i, SLiteral j) -> 
+          let e1_t = L.const_float_of_string float_t (string_of_int i)
+          and e2_t = L.const_float_of_string float_t (string_of_int j)
+          and e3_t = L.const_float_of_string float_t (string_of_int 0)
+          in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
+        | (SFliteral i, SFliteral j) ->
+          let e1_t = L.const_float_of_string float_t i
+          and e2_t = L.const_float_of_string float_t j
+          and e3_t = L.const_float_of_string float_t "0.0"
+          in L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t]))
+        | _ -> raise(Failure ("only suppurt int or float tuple"))
+    )
     | STriTuple((s1, e1), (s2, e2), (s3, e3)) ->
-    	(
-    		match (e1, e2, e3) with
-    		| (SLiteral i, SLiteral j, SLiteral k) ->
-          let e1' = L.const_float_of_string float_t (string_of_int i)
-          and e2' = L.const_float_of_string float_t (string_of_int j)
-          and e3' = L.const_float_of_string float_t (string_of_int k)
-    			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
-    		| (SFliteral i, SFliteral j, SFliteral k) ->
-    			let e1' = L.const_float_of_string float_t i
-    			and e2' = L.const_float_of_string float_t j
-    			and e3' = L.const_float_of_string float_t k
-    			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
-    		| _ -> raise(Failure ("only support int or float tuple"))
-    	)
+  	(
+  		match (e1, e2, e3) with
+  		| (SLiteral i, SLiteral j, SLiteral k) ->
+        let e1' = L.const_float_of_string float_t (string_of_int i)
+        and e2' = L.const_float_of_string float_t (string_of_int j)
+        and e3' = L.const_float_of_string float_t (string_of_int k)
+  			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
+  		| (SFliteral i, SFliteral j, SFliteral k) ->
+  			let e1' = L.const_float_of_string float_t i
+  			and e2' = L.const_float_of_string float_t j
+  			and e3' = L.const_float_of_string float_t k
+  			in L.const_array float_t (Array.of_list(e1'::e2'::[e3']))
+  		| _ -> raise(Failure ("only support int or float tuple"))
+  	)
     | STupleAccess(s, (s1, SLiteral l)) ->
+    (
+      (* let s' = L.build_load (lookup s) s builder in *)
+      let value = StringMap.find s local_vars in
+      L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
+    )
+    | SMatLitDim (s, m, n) -> 
+    (
+      (* let m = row and n = Array.length (Array.get s 0) in *)
+      let rec recompute_in = function
+        | [] -> []
+        | head :: tail -> let res = expr builder head in res :: recompute_in tail 
+      in 
+      let rec recompute_out = function
+        | [[]] -> let x = (Array.of_list([])) in [x]
+        | head::tail -> 
+        (
+          (* inner *)
+          let tmp = Array.of_list(recompute_in head) in 
+          tmp :: recompute_out tail
+        )
+        | [] -> []
+      in
+      let arr_in = Array.of_list(recompute_out s) in
+      let matrix = L.build_malloc (matrix_t 200 200) "res" builder in
+      let row_idxs = range 0 (m - 1) in
+      let col_idxs = range 0 (n-1) in
+      List.iter 
       (
-        (* let s' = L.build_load (lookup s) s builder in *)
-        let value = StringMap.find s local_vars in
-        L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
+        fun row_idx -> List.iter (
+          fun idx -> ignore
+          (
+            L.build_store 
+            (Array.get (Array.get arr_in row_idx) idx)
+            (L.build_gep matrix [|L.const_int i32_t 0; L.const_int i32_t row_idx; L.const_int i32_t idx|]  "tmp" builder)  
+            builder
+          )
+        ) col_idxs; 
+      ) row_idxs; 
+      matrix
+    )
+    | SMatrixAccess (s, e1, e2) -> 
+    (
+      let (i, j) = StringMap.find s matrix_map
+      and row_t = expr builder e1
+      and col_t = expr builder e2
+      in
+      let matrix_var = L.build_load (lookup s) s builder in
+      if (i > row_t) || (j > col_t)
+      then raise(Failure("matrix index access out of boundary"))
+      else
+      (
+        L.build_load (L.build_gep (matrix_var) [| L.const_int i32_t 0; row_t; col_t|] s builder) s builder
       )
-    | SAssign (s, e) -> let e' = expr builder e in
-                        ignore(L.build_store e' (lookup s) builder); e'
+    )
+    | SMatAssign (s, e1, e2, e3) ->
+    (
+      let e3' = expr builder e3 in
+(*       let get_value val_in = 
+        match val_in with
+        | Some l -> l
+        | None -> raise(Failure("fail to get value"))
+      in *)
+      let (i, j) = StringMap.find s matrix_map
+      and row_t = expr builder e1
+      and col_t = expr builder e2
+      in
+      let matrix_var = L.build_load (lookup s) s builder in
+(*       let i_v = get_value (L.int64_of_const i)
+      and j_v = get_value (L.int64_of_const j)
+      and row_v = get_value (L.int64_of_const row_t)
+      and col_v = get_value (L.int64_of_const col_t)
+      in *)
+      if (i >= row_t) || (j >= col_t)
+      then raise(Failure("matrix index access out of boundary"))
+      else
+      (
+        ignore(L.build_store e3' (L.build_gep (matrix_var) [| L.const_int i32_t 0; row_t; col_t|] s builder) builder);
+        e3'
+      ) 
+    )
+    | SAssign (s, e) -> 
+    (
+      let e' = expr builder e in ignore(L.build_store e' (lookup s) builder); 
+      e'
+    )
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
   	  let e1' = expr builder e1
   	  and e2' = expr builder e2 in
@@ -299,11 +375,25 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       	 ignore(L.build_cond_br bool_val then_bb else_bb builder);
       	 L.builder_at_end context merge_bb
 
-      | SMatDeclAsn((ty, s, e1, e2), exprs) ->
+      | SMatDeclAsn(ty, s, e1, e2, exprs) ->
       (
+        let e1' = expr builder e1 in
+        let e2' = expr builder e2 in
+        let size = (e1', e2') in
         let e' = expr builder exprs in
+        matrix_map = StringMap.add s size matrix_map;
         ignore(L.build_store e' (lookup s) builder); builder
       )
+
+      | SMatDecl(ty, s, e1, e2) ->
+      (
+        let e1' = expr builder e1 in
+        let e2' = expr builder e2 in
+        let size = (e1', e2') in
+        matrix_map = StringMap.add s size matrix_map; builder
+      )
+
+      | STypeAsn (ty, s) -> builder
 
       | SExpr e -> ignore(expr builder e); builder 
 
@@ -339,3 +429,25 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
   List.iter build_function_body functions;
   the_module
+
+
+(*       
+      let rec recompute_in = function
+        | [] -> []
+        | head :: tail -> let res = expr builder head in res :: recompute_in tail 
+      in 
+      let rec recompute_out = function
+        | [[]] -> let x = L.const_array float_t (Array.of_list([])) in [x]
+        | head::tail -> 
+        (
+          (* inner *)
+          let tmp = Array.of_list(recompute_in head) in 
+          let res = L.const_array float_t tmp in
+          res :: recompute_out tail
+        )
+        | [] -> []
+        (* | _ -> raise(Failure("invalid matlit")) *)
+      in  *)
+(*       let matrix_o = L.build_malloc matrix_t "res" builder in
+      (L.const_array (array_t col) (Array.of_list(recompute_out el)))
+      matrix_o *)
