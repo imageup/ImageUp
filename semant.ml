@@ -38,10 +38,14 @@ let check (globals, functions) =
       fname = name; 
       formals = formals;
        body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", [(Int, "x")]);
+    in List.fold_left add_bind StringMap.empty [ 
+                               ("print", [(Int, "x")]);
 			                         ("printb", [(Bool, "x")]);
 			                         ("printf", [(Float, "x")]);
-			                         ("prints", [(String, "x")]);("scale", [(Matrix, "matrix"); (Int, "r"); (Int, "c"); (Float, "ratio")]) ]
+			                         ("prints", [(String, "x")]);
+                               ("scale", [(Matrix, "matrix"); (Float, "ratio")]); 
+                               ("transpose", [(Matrix, "matrix")]);
+                               ("rotate", [(Matrix, "matrix"); (Bool, "direction")])]
   in
 
   (* Add function name to symbol table *)
