@@ -26,7 +26,11 @@ let translate (globals, functions) =
   and string_t   = L.pointer_type (L.i8_type context) 
   and array_t n  = (L.array_type (L.double_type context) n)
   and matrix_t m n = (L.array_type (L.array_type (L.double_type context) n) m)
-  and void_t     = L.void_type   context in
+  and void_t     = L.void_type   context
+  in let image_t = L.named_struct_type context "image_t"
+  in L.struct_set_body image_t [| (L.array_type (L.array_type float_t 1000) 1000 );
+                                  (L.array_type (L.array_type float_t 1000) 1000 );
+                                  (L.array_type (L.array_type float_t 1000) 1000 ) |] false;
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -37,8 +41,9 @@ let translate (globals, functions) =
     | A.Char  -> i8_t
     | A.String -> string_t
     | A.Tuple -> L.array_type float_t 3
+
     | A.Matrix -> L.pointer_type (matrix_t 200 200)
-    | A.Image -> L.pointer_type (L.array_type (matrix_t 200 200) 3)
+    | A.Image -> image_t
   in
 (* 
 
