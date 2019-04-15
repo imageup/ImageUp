@@ -326,8 +326,30 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SCall ("prints", [e]) ->        
 	  (L.build_call printf_func [| string_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |] 
 	    "printf" builder, (matrix_map, image_map))
+    | SCall ("scale", e)     ->
+          let args = e
+          in let m = match args with mm::_ -> mm
+          in let r = match args with _::rr::_ -> rr
+          in let c = match args with _::_::cc::_ -> cc
+          in let ratio = match args with _::_::_::rratio ->List.hd rratio
+
+          in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
+          in let row = fst (expr (builder, (matrix_map, image_map)) r) 
+          in let col = fst (expr (builder, (matrix_map, image_map)) c)
+          in let rat = fst (expr (builder, (matrix_map, image_map)) ratio)  
 
 
+
+
+
+          in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
+
+          in let ptr_typ = ltype_of_typ A.Matrix
+          in let func_def_scale = L.function_type i32_t [| ptr_typ; i32_t; i32_t; float_t |]
+          in let func_decl_scale = L.declare_function "scale_c" func_def_scale the_module
+
+          in ignore(L.build_call func_decl_scale [| mat_ptr;row; col;rat |] "" builder);
+          (L.const_int i32_t 0, (matrix_map, image_map)) 
     | SCall (f, args) ->
     let (fdef, fdecl) = StringMap.find f function_decls in
     let llargs = List.rev (List.map fst (List.map (expr (builder, (matrix_map, image_map))) (List.rev args))) in

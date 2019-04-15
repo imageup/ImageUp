@@ -33,15 +33,15 @@ let check (globals, functions) =
 
   (* Collect function declarations for built-in functions: no bodies *)
   let built_in_decls = 
-    let add_bind map (name, ty) = StringMap.add name {
+    let add_bind map (name, formals) = StringMap.add name {
       typ = Void;
       fname = name; 
-      formals = [(ty, "x")];
+      formals = formals;
        body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", Int);
-			                         ("printb", Bool);
-			                         ("printf", Float);
-			                         ("prints", String) ]
+    in List.fold_left add_bind StringMap.empty [ ("print", [(Int, "x")]);
+			                         ("printb", [(Bool, "x")]);
+			                         ("printf", [(Float, "x")]);
+			                         ("prints", [(String, "x")]);("scale", [(Matrix, "matrix"); (Int, "r"); (Int, "c"); (Float, "ratio")]) ]
   in
 
   (* Add function name to symbol table *)
@@ -213,6 +213,7 @@ let check (globals, functions) =
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
+
       | Call(fname, args) as call -> 
           let fd = find_func fname in
           let param_length = List.length fd.formals in

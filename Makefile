@@ -8,7 +8,7 @@ imageupmake :
 	ocamlc -c imageup.ml
 	ocamlc -o imageup parser.cmo scanner.cmo imageup.cmo	
 test :
-	./imageup.native test.iu > test.ll; llc -relocation-model=pic test.ll > test.s ;cc -o test.exe test.s;./test.exe
+	./imageup.native test.iu > test.ll; llc -relocation-model=pic test.ll > test.s ;cc -o test.exe test.s lib.c;./test.exe
 
 imp :
 	ocamlbuild -r -pkgs llvm -pkgs llvm.analysis imageup.native

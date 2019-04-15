@@ -18,13 +18,13 @@ double* transpose(double* mat, int r, int c) {
     return mat;
 }
 
-double* scale(double* mat, int r, int c,  double ratio) {
+void scale_c(double* mat, int r, int c,  double ratio) {
     for (int i = 0; i < r; i++) {
         for (int j = 0; j < c; j++) {
             mat[i * c + j] *= ratio;
         }
     }
-    return mat;
+
 }
 
 double* rorate(double* mat, int r, int c, bool dir) {
