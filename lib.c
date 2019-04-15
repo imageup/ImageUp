@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-double* transpose(double* mat, int r, int c) {
+double* transpose_c(double* mat, int r, int c) {
     double *p1 =(double *) malloc(r * c * sizeof(double));
     for (int i = 0; i < r; i++) {
         for (int j = 0; j < c; j++) {
@@ -28,7 +28,7 @@ void scale_c(double* mat, int r, int c,  double ratio) {
 }
 
 double* rorate(double* mat, int r, int c, bool dir) {
-    mat = transpose(mat, r, c);
+    mat = transpose_c(mat, r, c);
     double *p1 = (double *)malloc(r * c * sizeof(double));
     if (dir == true) {//left
         for (int i = 0; i < r; i++) {

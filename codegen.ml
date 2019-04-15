@@ -347,10 +347,21 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
           in ignore(L.build_call func_decl_scale [| mat_ptr;row; col;rat |] "" builder);
           (L.const_int i32_t 0, (matrix_map, image_map)) 
-    (*| SCall ("transpose", e)     ->
+    | SCall ("read", e)     ->
+          let args = e
+          in let path = match args with mm::_ -> fst (expr (builder, (matrix_map, image_map)) mm)
+
+        
+          in let func_def_read = L.function_type (L.pointer_type float_t) [| string_t |]
+          in let func_decl_read = L.declare_function "read_c" func_def_read the_module
+
+          in ignore(L.build_call func_decl_read [| path|] "" builder);
+          (L.const_int i32_t 0, (matrix_map, image_map)) 
+    | SCall ("transpose", e)     ->
           let args = e
           in let m = match args with mm::_ -> mm
-          in let (row, col) = match m with (_, SId s) -> StringMap.find s matrix_map
+          in let s = match m with (_, SId s) -> s
+          in let (row, col) = StringMap.find s matrix_map
 
 
           in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
@@ -363,11 +374,11 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
 
           in let ptr_typ = ltype_of_typ A.Matrix
-          in let func_def_transpose = L.function_type i32_t [| ptr_typ |]
+          in let func_def_transpose = L.function_type i32_t [| ptr_typ ; i32_t; i32_t; |]
           in let func_decl_transpose = L.declare_function "transpose_c" func_def_transpose the_module
-
-          in ignore(L.build_call func_decl_transpose [| mat_ptr |] "" builder);
-          (L.const_int i32_t 0, (matrix_map, image_map)) *)
+          in let new_matrix_map = StringMap.add s (col, row) matrix_map
+          in ignore(L.build_call func_decl_transpose [| mat_ptr; row; col |] "" builder);
+          (L.const_int i32_t 0, (new_matrix_map, image_map)) 
     | SCall (f, args) ->
     let (fdef, fdecl) = StringMap.find f function_decls in
     let llargs = List.rev (List.map fst (List.map (expr (builder, (matrix_map, image_map))) (List.rev args))) in

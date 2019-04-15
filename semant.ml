@@ -45,7 +45,8 @@ let check (globals, functions) =
 			                         ("prints", [(String, "x")]);
                                ("scale", [(Matrix, "matrix"); (Float, "ratio")]); 
                                ("transpose", [(Matrix, "matrix")]);
-                               ("rotate", [(Matrix, "matrix"); (Bool, "direction")])]
+                               ("rotate", [(Matrix, "matrix"); (Bool, "direction")]);
+                               ("read"), [(String, "path")]]
   in
 
   (* Add function name to symbol table *)
