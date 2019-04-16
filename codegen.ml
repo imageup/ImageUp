@@ -270,10 +270,14 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         (e3', (matrix_map, image_map))
       ) 
     )
-    | SAssign (s, e) -> 
-    (
-      let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); 
-      (e', (matrix_map, image_map))
+    | SAssign (s, e) ->
+    (match e with
+        |SCall(fname, vars) -> 
+            (match fname with
+                |"blur" -> blur_body s vars
+                | _ -> raise(Failure("Image function not defined"))
+            )
+        |_ -> let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); (e', (matrix_map, image_map))
     )
 
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
@@ -423,8 +427,17 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     let rec stmt (builder, (matrix_map, image_map)) = function
 	      SBlock sl -> List.fold_left stmt (builder, (matrix_map, image_map)) sl
       | STypeAsn (type_of_id, id) -> (builder, (matrix_map, image_map))
-      | SDeclAsn ((type_of_id, id), exprs) -> let (e', _) = expr (builder, (matrix_map, image_map)) exprs in
+      | SDeclAsn ((type_of_id, id), exprs) ->
+      (match exprs with
+        |SCall(fname, vars) ->
+              (match fname with
+                | "blur" -> blur_body id vars
+                | _ -> raise(Failure("Image function not exist"))
+              )
+
+        |_ -> let (e', _) = expr (builder, (matrix_map, image_map)) exprs in
                         ignore(L.build_store e' (lookup id) builder); (builder, (matrix_map, image_map))
+      )
       | SExpr e -> ignore(expr (builder, (matrix_map, image_map)) e); (builder, (matrix_map, image_map))
       | SReturn e -> ignore(match fdecl.styp with
                             (* Special "return nothing" instr *)
