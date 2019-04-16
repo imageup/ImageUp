@@ -362,6 +362,21 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
           in ignore(L.build_call func_decl_read [| path|] "" builder);
           (L.const_int i32_t 0, (matrix_map, image_map)) 
+    | SCall ("rotate", e)       ->
+            let args = e
+            in let m = match args with mm::_ -> mm
+            in let s = match m with (_, SId s) -> s
+            in let (row, col) = StringMap.find s matrix_map
+            in let direction = match args with _::rdirection -> List.hd rdirection
+            in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
+            in let dir = fst (expr (builder, (matrix_map, image_map)) direction)
+            in let mat_ptr = L.build_gep stored_matrix [|L.const_int i32_t 0 |] "ptr_matrix" builder
+            in let ptr_typ = ltype_of_typ A.Matrix
+            in let func_def_rotate = L.function_type i32_t [| ptr_typ; i32_t; i32_t; i1_t |]
+            in let func_decl_rotate = L.declare_function "rotate_c" func_def_rotate the_module
+            in let new_matrix_map = StringMap.add s (col, row) matrix_map
+            in ignore(L.build_call func_decl_rotate [| mat_ptr; row; col; dir|] "" builder);
+            (L.const_int i32_t 0, (new_matrix_map, image_map))
     | SCall ("transpose", e)     ->
           let args = e
           in let m = match args with mm::_ -> mm

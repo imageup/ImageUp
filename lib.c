@@ -31,16 +31,16 @@ double* rotate_c(double* mat, int r, int c, bool dir) {
     mat = transpose_c(mat, r, c);
     double *p1 = (double *)malloc(MATRIX_SIZE * MATRIX_SIZE * sizeof(double));
     if (dir == true) {//left
-        for (int i = 0; i < MATRIX_SIZE; i++) {
-            for (int j = 0; j < MATRIX_SIZE; j++) {
-                p1[(MATRIX_SIZE - 1 - i) * MATRIX_SIZE + j] = mat[i * MATRIX_SIZE + j];
+        for (int i = 0; i < c; i++) {
+            for (int j = 0; j < r; j++) {
+                p1[(c - 1 - i) * MATRIX_SIZE + j] = mat[i * MATRIX_SIZE + j];
             }
         }
     }
     else {
-        for (int i = 0; i < MATRIX_SIZE; i++) {
-            for (int j = 0; j < MATRIX_SIZE; j++) {
-                p1[i * MATRIX_SIZE + (MATRIX_SIZE - 1 - j)] = mat[i * MATRIX_SIZE + j];
+        for (int i = 0; i < c; i++) {
+            for (int j = 0; j < r; j++) {
+                p1[i * MATRIX_SIZE + (r - 1 - j)] = mat[i * MATRIX_SIZE + j];
             }
         }
     }
