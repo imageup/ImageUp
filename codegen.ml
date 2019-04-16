@@ -147,6 +147,58 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
        Check local names first, then global names *)
     let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
+
+
+    in
+    let load_image name load_return matrix_map image_map builder =
+      let img = L.build_alloca (ltype_of_typ Image) "new_img" builder
+      in let red_ptr = L.build_struct_gep img 0 "red_ptr" builder
+      and green_ptr = L.build_struct_gep img 1 "green_ptr" builder
+      and blue_ptr = L.build_struct_gep img 2 "blue_ptr" builder
+
+      in let rec grub_image as_llval as_list iter =
+        let size = 3 * 1000 * 1000
+        in let row_size = match L.int64_of_const (L.build_load (L.build_gep load_return [|L.const_int i32_t 0|] "row_size" builder) "number" builder) with Some i -> Int64.to_int i
+        in let col_size = match L.int64_of_const (L.build_load (L.build_gep load_return [|L.const_int i32_t 1|] "col_size" builder) "number" builder) with Some i -> Int64.to_int i
+        in (match iter with
+          | n when n = -2 -> (grub_image as_llval as_list (iter + 1))
+          | n when n = -1 -> (grub_image as_llval as_list (iter + 1))
+          | n when n = size -> as_list 
+          | _ -> let next_element = (L.build_load (L.build_gep load_return
+                [|L.const_int i32_t iter|] "element_ptr" builder) "element" builder)
+                in
+                (* FILL IN MATRICES *)
+                  let mat_list_ix = (iter / 3)
+ 
+                  in let curr_row = mat_list_ix / col_size
+                  in let curr_col = (mat_list_ix mod col_size)
+                    in if iter mod 3 = 2
+                      then (* FILL IN RED MATRIX *) let red_elem_ptr =
+                          L.build_gep red_ptr [| L.const_int i32_t 0;
+                          L.const_int i32_t curr_row; L.const_int i32_t curr_col |] "red_mat_ptr" builder
+                          in ignore(L.build_store next_element red_elem_ptr builder);
+                    else if iter mod 3 = 1
+                      then (* FILL IN GREEN MATRIX *) let green_elem_ptr =
+                          L.build_gep green_ptr [| L.const_int i32_t 0;
+                          L.const_int i32_t curr_row; L.const_int i32_t curr_col |] "green_mat_ptr" builder
+                      in ignore(L.build_store next_element green_elem_ptr builder);
+                    else if iter mod 3 = 0
+                      then (* FILL IN BLUE MATRIX *) let blue_elem_ptr =
+                          L.build_gep blue_ptr [| L.const_int i32_t 0;
+                          L.const_int i32_t curr_row; L.const_int i32_t curr_col |] "green_mat_ptr" builder
+                      in ignore(L.build_store next_element blue_elem_ptr builder);
+                    else raise (Failure "Internal error"); (* END ENTIRE IF BLOCK *)
+                  let new_as_list = as_list@[next_element]
+                  in (grub_image as_llval new_as_list (iter + 1))
+        )
+        in ignore(grub_image load_return [] (-2));
+
+        let new_row_size = L.build_load (L.build_gep load_return [|L.const_int i32_t 0|] "row_size" builder) "number" builder
+        in let new_col_size = L.build_load (L.build_gep load_return [|L.const_int i32_t 1|] "col_size" builder) "number" builder 
+        in let size = (new_row_size, new_col_size) 
+        in let new_image_map = StringMap.add name size image_map
+        in (builder, (matrix_map, new_image_map)) 
+      
     in
 
     (* Construct code for an expression; return its value *)
@@ -272,11 +324,13 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     )
     | SAssign (s, e) ->
     (match e with
+        (*
         |SCall(fname, vars) -> 
             (match fname with
                 |"blur" -> blur_body s vars
                 | _ -> raise(Failure("Image function not defined"))
             )
+          *)
         |_ -> let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); (e', (matrix_map, image_map))
     )
 
@@ -429,16 +483,17 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       | STypeAsn (type_of_id, id) -> (builder, (matrix_map, image_map))
       | SDeclAsn ((type_of_id, id), exprs) ->
       (match exprs with
+        (*
         |SCall(fname, vars) ->
               (match fname with
                 | "blur" -> blur_body id vars
                 | _ -> raise(Failure("Image function not exist"))
               )
-
+        *)
         |_ -> let (e', _) = expr (builder, (matrix_map, image_map)) exprs in
                         ignore(L.build_store e' (lookup id) builder); (builder, (matrix_map, image_map))
       )
-      | SExpr e -> ignore(expr (builder, (matrix_map, image_map)) e); (builder, (matrix_map, image_map))
+      | SExpr e -> let (_, (new_matrix_map, _)) = expr (builder, (matrix_map, image_map)) e in (builder, (new_matrix_map, image_map))
       | SReturn e -> ignore(match fdecl.styp with
                             (* Special "return nothing" instr *)
                             A.Void -> L.build_ret_void builder 
