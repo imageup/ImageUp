@@ -201,25 +201,36 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         
       in let func_def_read = L.function_type (L.pointer_type (array_t image_size)) [| string_t |]
       in let func_decl_read = L.declare_function "read_c" func_def_read the_module
+        
+      in let func_def_dim = L.function_type (L.pointer_type (array_t 2)) [| string_t |]
+      in let func_decl_dim = L.declare_function "dim_c" func_def_dim the_module
 
       in let read_return = L.build_call func_decl_read [| path|] "" builder
-      in (read_return, (builder, (matrix_map, image_map))) 
+      in let dim_return = L.build_call func_decl_dim [| path|] "" builder
+      in let row_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 0|] "row_size" builder) "number" builder
+      
+      in let col_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 1|] "col_size" builder) "number" builder
+      in let size = (row_size, col_size) 
+      in let new_image_map = StringMap.add name size image_map
+      in (read_return, (builder, (matrix_map, new_image_map))) 
       (*load_image name read_return matrix_map image_map builder*)
       (*in (builder, (matrix_map, image_map))*)
     in    
     let save_body args builder matrix_map image_map=
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
       in let timg = match args with _::rimg -> List.hd rimg
+
     in let name = match timg with (_, SId s) -> s
+    in let (row, col) = StringMap.find name image_map
       (*in let img = L.build_gep (lookup name) [| L.const_int i32_t 0 |] "ptr_img" builder*)
     in let img = L.build_load (lookup name) "image" builder
 
       in let ptr_typ = L.pointer_type (array_t image_size)
               
-      in let func_def_save = L.function_type void_t [| string_t; ptr_typ|]
+      in let func_def_save = L.function_type void_t [| string_t; ptr_typ; float_t; float_t|]
       in let func_decl_save = L.declare_function "save_c" func_def_save the_module
 
-      in ignore(L.build_call func_decl_save [| path; img|] "" builder);
+      in ignore(L.build_call func_decl_save [| path; img;row;col|] "" builder);
       
       (L.const_int i32_t 0, (matrix_map, image_map))
     in                                              
@@ -431,32 +442,6 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           (L.const_int i32_t 0, (matrix_map, image_map)) 
     |SCall("save", vars) -> 
             save_body vars builder matrix_map image_map
-    |SCall("multiply", e)  ->
-            let args = e
-            in let m1 = List.nth args 0
-            in let m2 = List.nth args 1
-            in let m3 = List.nth args 2
-            in let s1 = match m1 with (_, SId s) -> s
-            in let s2 = match m2 with (_, SId s) -> s
-            in let s3 = match m3 with (_, SId s) -> s
-            in let (row1, col1) = StringMap.find s1 matrix_map
-            in let (row2, col2) = StringMap.find s2 matrix_map
-           (* in if (L.int64_of_const col1 != L.int64_of_const row2) 
-                then raise(Failure("Matrix Multiplication must obey dimension restriction"))
-                else ( *) 
-           in let stored_mat1 = fst (expr (builder, (matrix_map, image_map)) m1)
-           in let stored_mat2 = fst (expr (builder, (matrix_map, image_map)) m2)
-           in let stored_mat3 = fst (expr (builder, (matrix_map, image_map)) m3)
-           in let mat_ptr1 = L.build_gep stored_mat1 [| L.const_int i32_t 0 |] "ptr_matrix" builder
-                    in let mat_ptr2 = L.build_gep stored_mat2 [| L.const_int i32_t 0 |] "ptr_matrix" builder
-                    in let mat_ptr3 = L.build_gep stored_mat3 [| L.const_int i32_t 0 |] "ptr_matrix" builder
-                    in let ptr_type = ltype_of_typ A.Matrix
-                    in let func_def_multiply = L.function_type i32_t [| ptr_type; ptr_type; ptr_type; i32_t; i32_t |]
-                    in let func_decl_multiply = L.declare_function "multiply_c" func_def_multiply the_module
-                    in let new_matrix_map = StringMap.add s3 (row1, col2) matrix_map
-                    in ignore(L.build_call func_decl_multiply [| mat_ptr1; mat_ptr2; mat_ptr3; row1; col1 |] "" builder);
-                    (L.const_int i32_t 0, (new_matrix_map, image_map))
-                
     | SCall ("rotate", e)       ->
             let args = e
             in let m = match args with mm::_ -> mm

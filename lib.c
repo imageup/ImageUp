@@ -8,6 +8,22 @@
 #define MATRIX_SIZE 200
 #define IMAGE_SIZE 1000
 
+
+double* dim_c(char path[]){
+
+    CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
+    unsigned char* input = (unsigned char*)(img->data.ptr);
+    double *output =(double *) malloc(2 * sizeof(double));
+
+
+    int rows = img->rows;
+    int cols = img->cols;
+    output[0] = rows;
+    output[1] = cols;
+    return output;
+}
+
+
 double* read_c(char path[]){
 
     CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
@@ -18,8 +34,6 @@ double* read_c(char path[]){
     int rows = img->rows;
     int cols = img->cols;
 
-    //output[0] = rows;
-    //output[1] = cols;
 
     int k = 0;
     for(int i = 0; i < IMAGE_SIZE; i++){
@@ -49,17 +63,17 @@ double* read_c(char path[]){
 
 
 
-void save_c(char outname[], double *img) {
+void save_c(char outname[], double *img, double rows, double cols) {
 
-    int h = 1000; //20
-    int w = 1000; //30
+    int h = (int)rows; //20
+    int w = (int)cols; //30
     double *data =(double *) malloc((3 * h * w) * sizeof(double));
 
     for (int i = 0; i < w; i++) {
         for (int j = 0; j < h; j++) {
-            data[3*(w*j+i)] = img[3*(w*j+i)];
-            data[3*(w*j+i)+1] = img[3*(w*j+i)+1];
-            data[3*(w*j+i)+2] = img[3*(w*j+i)+2];
+            data[3*(w*j+i)] = img[3*(IMAGE_SIZE*j+i)];
+            data[3*(w*j+i)+1] = img[3*(IMAGE_SIZE*j+i)+1];
+            data[3*(w*j+i)+2] = img[3*(IMAGE_SIZE*j+i)+2];
         }
     }
 
@@ -118,17 +132,4 @@ double* rotate_c(double* mat, int r, int c, bool dir) {
     }
     free(p1);
     return mat;
-}
-
-double* multiply_c(double *mat1, double *mat2, double *mat3, int r, int c) {
-    for (int i = 0; i < c; i++) {
-        for (int j = 0; j < r; j++) {
-            double tmp = 0.0;
-            for (int k = 0; k < c; k++) {
-                tmp += mat1[j * MATRIX_SIZE + k] * mat2[k * MATRIX_SIZE + i];
-            }
-            mat3[j * MATRIX_SIZE + i] = tmp;
-        }
-    }
-    return mat3;
 }
