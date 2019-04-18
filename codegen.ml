@@ -13,7 +13,7 @@ module StringMap = Map.Make(String)
 (* translate : Sast.program -> Llvm.module *)
 let translate (globals, functions) =
   let context    = L.global_context () in
-  let image_size = 30 in 
+  let image_size = 1000 * 1000 * 3 in 
   
   (* Create the LLVM compilation module into which
      we will generate code *)
@@ -44,7 +44,7 @@ let translate (globals, functions) =
     | A.Tuple -> L.array_type float_t 3
 
     | A.Matrix -> L.pointer_type (matrix_t 200 200)
-    | A.Image -> L.pointer_type image_t
+    | A.Image -> L.pointer_type (array_t image_size)
   in
 (* 
 
@@ -146,11 +146,10 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 
 
     in
-    let load_image name load_return matrix_map image_map builder =
-      let img = L.build_malloc image_t "new_img" builder
-      in let red_ptr = L.build_struct_gep img 0 "red_ptr" builder
-      and green_ptr = L.build_struct_gep img 1 "green_ptr" builder
-      and blue_ptr = L.build_struct_gep img 2 "blue_ptr" builder
+    (*let load_image name load_return matrix_map image_map builder =
+      let img = L.build_malloc array_t 3 * image_size * image_size "new_img" builder
+      in let ignore(L.build_store next_element (L.build_gep load_return
+                [|L.const_int i32_t 0|]) builder);
 
       in let rec grub_image iter =
         let size = 3 * image_size * image_size + 2
@@ -192,44 +191,35 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         in let new_col_size = L.build_load (L.build_gep load_return [|L.const_int i32_t 1|] "col_size" builder) "number" builder 
         in let size = (new_row_size, new_col_size) 
         in let new_image_map = StringMap.add name size image_map
-        in (img, (builder, (matrix_map, new_image_map)))
+        in (img, (builder, (matrix_map, new_image_map)))*)
       
-    in
+    
     let read_body name args builder matrix_map image_map=
 
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
 
         
-      in let func_def_read = L.function_type (L.pointer_type float_t) [| string_t |]
+      in let func_def_read = L.function_type (L.pointer_type (array_t image_size)) [| string_t |]
       in let func_decl_read = L.declare_function "read_c" func_def_read the_module
 
       in let read_return = L.build_call func_decl_read [| path|] "" builder
-      in load_image name read_return matrix_map image_map builder
+      in (read_return, (builder, (matrix_map, image_map))) 
+      (*load_image name read_return matrix_map image_map builder*)
       (*in (builder, (matrix_map, image_map))*)
     in    
     let save_body args builder matrix_map image_map=
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
       in let timg = match args with _::rimg -> List.hd rimg
     in let name = match timg with (_, SId s) -> s
-      in let img = L.build_load (lookup name) name builder
-    in let (row, col) = StringMap.find name image_map
-    in let img_ptr = L.build_gep img [|L.const_int i32_t 0|] "img_ptr" builder
-      in let pointer_to_red = L.build_struct_gep img_ptr 0 "i_red" builder
+      (*in let img = L.build_gep (lookup name) [| L.const_int i32_t 0 |] "ptr_img" builder*)
+    in let img = L.build_load (lookup name) "image" builder
 
-      in let pointer_to_blue = L.build_struct_gep img_ptr 2 "i_blue" builder
-
-      in let pointer_to_green = L.build_struct_gep img_ptr 1 "i_green" builder
-
-
-      in let red_mat_ptr = L.build_gep pointer_to_red [| L.const_int i32_t 0|] "ptr_red" builder
-      in let blue_mat_ptr = L.build_gep pointer_to_blue [| L.const_int i32_t 0|] "ptr_blue" builder
-      in let green_mat_ptr = L.build_gep pointer_to_green [| L.const_int i32_t 0|] "ptr_green" builder
-
-      in let ptr_typ = L.pointer_type ((L.array_type (L.array_type float_t image_size) image_size ))
-      in let func_def_save = L.function_type void_t [| string_t; ptr_typ; ptr_typ; ptr_typ; float_t; float_t|]
+      in let ptr_typ = L.pointer_type (array_t image_size)
+              
+      in let func_def_save = L.function_type void_t [| string_t; ptr_typ|]
       in let func_decl_save = L.declare_function "save_c" func_def_save the_module
 
-      in ignore(L.build_call func_decl_save [| path; red_mat_ptr; green_mat_ptr; blue_mat_ptr;row;col|] "" builder);
+      in ignore(L.build_call func_decl_save [| path; img|] "" builder);
       
       (L.const_int i32_t 0, (matrix_map, image_map))
     in                                              
