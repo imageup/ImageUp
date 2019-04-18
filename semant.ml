@@ -46,6 +46,7 @@ let check (globals, functions) =
                                ("scale", [(Matrix, "matrix"); (Float, "ratio")]); 
                                ("transpose", [(Matrix, "matrix")]);
                                ("rotate", [(Matrix, "matrix"); (Bool, "direction")]);
+                               ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")]); 
                                ("read"), [(String, "path")];
                                ("save"), [(String, "path"); (Image, "image")]]
   in
