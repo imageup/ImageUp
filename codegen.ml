@@ -431,6 +431,32 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           (L.const_int i32_t 0, (matrix_map, image_map)) 
     |SCall("save", vars) -> 
             save_body vars builder matrix_map image_map
+    |SCall("multiply", e)  ->
+            let args = e
+            in let m1 = List.nth args 0
+            in let m2 = List.nth args 1
+            in let m3 = List.nth args 2
+            in let s1 = match m1 with (_, SId s) -> s
+            in let s2 = match m2 with (_, SId s) -> s
+            in let s3 = match m3 with (_, SId s) -> s
+            in let (row1, col1) = StringMap.find s1 matrix_map
+            in let (row2, col2) = StringMap.find s2 matrix_map
+           (* in if (L.int64_of_const col1 != L.int64_of_const row2) 
+                then raise(Failure("Matrix Multiplication must obey dimension restriction"))
+                else ( *) 
+           in let stored_mat1 = fst (expr (builder, (matrix_map, image_map)) m1)
+           in let stored_mat2 = fst (expr (builder, (matrix_map, image_map)) m2)
+           in let stored_mat3 = fst (expr (builder, (matrix_map, image_map)) m3)
+           in let mat_ptr1 = L.build_gep stored_mat1 [| L.const_int i32_t 0 |] "ptr_matrix" builder
+                    in let mat_ptr2 = L.build_gep stored_mat2 [| L.const_int i32_t 0 |] "ptr_matrix" builder
+                    in let mat_ptr3 = L.build_gep stored_mat3 [| L.const_int i32_t 0 |] "ptr_matrix" builder
+                    in let ptr_type = ltype_of_typ A.Matrix
+                    in let func_def_multiply = L.function_type i32_t [| ptr_type; ptr_type; ptr_type; i32_t; i32_t |]
+                    in let func_decl_multiply = L.declare_function "multiply_c" func_def_multiply the_module
+                    in let new_matrix_map = StringMap.add s3 (row1, col2) matrix_map
+                    in ignore(L.build_call func_decl_multiply [| mat_ptr1; mat_ptr2; mat_ptr3; row1; col1 |] "" builder);
+                    (L.const_int i32_t 0, (new_matrix_map, image_map))
+                
     | SCall ("rotate", e)       ->
             let args = e
             in let m = match args with mm::_ -> mm
