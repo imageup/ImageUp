@@ -1,7 +1,73 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/core/core_c.h>
+#include <opencv2/core/types_c.h>
+#include <opencv2/imgproc/imgproc_c.h> 
 #define MATRIX_SIZE 200
+#define IMAGE_SIZE 30
+
+double* read_c(char path[]){
+
+    CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
+    unsigned char* input = (unsigned char*)(img->data.ptr);
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE + 2) * sizeof(double));
+
+    double r,g,b;
+    int rows = img->rows;
+    int cols = img->cols;
+
+    output[0] = rows;
+    output[1] = cols;
+    int k = 2;
+    for(int i = 0; i < IMAGE_SIZE; i++){
+        for(int j = 0; j < IMAGE_SIZE; j++){
+            if ( i >= rows || j >= cols ) {
+                b = 0;
+                output[k++] = b;
+                g = 0;
+                output[k++] = g;
+                r = 0;
+                output[k++] = r;
+               } else {
+                b = input[img->step * i + j*3] ;
+                output[k++]=b;
+                g = input[img->step * i + j*3 + 1];
+                output[k++]=g;
+                r = input[img->step * i + j*3 + 2];
+                output[k++]=r;
+               }
+
+        }
+    }
+
+    return output;
+    
+}
+
+
+
+void save_c(char outname[], double r[IMAGE_SIZE][IMAGE_SIZE], double g[IMAGE_SIZE][IMAGE_SIZE], double b[IMAGE_SIZE][IMAGE_SIZE]) {
+    int h = IMAGE_SIZE;
+    int w = IMAGE_SIZE;
+    double *data =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
+    int p[1];
+    p[0] = CV_IMWRITE_JPEG_QUALITY;
+    for (int i = 0; i < w; i++) {
+        for (int j = 0; j < h; j++) {
+            data[3*(h*i+j)] = b[i][j];
+            data[3*(h*i+j)+1] = g[i][j];
+            data[3*(h*i+j)+2] = r[i][j];
+        }
+    }
+
+
+    CvMat image = cvMat(h, w, CV_64FC3, data);
+    cvSaveImage(outname,&image, 0);
+    free(data);
+    return;
+}
 double* transpose_c(double* mat, int r, int c) {
     double *p1 =(double *) malloc(MATRIX_SIZE * MATRIX_SIZE * sizeof(double));
     for (int i = 0; i < MATRIX_SIZE; i++) {
