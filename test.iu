@@ -1,7 +1,7 @@
 function main() -> int
 {
 
-        image: a = read("./images/tiny.jpg");
-        save("test.jpg", a);
+        image: a = read("./images/blue.jpg");
+        save("test.out.jpg", a);
         return 0;
 }

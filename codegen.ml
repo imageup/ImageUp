@@ -210,7 +210,9 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     let save_body args builder matrix_map image_map=
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
       in let timg = match args with _::rimg -> List.hd rimg
-      in let img = match timg with (_, SId s) -> L.build_load (lookup s) s builder
+    in let name = match timg with (_, SId s) -> s
+      in let img = L.build_load (lookup name) name builder
+    in let (row, col) = StringMap.find name image_map
     in let img_ptr = L.build_gep img [|L.const_int i32_t 0|] "img_ptr" builder
       in let pointer_to_red = L.build_struct_gep img_ptr 0 "i_red" builder
 
@@ -219,15 +221,15 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       in let pointer_to_green = L.build_struct_gep img_ptr 1 "i_green" builder
 
 
-      in let red_mat_ptr = L.build_gep pointer_to_red [| L.const_int i32_t 0; L.const_int i32_t 0 |] "ptr_red" builder
-      in let blue_mat_ptr = L.build_gep pointer_to_blue [| L.const_int i32_t 0; L.const_int i32_t 0 |] "ptr_blue" builder
-      in let green_mat_ptr = L.build_gep pointer_to_green [| L.const_int i32_t 0; L.const_int i32_t 0 |] "ptr_green" builder
+      in let red_mat_ptr = L.build_gep pointer_to_red [| L.const_int i32_t 0|] "ptr_red" builder
+      in let blue_mat_ptr = L.build_gep pointer_to_blue [| L.const_int i32_t 0|] "ptr_blue" builder
+      in let green_mat_ptr = L.build_gep pointer_to_green [| L.const_int i32_t 0|] "ptr_green" builder
 
-      in let ptr_typ = L.pointer_type (array_t image_size)
-      in let func_def_save = L.function_type void_t [| string_t; ptr_typ; ptr_typ; ptr_typ|]
+      in let ptr_typ = L.pointer_type ((L.array_type (L.array_type float_t image_size) image_size ))
+      in let func_def_save = L.function_type void_t [| string_t; ptr_typ; ptr_typ; ptr_typ; float_t; float_t|]
       in let func_decl_save = L.declare_function "save_c" func_def_save the_module
 
-      in ignore(L.build_call func_decl_save [| path; red_mat_ptr; green_mat_ptr; blue_mat_ptr|] "" builder);
+      in ignore(L.build_call func_decl_save [| path; red_mat_ptr; green_mat_ptr; blue_mat_ptr;row;col|] "" builder);
       
       (L.const_int i32_t 0, (matrix_map, image_map))
     in                                              

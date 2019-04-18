@@ -20,6 +20,7 @@ double* read_c(char path[]){
 
     output[0] = rows;
     output[1] = cols;
+
     int k = 2;
     for(int i = 0; i < IMAGE_SIZE; i++){
         for(int j = 0; j < IMAGE_SIZE; j++){
@@ -48,17 +49,17 @@ double* read_c(char path[]){
 
 
 
-void save_c(char outname[], double r[IMAGE_SIZE][IMAGE_SIZE], double g[IMAGE_SIZE][IMAGE_SIZE], double b[IMAGE_SIZE][IMAGE_SIZE]) {
-    int h = IMAGE_SIZE;
-    int w = IMAGE_SIZE;
-    double *data =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
-    int p[1];
-    p[0] = CV_IMWRITE_JPEG_QUALITY;
+void save_c(char outname[], double r[IMAGE_SIZE][IMAGE_SIZE], double g[IMAGE_SIZE][IMAGE_SIZE], double b[IMAGE_SIZE][IMAGE_SIZE], double row, double col) {
+
+    int h = (int) row; //20
+    int w = (int) col; //30
+    double *data =(double *) malloc((3 * h * w) * sizeof(double));
+
     for (int i = 0; i < w; i++) {
         for (int j = 0; j < h; j++) {
-            data[3*(h*i+j)] = b[i][j];
-            data[3*(h*i+j)+1] = g[i][j];
-            data[3*(h*i+j)+2] = r[i][j];
+            data[3*(w*j+i)] = b[j][i];
+            data[3*(w*j+i)+1] = g[j][i];
+            data[3*(w*j+i)+2] = r[j][i];
         }
     }
 
