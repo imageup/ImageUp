@@ -6,22 +6,22 @@
 #include <opencv2/core/types_c.h>
 #include <opencv2/imgproc/imgproc_c.h> 
 #define MATRIX_SIZE 200
-#define IMAGE_SIZE 30
+#define IMAGE_SIZE 1000
 
 double* read_c(char path[]){
 
     CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
     unsigned char* input = (unsigned char*)(img->data.ptr);
-    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE + 2) * sizeof(double));
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
 
     double r,g,b;
     int rows = img->rows;
     int cols = img->cols;
 
-    output[0] = rows;
-    output[1] = cols;
+    //output[0] = rows;
+    //output[1] = cols;
 
-    int k = 2;
+    int k = 0;
     for(int i = 0; i < IMAGE_SIZE; i++){
         for(int j = 0; j < IMAGE_SIZE; j++){
             if ( i >= rows || j >= cols ) {
@@ -49,17 +49,17 @@ double* read_c(char path[]){
 
 
 
-void save_c(char outname[], double r[IMAGE_SIZE][IMAGE_SIZE], double g[IMAGE_SIZE][IMAGE_SIZE], double b[IMAGE_SIZE][IMAGE_SIZE], double row, double col) {
+void save_c(char outname[], double *img) {
 
-    int h = (int) row; //20
-    int w = (int) col; //30
+    int h = 1000; //20
+    int w = 1000; //30
     double *data =(double *) malloc((3 * h * w) * sizeof(double));
 
     for (int i = 0; i < w; i++) {
         for (int j = 0; j < h; j++) {
-            data[3*(w*j+i)] = b[j][i];
-            data[3*(w*j+i)+1] = g[j][i];
-            data[3*(w*j+i)+2] = r[j][i];
+            data[3*(w*j+i)] = img[3*(w*j+i)];
+            data[3*(w*j+i)+1] = img[3*(w*j+i)+1];
+            data[3*(w*j+i)+2] = img[3*(w*j+i)+2];
         }
     }
 
