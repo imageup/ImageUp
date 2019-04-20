@@ -147,17 +147,13 @@ let check (globals, functions) =
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
         in
-        if (string_of_typ t1) = (string_of_typ t2)
-        then (Tuple, SBiTuple ((t1, e1'), (t2, e2')))
-        else raise (Failure ("Bituple type mismatch"))
+        (Tuple, SBiTuple ((t1, e1'), (t2, e2')))
       | TriTuple (e1, e2, e3) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
         and (t3, e3') = expr e3
         in
-        if (string_of_typ t1) = (string_of_typ t2) && (string_of_typ t1) = (string_of_typ t3)
-        then (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
-        else raise (Failure ("Trituple type mismatch"))
+        (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
       | TupleAccess(s, e1) ->
         (
           match e1 with

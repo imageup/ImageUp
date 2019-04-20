@@ -41,7 +41,8 @@ let translate (globals, functions) =
     | A.Void  -> void_t
     | A.Char  -> i8_t
     | A.String -> string_t
-    | A.Tuple -> L.array_type float_t 3
+    (* | A.Tuple -> (array_t 3) *)
+    | A.Tuple -> L.pointer_type (array_t 3)
     | A.Matrix -> L.pointer_type (matrix_t 200 200)
     | A.Image -> L.pointer_type (array_t image_size)
   in
@@ -136,7 +137,6 @@ let translate (globals, functions) =
         in tuple_return
     in
     let read_body name args builder matrix_map image_map=
-
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
       in let func_def_read = L.function_type (L.pointer_type (array_t image_size)) [| string_t |]
       in let func_decl_read = L.declare_function "read_c" func_def_read the_module
@@ -154,7 +154,13 @@ let translate (globals, functions) =
     let save_body args builder matrix_map image_map=
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder in 
       let timg = match args with _::rimg -> List.hd rimg in 
-      let name = match timg with (_, SId s) -> s in 
+      let name = 
+      (
+        match timg with 
+        | (_, SId s) -> s 
+        | _ -> raise(Failure("incorrect parameter"))
+      )
+      in 
       let (row, col) = StringMap.find name image_map in 
       let img = L.build_load (lookup name) "image" builder in 
       let ptr_typ = L.pointer_type (array_t image_size) in 
@@ -162,6 +168,7 @@ let translate (globals, functions) =
       let func_decl_save = L.declare_function "save_c" func_def_save the_module
       in ignore(L.build_call func_decl_save [| path; img;row;col|] "" builder);
       (L.const_int i32_t 0, (matrix_map, image_map))
+<<<<<<< HEAD
     in   
 
     let get_pixel_body args builder matrix_map image_map=
@@ -197,6 +204,94 @@ let translate (globals, functions) =
       (load_tuple get_pixel_return builder, (builder, (matrix_map, image_map)))
       (*(L.const_int i32_t 0, (matrix_map, image_map))*)
     in 
+=======
+    in
+
+
+    let rec cast_expr (builder, (matrix_map, image_map)) ((_, e) : sexpr) = match e with
+    | SLiteral i  -> L.const_float_of_string float_t (string_of_int i)
+    | SFliteral l -> L.const_float_of_string float_t l
+    | SId s       -> L.build_load (lookup s) s builder
+    | STupleAccess(s, (s1, SLiteral l)) ->
+    (
+      (* let s' = L.build_load (lookup s) s builder in *)
+      let value = StringMap.find s local_vars in
+      L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder
+    )
+    | SMatrixAccess (s, e1, e2) -> 
+    (
+      let (i, j) = StringMap.find s matrix_map
+      and row_t = cast_expr (builder, (matrix_map, image_map)) e1
+      and col_t = cast_expr (builder, (matrix_map, image_map)) e2
+      in
+      let matrix_var = L.build_load (lookup s) s builder in
+      if (L.int64_of_const i <= L.int64_of_const row_t) || (L.int64_of_const j <= L.int64_of_const col_t)
+      then raise(Failure("matrix index access out of boundary 2"))
+      else
+      (
+        L.build_load (L.build_gep (matrix_var) [| L.const_int i32_t 0; row_t; col_t|] s builder) s builder
+      )
+    )
+    | SBinop ((A.Float,_ ) as e1, op, e2) ->
+    (
+      let e1' = (cast_expr (builder, (matrix_map, image_map)) e1)
+      and e2' = (cast_expr (builder , (matrix_map, image_map)) e2) in
+      (
+        (
+          match op with 
+            A.Add     -> L.build_fadd
+          | A.Sub     -> L.build_fsub
+          | A.Mult    -> L.build_fmul
+          | A.Div     -> L.build_fdiv 
+          | A.Mod     -> L.build_srem
+          | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
+          | A.Neq     -> L.build_fcmp L.Fcmp.One
+          | A.Less    -> L.build_fcmp L.Fcmp.Olt
+          | A.Leq     -> L.build_fcmp L.Fcmp.Ole
+          | A.Greater -> L.build_fcmp L.Fcmp.Ogt
+          | A.Geq     -> L.build_fcmp L.Fcmp.Oge
+          | A.And | A.Or ->
+              raise (Failure "internal error: semant should have rejected and/or on float")
+         ) e1' e2' "tmp" builder
+      )
+    )
+    | SBinop (e1, op, e2) ->
+    (
+      let e1' = (cast_expr (builder, (matrix_map, image_map)) e1)
+      and e2' = (cast_expr (builder, (matrix_map, image_map)) e2) in
+      (
+        (
+          match op with
+            A.Add     -> L.build_fadd
+          | A.Sub     -> L.build_fsub
+          | A.Mult    -> L.build_fmul
+          | A.Div     -> L.build_fdiv
+          | A.Mod     -> L.build_srem
+          | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
+          | A.Neq     -> L.build_fcmp L.Fcmp.One
+          | A.Less    -> L.build_fcmp L.Fcmp.Olt
+          | A.Leq     -> L.build_fcmp L.Fcmp.Ole
+          | A.Greater -> L.build_fcmp L.Fcmp.Ogt
+          | A.Geq     -> L.build_fcmp L.Fcmp.Oge
+          | _ -> raise(Failure("unsupported operator"))
+        ) e1' e2' "tmp" builder
+      )
+    )
+    | SUnop(op, ((t, _) as e)) ->
+    (
+      let e' = (cast_expr (builder, (matrix_map, image_map)) e) in
+      (
+        (
+          match op with
+            A.Neg when t = A.Float -> L.build_fneg 
+          | A.Neg                  -> L.build_neg
+          | A.Not                  -> L.build_not
+        ) e' "tmp" builder
+      )
+    )
+    | _ -> raise(Failure ("unsupport type for tuple initialization"))
+    in
+>>>>>>> ac4ee0f9c30a32cf02bf5cb967a737f5552a2463
 
     (* Construct code for an expression; return its value *)
     let rec expr (builder, (matrix_map, image_map)) ((_, e) : sexpr) = match e with
@@ -207,43 +302,45 @@ let translate (globals, functions) =
     | SSliteral s -> (L.build_global_stringptr s "system_string" builder, (matrix_map, image_map))
     | SNoexpr     -> (L.const_int i32_t 0, (matrix_map, image_map))
     | SId s       -> (L.build_load (lookup s) s builder, (matrix_map, image_map))
-    | SBiTuple ((s1, e1), (s2, e2)) -> 
+    | SBiTuple (e1, e2) -> 
     (
-    (* only int or float, not 3 + 2 *)
-      match (e1, e2) with 
-        | (SLiteral i, SLiteral j) -> 
-          let e1_t = L.const_float_of_string float_t (string_of_int i)
-          and e2_t = L.const_float_of_string float_t (string_of_int j)
-          and e3_t = L.const_float_of_string float_t (string_of_int 0)
-          in (L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t])), (matrix_map, image_map))
-        | (SFliteral i, SFliteral j) ->
-          let e1_t = L.const_float_of_string float_t i
-          and e2_t = L.const_float_of_string float_t j
-          and e3_t = L.const_float_of_string float_t "0.0"
-          in (L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t])), (matrix_map, image_map))
-        | _ -> raise(Failure ("only suppurt int or float tuple"))
+      let e1_t = cast_expr (builder, (matrix_map, image_map)) e1
+      and e2_t = cast_expr (builder, (matrix_map, image_map)) e2
+      and e3_t = L.const_float_of_string float_t (string_of_int 0)
+      in
+      let tuple_x = L.build_malloc (array_t 3) "tmp" builder in
+      L.build_store e1_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 0;|] "tmp" builder) builder;
+      L.build_store e2_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 1;|] "tmp" builder) builder;
+      L.build_store e3_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 2;|] "tmp" builder) builder;
+      (tuple_x, (matrix_map, image_map))
     )
-    | STriTuple((s1, e1), (s2, e2), (s3, e3)) ->
+    | STriTuple(e1, e2, e3) ->
   	(
-  		match (e1, e2, e3) with
-  		| (SLiteral i, SLiteral j, SLiteral k) ->
-        let e1' = L.const_float_of_string float_t (string_of_int i)
-        and e2' = L.const_float_of_string float_t (string_of_int j)
-        and e3' = L.const_float_of_string float_t (string_of_int k)
-  			in (L.const_array float_t (Array.of_list(e1'::e2'::[e3'])), (matrix_map, image_map))
-  		| (SFliteral i, SFliteral j, SFliteral k) ->
-  			let e1' = L.const_float_of_string float_t i
-  			and e2' = L.const_float_of_string float_t j
-  			and e3' = L.const_float_of_string float_t k
-  			in (L.const_array float_t (Array.of_list(e1'::e2'::[e3'])), (matrix_map, image_map))
-  		| _ -> raise(Failure ("only support int or float tuple"))
+      let e1_t = cast_expr (builder, (matrix_map, image_map)) e1
+      and e2_t = cast_expr (builder, (matrix_map, image_map)) e2
+      and e3_t = cast_expr (builder, (matrix_map, image_map)) e3
+      in 
+      let tuple_x = L.build_malloc (array_t 3) "tmp" builder in
+      L.build_store e1_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 0;|] "tmp" builder) builder;
+      L.build_store e2_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 1;|] "tmp" builder) builder;
+      L.build_store e3_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 2;|] "tmp" builder) builder;
+      (tuple_x, (matrix_map, image_map))
   	)
     | STupleAccess(s, (s1, SLiteral l)) ->
     (
       (* let s' = L.build_load (lookup s) s builder in *)
+<<<<<<< HEAD
 
       let value = StringMap.find s local_vars in
       (L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder, (matrix_map, image_map))
+=======
+      let value = L.build_load (StringMap.find s local_vars) "tmp" builder in
+      (
+        let res = L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) "tmp" builder
+        in
+        (res, (matrix_map, image_map))
+      ) 
+>>>>>>> ac4ee0f9c30a32cf02bf5cb967a737f5552a2463
     )
     | SMatLitDim (s, m, n) -> 
     (
@@ -371,15 +468,17 @@ let translate (globals, functions) =
       )
     )
     | SUnop(op, ((t, _) as e)) ->
+    (
       let e' = fst (expr (builder, (matrix_map, image_map)) e) in
   	  (
         (
           match op with
       	    A.Neg when t = A.Float -> L.build_fneg 
       	  | A.Neg                  -> L.build_neg
-          | A.Not                  -> L.build_not) e' "tmp" builder,(matrix_map, image_map
-        )
+          | A.Not                  -> L.build_not
+        ) e' "tmp" builder,(matrix_map, image_map)
       )
+    )
     | SCall ("print", [e]) | SCall ("printb", [e]) ->
       (L.build_call printf_func [| int_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |]
 	    "printf" builder, (matrix_map, image_map))
@@ -561,3 +660,33 @@ let translate (globals, functions) =
 
   List.iter build_function_body functions;
   the_module
+
+
+
+
+(*       match (e1, e2) with 
+        | (SLiteral i, SLiteral j) -> 
+          let e1_t = L.const_float_of_string float_t (string_of_int i)
+          and e2_t = L.const_float_of_string float_t (string_of_int j)
+          and e3_t = L.const_float_of_string float_t (string_of_int 0)
+          in (L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t])), (matrix_map, image_map))
+        | (SFliteral i, SFliteral j) ->
+          let e1_t = L.const_float_of_string float_t i
+          and e2_t = L.const_float_of_string float_t j
+          and e3_t = L.const_float_of_string float_t "0.0"
+          in (L.const_array float_t (Array.of_list(e1_t::e2_t::[e3_t])), (matrix_map, image_map))
+        | _ -> raise(Failure ("only suppurt int or float tuple")) *)
+
+
+  (*      match (e1, e2, e3) with
+      | (SLiteral i, SLiteral j, SLiteral k) ->
+        let e1' = L.const_float_of_string float_t (string_of_int i)
+        and e2' = L.const_float_of_string float_t (string_of_int j)
+        and e3' = L.const_float_of_string float_t (string_of_int k)
+        in (L.const_array float_t (Array.of_list(e1'::e2'::[e3'])), (matrix_map, image_map))
+      | (SFliteral i, SFliteral j, SFliteral k) ->
+        let e1' = L.const_float_of_string float_t i
+        and e2' = L.const_float_of_string float_t j
+        and e3' = L.const_float_of_string float_t k
+        in (L.const_array float_t (Array.of_list(e1'::e2'::[e3'])), (matrix_map, image_map))
+      | _ -> raise(Failure ("only support int or float tuple")) *)
