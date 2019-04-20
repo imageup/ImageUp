@@ -146,15 +146,15 @@ let check (globals, functions) =
         and (t2, e2') = expr e2
         in
         (Tuple, SBiTuple ((t1, e1'), (t2, e2')))
-        else raise (Failure ("Bituple type mismatch"))
+
       | TriTuple (e1, e2, e3) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
         and (t3, e3') = expr e3
         in
         (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
-        else raise (Failure ("Trituple type mismatch"))
-      | TupleAccess(s, e1) -> 
+
+      | TupleAccess(s, e1) ->
         (
           match e1 with
           | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
