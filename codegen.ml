@@ -128,8 +128,13 @@ let translate (globals, functions) =
        Check local names first, then global names *)
     let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
-    in      
-    
+    in let load_tuple load_return builder=  
+        let b = L.build_load (L.build_gep load_return [|L.const_int i32_t 0;L.const_int i32_t 0|] "b" builder) "number" builder
+        in let g = L.build_load (L.build_gep load_return [|L.const_int i32_t 0;L.const_int i32_t 1|] "g" builder) "number" builder 
+        in let r = L.build_load (L.build_gep load_return [|L.const_int i32_t 0;L.const_int i32_t 2|] "r" builder) "number" builder         
+        in let tuple_return = L.build_load (L.build_gep load_return [|L.const_int i32_t 0;|] "r" builder) "number" builder      
+        in tuple_return
+    in
     let read_body name args builder matrix_map image_map=
 
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
@@ -157,7 +162,42 @@ let translate (globals, functions) =
       let func_decl_save = L.declare_function "save_c" func_def_save the_module
       in ignore(L.build_call func_decl_save [| path; img;row;col|] "" builder);
       (L.const_int i32_t 0, (matrix_map, image_map))
-    in                                              
+    in   
+
+    let get_pixel_body args builder matrix_map image_map=
+      let name = match args with mm::_ -> match mm with (_, SId s) -> s in
+      let img = L.build_load (lookup name) "image" builder in 
+      let pos = match args with _::rimg -> List.hd rimg in 
+      let (row, col) = match pos with
+    | (_, SId s) -> let t = L.build_load (lookup s) s builder in 
+                    let r = L.build_load (L.build_gep (t) [| L.const_int i32_t 0; L.const_int i32_t 0|] "" builder) "" builder
+                  in let c = L.build_load (L.build_gep (t) [| L.const_int i32_t 0; L.const_int i32_t 1|] "" builder) "" builder
+                in (r, c)
+    | (_, SBiTuple ((s1, e1), (s2, e2))) -> 
+    (
+    (* only int or float, not 3 + 2 *)
+      match (e1, e2) with 
+        | (SLiteral i, SLiteral j) -> 
+          let e1_t = L.const_float_of_string float_t (string_of_int i)
+          and e2_t = L.const_float_of_string float_t (string_of_int j)
+          and e3_t = L.const_float_of_string float_t (string_of_int 0)
+          in (e1_t, e2_t)
+        | (SFliteral i, SFliteral j) ->
+          let e1_t = L.const_float_of_string float_t i
+          and e2_t = L.const_float_of_string float_t j
+          and e3_t = L.const_float_of_string float_t "0.0"
+          in (e1_t, e2_t)
+        | _ -> raise(Failure ("only suppurt int or float tuple"))
+    )
+      in
+      let ptr_typ = L.pointer_type (array_t image_size) in 
+      let func_def_get_pixel = L.function_type (L.pointer_type (array_t 3)) [| ptr_typ; float_t; float_t|] in 
+      let func_decl_get_pixel = L.declare_function "get_pixel_c" func_def_get_pixel the_module in
+      let get_pixel_return = L.build_call func_decl_get_pixel [| img;row;col|] "" builder in
+      (load_tuple get_pixel_return builder, (builder, (matrix_map, image_map)))
+      (*(L.const_int i32_t 0, (matrix_map, image_map))*)
+    in 
+
     (* Construct code for an expression; return its value *)
     let rec expr (builder, (matrix_map, image_map)) ((_, e) : sexpr) = match e with
       SLiteral i  -> (L.const_int i32_t i, (matrix_map, image_map))
@@ -201,6 +241,7 @@ let translate (globals, functions) =
     | STupleAccess(s, (s1, SLiteral l)) ->
     (
       (* let s' = L.build_load (lookup s) s builder in *)
+
       let value = StringMap.find s local_vars in
       (L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) s builder, (matrix_map, image_map))
     )
@@ -366,6 +407,8 @@ let translate (globals, functions) =
     )
     |SCall("save", vars) -> 
       save_body vars builder matrix_map image_map
+    |SCall("get_pixel", vars) -> let (return_tuple, (_,(new_matrix_map, new_image_map))) = get_pixel_body vars builder matrix_map image_map in 
+                                    (return_tuple,(new_matrix_map, new_image_map))
     | SCall ("rotate", e)       ->
     (
       let args = e
@@ -426,9 +469,14 @@ let translate (globals, functions) =
       (
         match exprs with
         
-        |(_, SCall("read", vars)) -> let (img, (new_builder,(new_matrix_map, new_image_map))) = read_body id vars builder matrix_map image_map in 
-                                    ignore(L.build_store img (lookup id) new_builder); (new_builder,(new_matrix_map, new_image_map))
+        |(_, SCall("read", vars)) -> let (img, (_,(new_matrix_map, new_image_map))) = read_body id vars builder matrix_map image_map in 
+                                    ignore(L.build_store img (lookup id) builder); (builder,(new_matrix_map, new_image_map))
         
+
+        |(_, SCall("get_pixel", vars)) -> let (return_tuple, (_,(new_matrix_map, new_image_map))) = get_pixel_body vars builder matrix_map image_map in 
+                                    ignore(L.build_store return_tuple (lookup id) builder); (builder,(new_matrix_map, new_image_map))
+
+
         |_ -> let (e', _) = expr (builder, (matrix_map, image_map)) exprs in
                         ignore(L.build_store e' (lookup id) builder); (builder, (matrix_map, image_map))
       )

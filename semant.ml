@@ -48,7 +48,9 @@ let check (globals, functions) =
                                ("rotate", [(Matrix, "matrix"); (Bool, "direction")]);
                                ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")]); 
                                ("read"), [(String, "path")];
-                               ("save"), [(String, "path"); (Image, "image")]]
+                               ("save"), [(String, "path"); (Image, "image")];
+                              ("get_pixel"), [(Image, "image"); (Tuple, "tuple")];
+                              ("write_pixel"), [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")]]
   in
 
   (* Add function name to symbol table *)
@@ -159,7 +161,7 @@ let check (globals, functions) =
       | TupleAccess(s, e1) ->
         (
           match e1 with
-          | Literal i -> (Int, STupleAccess(s, (Int, SLiteral i)))
+          | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
           | _ -> raise(Failure("Tuple can only be accessed by integer index"))
         )
       | MatLit el  ->  

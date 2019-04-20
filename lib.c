@@ -61,7 +61,33 @@ double* read_c(char path[]){
     
 }
 
+double *get_pixel_c(double *img, double rr, double cc) {
 
+    int row = (int) rr;
+    int col = (int) cc;
+
+    double *output =(double *) malloc(3 * sizeof(double));
+    
+    double b = img[3*(IMAGE_SIZE*row+col)];
+    double g = img[3*(IMAGE_SIZE*row+col)+1];
+    double r = img[3*(IMAGE_SIZE*row+col)+2];
+    output[0] = b;
+    output[1] = g;
+    output[2] = r;
+
+
+
+    return output;
+}
+
+void write_pixel_c(double *img, double rr, double cc, double *value) {
+
+    int row = (int) rr;
+    int col = (int) cc;
+
+    printf("%f", value[0]);
+    return;
+}
 
 void save_c(char outname[], double *img, double rows, double cols) {
 

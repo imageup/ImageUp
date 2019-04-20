@@ -1,7 +1,8 @@
 function main() -> int
 {
 
-        image: a = read("./images/google-chrome.jpg");
-        save("test.out.jpg", a);
+        float: a = 1.0;
+        tuple: x = (a, 2.0);
+        printf(x[0]);
         return 0;
 }
