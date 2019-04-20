@@ -42,15 +42,10 @@ let translate (globals, functions) =
     | A.Char  -> i8_t
     | A.String -> string_t
     | A.Tuple -> L.array_type float_t 3
-
     | A.Matrix -> L.pointer_type (matrix_t 200 200)
     | A.Image -> L.pointer_type (array_t image_size)
   in
-(* 
 
-type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
-
- *)
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
     let global_var m (t, n) = 
@@ -64,15 +59,6 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
           L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
       let printf_func : L.llvalue = 
           L.declare_function "printf" printf_t the_module in
-      (* let prints_t : L.lltype = 
-	  L.function_type string_t [| string_t; string_t |] in   *)
-(*       let prints_func : L.llvalue =
-	  L.declare_function "prints" prints_t the_module in *)
-	  
-(*       let printbig_t : L.lltype =
-          L.function_type i32_t [| i32_t |] in
-      let printbig_func : L.llvalue =
-          L.declare_function "printbig" printbig_t the_module in *)
 
   (* Define each function (arguments and return type) so we can 
      call it even before we've created its body *)
@@ -89,7 +75,6 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
   let build_function_body fdecl =
     let (the_function, _) = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
-
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder 
     and	string_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
@@ -143,95 +128,34 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
        Check local names first, then global names *)
     let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
-
-
-    in
-    (*let load_image name load_return matrix_map image_map builder =
-      let img = L.build_malloc array_t 3 * image_size * image_size "new_img" builder
-      in let ignore(L.build_store next_element (L.build_gep load_return
-                [|L.const_int i32_t 0|]) builder);
-
-      in let rec grub_image iter =
-        let size = 3 * image_size * image_size + 2
-
-        in (match iter with
-          | n when n = 0 -> (grub_image (iter + 1))
-          | n when n = 1 -> (grub_image (iter + 1))
-          | n when n = size -> []
-          | _ -> let next_element = (L.build_load (L.build_gep load_return
-                [|L.const_int i32_t iter|] "element_ptr" builder) "element" builder)
-                in
-                (* FILL IN MATRICES *)
-                  let mat_list_ix = ((iter-2) / 3)
- 
-                  in let curr_row = mat_list_ix / image_size
-                  in let curr_col = (mat_list_ix mod image_size)
-                    in if iter mod 3 = 1
-                      then (* FILL IN RED MATRIX *) let red_elem_ptr =
-                          L.build_gep red_ptr [| L.const_int i32_t 0;
-                          L.const_int i32_t curr_row; L.const_int i32_t curr_col |] "red_mat_ptr" builder
-                          in ignore(L.build_store next_element red_elem_ptr builder);
-                    else if iter mod 3 = 0
-                      then (* FILL IN GREEN MATRIX *) let green_elem_ptr =
-                          L.build_gep green_ptr [| L.const_int i32_t 0;
-                          L.const_int i32_t curr_row; L.const_int i32_t curr_col |] "green_mat_ptr" builder
-                      in ignore(L.build_store next_element green_elem_ptr builder);
-                    else if iter mod 3 = 2
-                      then (* FILL IN BLUE MATRIX *) let blue_elem_ptr =
-                          L.build_gep blue_ptr [| L.const_int i32_t 0;
-                          L.const_int i32_t curr_row; L.const_int i32_t curr_col |] "green_mat_ptr" builder
-                      in ignore(L.build_store next_element blue_elem_ptr builder);
-                    else raise (Failure "Internal error"); (* END ENTIRE IF BLOCK *)
-                  
-                  (grub_image (iter + 1))
-        )
-        in ignore(grub_image 0); 
-
-        let new_row_size = L.build_load (L.build_gep load_return [|L.const_int i32_t 0|] "row_size" builder) "number" builder
-        in let new_col_size = L.build_load (L.build_gep load_return [|L.const_int i32_t 1|] "col_size" builder) "number" builder 
-        in let size = (new_row_size, new_col_size) 
-        in let new_image_map = StringMap.add name size image_map
-        in (img, (builder, (matrix_map, new_image_map)))*)
-      
+    in      
     
     let read_body name args builder matrix_map image_map=
 
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
-
-        
       in let func_def_read = L.function_type (L.pointer_type (array_t image_size)) [| string_t |]
       in let func_decl_read = L.declare_function "read_c" func_def_read the_module
-        
       in let func_def_dim = L.function_type (L.pointer_type (array_t 2)) [| string_t |]
       in let func_decl_dim = L.declare_function "dim_c" func_def_dim the_module
-
       in let read_return = L.build_call func_decl_read [| path|] "" builder
       in let dim_return = L.build_call func_decl_dim [| path|] "" builder
       in let row_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 0|] "row_size" builder) "number" builder
-      
       in let col_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 1|] "col_size" builder) "number" builder
       in let size = (row_size, col_size) 
       in let new_image_map = StringMap.add name size image_map
       in (read_return, (builder, (matrix_map, new_image_map))) 
-      (*load_image name read_return matrix_map image_map builder*)
-      (*in (builder, (matrix_map, image_map))*)
     in    
+
     let save_body args builder matrix_map image_map=
-      let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder
-      in let timg = match args with _::rimg -> List.hd rimg
-
-    in let name = match timg with (_, SId s) -> s
-    in let (row, col) = StringMap.find name image_map
-      (*in let img = L.build_gep (lookup name) [| L.const_int i32_t 0 |] "ptr_img" builder*)
-    in let img = L.build_load (lookup name) "image" builder
-
-      in let ptr_typ = L.pointer_type (array_t image_size)
-              
-      in let func_def_save = L.function_type void_t [| string_t; ptr_typ; float_t; float_t|]
-      in let func_decl_save = L.declare_function "save_c" func_def_save the_module
-
+      let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder in 
+      let timg = match args with _::rimg -> List.hd rimg in 
+      let name = match timg with (_, SId s) -> s in 
+      let (row, col) = StringMap.find name image_map in 
+      let img = L.build_load (lookup name) "image" builder in 
+      let ptr_typ = L.pointer_type (array_t image_size) in 
+      let func_def_save = L.function_type void_t [| string_t; ptr_typ; float_t; float_t|] in 
+      let func_decl_save = L.declare_function "save_c" func_def_save the_module
       in ignore(L.build_call func_decl_save [| path; img;row;col|] "" builder);
-      
       (L.const_int i32_t 0, (matrix_map, image_map))
     in                                              
     (* Construct code for an expression; return its value *)
@@ -332,21 +256,10 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     | SMatAssign (s, e1, e2, e3) ->
     (
       let e3' = fst (expr (builder, (matrix_map, image_map)) e3) in
-(*       let get_value val_in = 
-        match val_in with
-        | Some l -> l
-        | None -> raise(Failure("fail to get value"))
-      in *)
       let (i, j) = StringMap.find s matrix_map
       and row_t = fst (expr (builder, (matrix_map, image_map)) e1)
-      and col_t = fst (expr (builder, (matrix_map, image_map)) e2)
-      in
+      and col_t = fst (expr (builder, (matrix_map, image_map)) e2) in
       let matrix_var = L.build_load (lookup s) s builder in
-(*       let i_v = get_value (L.int64_of_const i)
-      and j_v = get_value (L.int64_of_const j)
-      and row_v = get_value (L.int64_of_const row_t)
-      and col_v = get_value (L.int64_of_const col_t)
-      in *)
       if (L.int64_of_const i <= L.int64_of_const row_t) || (L.int64_of_const j <= L.int64_of_const col_t)
       then raise(Failure("matrix index access out of boundary 1"))
       else
@@ -356,129 +269,135 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
       ) 
     )
     | SAssign (s, e) ->
-    (match e with
-        
-        |(_, SCall("read", vars)) -> let (img, (_,(new_matrix_map, new_image_map))) = read_body s vars builder matrix_map image_map in 
-                                    ignore(L.build_store img (lookup s) builder); (L.const_int i32_t 0,(new_matrix_map, new_image_map))
-          
-        |_ -> let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); (e', (matrix_map, image_map))
+    (
+      match e with
+      |(_, SCall("read", vars)) -> 
+      (
+        let (img, (_,(new_matrix_map, new_image_map))) = read_body s vars builder matrix_map image_map in 
+        ignore(L.build_store img (lookup s) builder); 
+        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
+      )
+      |_ ->
+      ( 
+        let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); 
+        (e', (matrix_map, image_map))
+      )
     )
 
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
-  	  let e1' = fst (expr (builder, (matrix_map, image_map)) e1)
+  	(
+      let e1' = fst (expr (builder, (matrix_map, image_map)) e1)
   	  and e2' = fst (expr (builder , (matrix_map, image_map)) e2) in
-  	  ((match op with 
-  	    A.Add     -> L.build_fadd
-  	  | A.Sub     -> L.build_fsub
-  	  | A.Mult    -> L.build_fmul
-  	  | A.Div     -> L.build_fdiv 
-      | A.Mod     -> L.build_srem
-  	  | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
-  	  | A.Neq     -> L.build_fcmp L.Fcmp.One
-  	  | A.Less    -> L.build_fcmp L.Fcmp.Olt
-  	  | A.Leq     -> L.build_fcmp L.Fcmp.Ole
-  	  | A.Greater -> L.build_fcmp L.Fcmp.Ogt
-  	  | A.Geq     -> L.build_fcmp L.Fcmp.Oge
-  	  | A.And | A.Or ->
-  	      raise (Failure "internal error: semant should have rejected and/or on float")
-  	 ) e1' e2' "tmp" builder, (matrix_map, image_map))
+  	  (
+        (
+          match op with 
+      	    A.Add     -> L.build_fadd
+      	  | A.Sub     -> L.build_fsub
+      	  | A.Mult    -> L.build_fmul
+      	  | A.Div     -> L.build_fdiv 
+          | A.Mod     -> L.build_srem
+      	  | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
+      	  | A.Neq     -> L.build_fcmp L.Fcmp.One
+      	  | A.Less    -> L.build_fcmp L.Fcmp.Olt
+      	  | A.Leq     -> L.build_fcmp L.Fcmp.Ole
+      	  | A.Greater -> L.build_fcmp L.Fcmp.Ogt
+      	  | A.Geq     -> L.build_fcmp L.Fcmp.Oge
+      	  | A.And | A.Or ->
+      	      raise (Failure "internal error: semant should have rejected and/or on float")
+      	 ) e1' e2' "tmp" builder, (matrix_map, image_map)
+      )
+    )
     | SBinop (e1, op, e2) ->
+    (
       let e1' = fst (expr (builder, (matrix_map, image_map)) e1)
       and e2' = fst (expr (builder , (matrix_map, image_map)) e2) in
-      ((
-        match op with
-          A.Add     -> L.build_add
-        | A.Sub     -> L.build_sub
-        | A.Mult    -> L.build_mul
-        | A.Div     -> L.build_sdiv
-        | A.And     -> L.build_and
-        | A.Or      -> L.build_or
-        | A.Equal   -> L.build_icmp L.Icmp.Eq
-        | A.Neq     -> L.build_icmp L.Icmp.Ne
-        | A.Less    -> L.build_icmp L.Icmp.Slt
-        | A.Leq     -> L.build_icmp L.Icmp.Sle
-        | A.Greater -> L.build_icmp L.Icmp.Sgt
-        | A.Geq     -> L.build_icmp L.Icmp.Sge
-      ) e1' e2' "tmp" builder, (matrix_map, image_map))
-
+      (
+        (
+          match op with
+            A.Add     -> L.build_add
+          | A.Sub     -> L.build_sub
+          | A.Mult    -> L.build_mul
+          | A.Div     -> L.build_sdiv
+          | A.And     -> L.build_and
+          | A.Or      -> L.build_or
+          | A.Equal   -> L.build_icmp L.Icmp.Eq
+          | A.Neq     -> L.build_icmp L.Icmp.Ne
+          | A.Less    -> L.build_icmp L.Icmp.Slt
+          | A.Leq     -> L.build_icmp L.Icmp.Sle
+          | A.Greater -> L.build_icmp L.Icmp.Sgt
+          | A.Geq     -> L.build_icmp L.Icmp.Sge
+        ) e1' e2' "tmp" builder, (matrix_map, image_map)
+      )
+    )
     | SUnop(op, ((t, _) as e)) ->
-          let e' = fst (expr (builder, (matrix_map, image_map)) e) in
-  	  ((match op with
-  	    A.Neg when t = A.Float -> L.build_fneg 
-  	  | A.Neg                  -> L.build_neg
-      | A.Not                  -> L.build_not) e' "tmp" builder,(matrix_map, image_map))
+      let e' = fst (expr (builder, (matrix_map, image_map)) e) in
+  	  (
+        (
+          match op with
+      	    A.Neg when t = A.Float -> L.build_fneg 
+      	  | A.Neg                  -> L.build_neg
+          | A.Not                  -> L.build_not) e' "tmp" builder,(matrix_map, image_map
+        )
+      )
     | SCall ("print", [e]) | SCall ("printb", [e]) ->
-	  (L.build_call printf_func [| int_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |]
+      (L.build_call printf_func [| int_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |]
 	    "printf" builder, (matrix_map, image_map))
     | SCall ("printf", [e]) -> 
-	  (L.build_call printf_func [| float_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |]
+      (L.build_call printf_func [| float_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |]
 	    "printf" builder, (matrix_map, image_map))
-    (*| SCall ("prints", [e]) ->
-	  L.build_call prints_func [| string_format_str ; (expr builder e) |]
-	    "printf" builder*)
     | SCall ("prints", [e]) ->        
-	  (L.build_call printf_func [| string_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |] 
+      (L.build_call printf_func [| string_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |] 
 	    "printf" builder, (matrix_map, image_map))
-    | SCall ("scale", e)     ->
-          let args = e
-          in let m = match args with mm::_ -> mm
-          in let (row, col) = match m with (_, SId s) -> StringMap.find s matrix_map
-          in let ratio = match args with _::rratio ->List.hd rratio
+    | SCall ("scale", e)    ->
+    (
+      let args = e
+      in let m = match args with mm::_ -> mm
+      in let (row, col) = match m with (_, SId s) -> StringMap.find s matrix_map
+      in let ratio = match args with _::rratio ->List.hd rratio
+      in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
+      in let rat = fst (expr (builder, (matrix_map, image_map)) ratio)  
+      in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
+      in let ptr_typ = ltype_of_typ A.Matrix
+      in let func_def_scale = L.function_type i32_t [| ptr_typ; i32_t; i32_t; float_t |]
+      in let func_decl_scale = L.declare_function "scale_c" func_def_scale the_module
 
-          in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
-          in let rat = fst (expr (builder, (matrix_map, image_map)) ratio)  
-
-
-
-
-
-          in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
-
-          in let ptr_typ = ltype_of_typ A.Matrix
-          in let func_def_scale = L.function_type i32_t [| ptr_typ; i32_t; i32_t; float_t |]
-          in let func_decl_scale = L.declare_function "scale_c" func_def_scale the_module
-
-          in ignore(L.build_call func_decl_scale [| mat_ptr;row; col;rat |] "" builder);
-          (L.const_int i32_t 0, (matrix_map, image_map)) 
+      in ignore(L.build_call func_decl_scale [| mat_ptr;row; col;rat |] "" builder);
+      (L.const_int i32_t 0, (matrix_map, image_map)) 
+    )
     |SCall("save", vars) -> 
-            save_body vars builder matrix_map image_map
+      save_body vars builder matrix_map image_map
     | SCall ("rotate", e)       ->
-            let args = e
-            in let m = match args with mm::_ -> mm
-            in let s = match m with (_, SId s) -> s
-            in let (row, col) = StringMap.find s matrix_map
-            in let direction = match args with _::rdirection -> List.hd rdirection
-            in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
-            in let dir = fst (expr (builder, (matrix_map, image_map)) direction)
-            in let mat_ptr = L.build_gep stored_matrix [|L.const_int i32_t 0 |] "ptr_matrix" builder
-            in let ptr_typ = ltype_of_typ A.Matrix
-            in let func_def_rotate = L.function_type i32_t [| ptr_typ; i32_t; i32_t; i1_t |]
-            in let func_decl_rotate = L.declare_function "rotate_c" func_def_rotate the_module
-            in let new_matrix_map = StringMap.add s (col, row) matrix_map
-            in ignore(L.build_call func_decl_rotate [| mat_ptr; row; col; dir|] "" builder);
-            (L.const_int i32_t 0, (new_matrix_map, image_map))
+    (
+      let args = e
+      in let m = match args with mm::_ -> mm
+      in let s = match m with (_, SId s) -> s
+      in let (row, col) = StringMap.find s matrix_map
+      in let direction = match args with _::rdirection -> List.hd rdirection
+      in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
+      in let dir = fst (expr (builder, (matrix_map, image_map)) direction)
+      in let mat_ptr = L.build_gep stored_matrix [|L.const_int i32_t 0 |] "ptr_matrix" builder
+      in let ptr_typ = ltype_of_typ A.Matrix
+      in let func_def_rotate = L.function_type i32_t [| ptr_typ; i32_t; i32_t; i1_t |]
+      in let func_decl_rotate = L.declare_function "rotate_c" func_def_rotate the_module
+      in let new_matrix_map = StringMap.add s (col, row) matrix_map
+      in ignore(L.build_call func_decl_rotate [| mat_ptr; row; col; dir|] "" builder);
+      (L.const_int i32_t 0, (new_matrix_map, image_map))
+    )
     | SCall ("transpose", e)     ->
-          let args = e
-          in let m = match args with mm::_ -> mm
-          in let s = match m with (_, SId s) -> s
-          in let (row, col) = StringMap.find s matrix_map
-
-
-          in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
-
-
-
-
-
-
-          in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
-
-          in let ptr_typ = ltype_of_typ A.Matrix
-          in let func_def_transpose = L.function_type i32_t [| ptr_typ ; i32_t; i32_t; |]
-          in let func_decl_transpose = L.declare_function "transpose_c" func_def_transpose the_module
-          in let new_matrix_map = StringMap.add s (col, row) matrix_map
-          in ignore(L.build_call func_decl_transpose [| mat_ptr; row; col |] "" builder);
-          (L.const_int i32_t 0, (new_matrix_map, image_map)) 
+    (
+      let args = e
+      in let m = match args with mm::_ -> mm
+      in let s = match m with (_, SId s) -> s
+      in let (row, col) = StringMap.find s matrix_map
+      in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
+      in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
+      in let ptr_typ = ltype_of_typ A.Matrix
+      in let func_def_transpose = L.function_type i32_t [| ptr_typ ; i32_t; i32_t; |]
+      in let func_decl_transpose = L.declare_function "transpose_c" func_def_transpose the_module
+      in let new_matrix_map = StringMap.add s (col, row) matrix_map
+      in ignore(L.build_call func_decl_transpose [| mat_ptr; row; col |] "" builder);
+      (L.const_int i32_t 0, (new_matrix_map, image_map)) 
+    )
     | SCall (f, args) ->
     let (fdef, fdecl) = StringMap.find f function_decls in
     let llargs = List.rev (List.map fst (List.map (expr (builder, (matrix_map, image_map))) (List.rev args))) in
@@ -504,7 +423,8 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
 	      SBlock sl -> List.fold_left stmt (builder, (matrix_map, image_map)) sl
       | STypeAsn (type_of_id, id) -> (builder, (matrix_map, image_map))
       | SDeclAsn ((type_of_id, id), exprs) ->
-      (match exprs with
+      (
+        match exprs with
         
         |(_, SCall("read", vars)) -> let (img, (new_builder,(new_matrix_map, new_image_map))) = read_body id vars builder matrix_map image_map in 
                                     ignore(L.build_store img (lookup id) new_builder); (new_builder,(new_matrix_map, new_image_map))
@@ -513,28 +433,32 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
                         ignore(L.build_store e' (lookup id) builder); (builder, (matrix_map, image_map))
       )
       | SExpr e -> let (_, (new_matrix_map, _)) = expr (builder, (matrix_map, image_map)) e in (builder, (new_matrix_map, image_map))
-      | SReturn e -> ignore(match fdecl.styp with
-                            (* Special "return nothing" instr *)
-                            A.Void -> L.build_ret_void builder 
-                            (* Build return statement *)
-                          | _ -> L.build_ret (fst (expr (builder, (matrix_map, image_map)) e)) builder );
-                     (builder, (matrix_map, image_map))
+      | SReturn e -> ignore
+      (
+        match fdecl.styp with
+          (* Special "return nothing" instr *)
+          A.Void -> L.build_ret_void builder 
+        (* Build return statement *)
+        | _ -> L.build_ret (fst (expr (builder, (matrix_map, image_map)) e)) builder );
+       (builder, (matrix_map, image_map)
+      )
       | SIf (predicate, then_stmt, else_stmt) ->
-         let bool_val = fst (expr (builder, (matrix_map, image_map)) predicate) in
-	       let merge_bb = L.append_block context "merge" the_function in
-         let build_br_merge = L.build_br merge_bb in (* partial function *)
+      (
+        let bool_val = fst (expr (builder, (matrix_map, image_map)) predicate) in
+        let merge_bb = L.append_block context "merge" the_function in
+        let build_br_merge = L.build_br merge_bb in (* partial function *)
 
-      	 let then_bb = L.append_block context "then" the_function in
-      	 add_terminal (stmt (L.builder_at_end context then_bb, (matrix_map, image_map)) then_stmt)
-      	   build_br_merge;
+        let then_bb = L.append_block context "then" the_function in
+        add_terminal (stmt (L.builder_at_end context then_bb, (matrix_map, image_map)) then_stmt)
+        build_br_merge;
 
-      	 let else_bb = L.append_block context "else" the_function in
-      	 add_terminal (stmt (L.builder_at_end context else_bb, (matrix_map, image_map)) else_stmt)
-      	   build_br_merge;
+        let else_bb = L.append_block context "else" the_function in
+        add_terminal (stmt (L.builder_at_end context else_bb, (matrix_map, image_map)) else_stmt)
+        build_br_merge;
 
-      	 ignore(L.build_cond_br bool_val then_bb else_bb builder);
-      	 (L.builder_at_end context merge_bb, (matrix_map, image_map))
-
+        ignore(L.build_cond_br bool_val then_bb else_bb builder);
+        (L.builder_at_end context merge_bb, (matrix_map, image_map))
+      )
       | SMatDeclAsn(ty, s, e1, e2, exprs) ->
       (
         let e1' = fst (expr (builder, (matrix_map, image_map)) e1) in
@@ -544,7 +468,6 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         let new_matrix_map = StringMap.add s size matrix_map in
         ignore(L.build_store e' (lookup s) builder); (builder, (new_matrix_map, image_map))
       )
-
       | SMatDecl(ty, s, e1, e2) ->
       (
         let e1' = fst (expr (builder, (matrix_map, image_map)) e1) in
@@ -553,10 +476,8 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
         let new_matrix_map = StringMap.add s size matrix_map in
         (builder, (new_matrix_map, image_map))
       )
-
-
-
       | SWhile (predicate, body) ->
+      (
     	  let pred_bb = L.append_block context "while" the_function in
     	  ignore(L.build_br pred_bb builder);
 
@@ -570,20 +491,24 @@ type typ = Int | Char | String | Matrix | Image | Tuple | Bool | Float | Void
     	  let merge_bb = L.append_block context "merge" the_function in
     	  ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
     	  (L.builder_at_end context merge_bb, (matrix_map, image_map))
-
+      )
       (* Implement for loops as while loops *)
       | SFor (e1, e2, e3, body) -> stmt (builder, (matrix_map, image_map))
-	    ( SBlock [SExpr e1 ; SWhile (e2, SBlock [body ; SExpr e3]) ] )
+	    ( 
+        SBlock [SExpr e1 ; SWhile (e2, SBlock [body ; SExpr e3]) ] 
+      )
       in
-
       (* Build the code for each statement in the function *)
       let builder_and_maps = stmt (builder, (StringMap.empty, StringMap.empty)) (SBlock fdecl.sbody) in
 
       (* Add a return if the last block falls off the end *)
-      add_terminal builder_and_maps (match fdecl.styp with
+      add_terminal builder_and_maps 
+      (
+        match fdecl.styp with
           A.Void -> L.build_ret_void
         | A.Float -> L.build_ret (L.const_float float_t 0.0)
-        | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
+        | t -> L.build_ret (L.const_int (ltype_of_typ t) 0)
+      )
     in
 
   List.iter build_function_body functions;
