@@ -142,26 +142,25 @@ let check (globals, functions) =
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | BiTuple (e1, e2) -> 
-        let (t1, e1') = expr e1
+        let (t1, e1') = expr e1 
         and (t2, e2') = expr e2
         in
-        if (string_of_typ t1) = (string_of_typ t2)
-        then (Tuple, SBiTuple ((t1, e1'), (t2, e2')))
+        (Tuple, SBiTuple ((t1, e1'), (t2, e2')))
         else raise (Failure ("Bituple type mismatch"))
       | TriTuple (e1, e2, e3) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
         and (t3, e3') = expr e3
         in
-        if (string_of_typ t1) = (string_of_typ t2) && (string_of_typ t1) = (string_of_typ t3)
-        then (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
+        (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
         else raise (Failure ("Trituple type mismatch"))
-      | TupleAccess(s, e1) ->
+      | TupleAccess(s, e1) -> 
         (
           match e1 with
-          | Literal i -> (Int, STupleAccess(s, (Int, SLiteral i)))
+          | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
           | _ -> raise(Failure("Tuple can only be accessed by integer index"))
         )
+
       | MatLit el  ->  
         let rec parse_expr = function
           | [] -> []
@@ -173,9 +172,14 @@ let check (globals, functions) =
           | head :: tail -> let tt = parse_expr head in tt :: parse_outer tail
         in
         let result_t = parse_outer el in
+        let len = List.length (List.hd result_t) in
+        let m = List.map (fun e -> if List.length e = len then 1 else 0) result_t in
+        let all_same = List.fold_left (fun s e -> if e = 1 && s = 1 then 1 else 0) 1 m in
         if List.length el = 0
-        then (Matrix, SMatLitDim (result_t, 0, 0))
-        else (Matrix, SMatLitDim (result_t, List.length el, List.length (List.hd el)))
+          then (Matrix, SMatLitDim (result_t, 0, 0))
+        else if all_same = 1
+          then (Matrix, SMatLitDim (result_t, List.length el, List.length (List.hd el)))
+        else raise(Failure("Matrix dimension error: Multiple row dimensions"))
       | MatrixAccess (s, e1, e2) ->
       (
         let e1' = expr e1 
@@ -187,6 +191,7 @@ let check (globals, functions) =
         and e2' = expr e2
         and e3' = expr e3 in
         (Float, SMatAssign (s, e1', e2', e3'))
+      
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var
           and (rt, e') = expr e in
@@ -247,12 +252,27 @@ let check (globals, functions) =
     let rec check_stmt = function
         Expr e -> SExpr (expr e)
       | If(p, b1, b2) -> SIf(check_bool_expr p, check_stmt b1, check_stmt b2)
-      | DeclAsn((t, s), e) -> SDeclAsn((t, s), expr e)
+      | DeclAsn((t, s), e) -> (match t with
+        | Matrix -> raise(Failure("Matrix declare assignment format wrong format"))
+        | _ -> SDeclAsn((t, s), expr e)
+      )
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak
       | Conti -> SConti
       | MatDecl(ty, s, e1, e2) -> SMatDecl(ty, s, expr e1, expr e2)
-      | MatDeclAsn(ty, s, e1, e2, e3) -> SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
+      | MatDeclAsn(ty, s, e1, e2, e3) -> (match expr e3 with
+        |(Matrix, SMatLitDim (_, r, c))  -> let d1 = SBinop(expr e1, Mult, expr e2) in
+                                            let r' = (Int, SLiteral r) in
+                                            let c' = (Int, SLiteral c) in
+                                            let d2 = SBinop(r', Mult, c') in
+                                            if d1 = d2 then SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
+                                            else raise(Failure("Matrix error: Declared dimension does not match with actual matrix's dimension"))
+        |_ -> raise(Failure("Illegal Matrix declaration format"))
+      )
+
+      (* (
+        SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
+      ) *)
       | For(e1, e2, e3, st) -> SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
       | Return e -> let (t, e') = expr e in
