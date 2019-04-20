@@ -513,25 +513,3 @@ let translate (globals, functions) =
 
   List.iter build_function_body functions;
   the_module
-
-
-(*       
-      let rec recompute_in = function
-        | [] -> []
-        | head :: tail -> let res = expr builder head in res :: recompute_in tail 
-      in 
-      let rec recompute_out = function
-        | [[]] -> let x = L.const_array float_t (Array.of_list([])) in [x]
-        | head::tail -> 
-        (
-          (* inner *)
-          let tmp = Array.of_list(recompute_in head) in 
-          let res = L.const_array float_t tmp in
-          res :: recompute_out tail
-        )
-        | [] -> []
-        (* | _ -> raise(Failure("invalid matlit")) *)
-      in  *)
-(*       let matrix_o = L.build_malloc matrix_t "res" builder in
-      (L.const_array (array_t col) (Array.of_list(recompute_out el)))
-      matrix_o *)
