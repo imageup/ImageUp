@@ -61,10 +61,10 @@ double* read_c(char path[]){
     
 }
 
-double *get_pixel_c(double *img, double rr, double cc) {
+double *get_pixel_c(double *img, double *pos) {
 
-    int row = (int) rr;
-    int col = (int) cc;
+    int row = (int) pos[0];
+    int col = (int) pos[1];
 
     double *output =(double *) malloc(3 * sizeof(double));
     
