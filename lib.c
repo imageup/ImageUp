@@ -80,13 +80,17 @@ double *get_pixel_c(double *img, double *pos) {
     return output;
 }
 
-void write_pixel_c(double *img, double rr, double cc, double *value) {
+void write_pixel_c(double *img, double *pos, double *value) {
 
-    int row = (int) rr;
-    int col = (int) cc;
+    int row = (int) pos[0];
+    int col = (int) pos[1];
+    double r = value[0];
+    double g = value[1];
+    double b = value[2];
+    img[3*(IMAGE_SIZE*row+col)] = b;
+    img[3*(IMAGE_SIZE*row+col)+1] = g;
+    img[3*(IMAGE_SIZE*row+col)+2] = r;
 
-    printf("%f", value[0]);
-    return;
 }
 
 void save_c(char outname[], double *img, double rows, double cols) {
