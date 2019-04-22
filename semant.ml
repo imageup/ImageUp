@@ -33,24 +33,24 @@ let check (globals, functions) =
 
   (* Collect function declarations for built-in functions: no bodies *)
   let built_in_decls = 
-    let add_bind map (name, formals) = StringMap.add name {
-      typ = Void;
+    let add_bind map (name, formals,typee)  = StringMap.add name {
+      typ = typee;
       fname = name; 
       formals = formals;
        body = [] } map
     in List.fold_left add_bind StringMap.empty [ 
-                               ("print", [(Int, "x")]);
-			                         ("printb", [(Bool, "x")]);
-			                         ("printf", [(Float, "x")]);
-			                         ("prints", [(String, "x")]);
-                               ("scale", [(Matrix, "matrix"); (Float, "ratio")]); 
-                               ("transpose", [(Matrix, "matrix")]);
-                               ("rotate", [(Matrix, "matrix"); (Bool, "direction")]);
-                               ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")]); 
-                               ("read"), [(String, "path")];
-                               ("save"), [(String, "path"); (Image, "image")];
-                              ("get_pixel"), [(Image, "image"); (Tuple, "tuple")];
-                              ("write_pixel"), [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")]]
+                               ("print", [(Int, "x")], Void);
+			                         ("printb", [(Bool, "x")], Void);
+			                         ("printf", [(Float, "x")], Void);
+			                         ("prints", [(String, "x")], Void);
+                               ("scale", [(Matrix, "matrix"); (Float, "ratio")], Void); 
+                               ("transpose", [(Matrix, "matrix")], Void);
+                               ("rotate", [(Matrix, "matrix"); (Bool, "direction")], Void);
+                               ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")], Void); 
+                               ("read", [(String, "path")], Void);
+                               ("save", [(String, "path"); (Image, "image")], Void);
+                              ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
+                              ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void)]
   in
 
   (* Add function name to symbol table *)
