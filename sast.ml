@@ -16,6 +16,7 @@ and sx =
   | SUnop of uop * sexpr
   | SAssign of string * sexpr
   | SMatAssign of string * sexpr * sexpr * sexpr
+  (* | STupleAssign of string * sexpr *)
   | SMatrixAccess of string * sexpr * sexpr
   | STupleAccess of string * sexpr
   | SCall of string * sexpr list

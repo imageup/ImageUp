@@ -15,8 +15,6 @@ open Ast
 %token <string> FLIT
 %token <bool> BLIT
 
-
-
 %nonassoc NOELSE
 %nonassoc ELSE
 %nonassoc NEG
@@ -26,8 +24,6 @@ open Ast
 %left RSQBRACE
 %right LSQBRACE
 %left SEPARATOR
-%left RPAREN
-%right LPAREN
 %left COMMA
 
 %right ASSIGN
@@ -38,6 +34,8 @@ open Ast
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
 %right NOT 
+%left RPAREN
+%left LPAREN
 
 %start program
 %type <Ast.program> program

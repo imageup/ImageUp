@@ -1,18 +1,7 @@
 function main() -> int
 {
-        image: a = read("./images/google-chrome.jpg");
-        
-
-
-
-
-		write_pixel(a, (0,1), (7,8,9));
-		write_pixel(a, (1,2), (7,8,9));
-		write_pixel(a, (2,3), (7,8,9));
-		write_pixel(a, (3,4), (7,8,9));
-		write_pixel(a, (4,5), (7,8,9));
-		write_pixel(a, (5,6), (7,8,9));
-		write_pixel(a, (6,7), (7,8,9));
-		save("test.out.jpg", a);
-        return 0;
+    int : i = 2;
+    tuple : x = (1, i+1);
+    printf(x[1]);
+    return 0;
 }

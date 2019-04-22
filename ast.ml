@@ -22,8 +22,7 @@ type expr =
   | Assign of string * expr (* Matrix : mat(2,2) = [1,2|1,2]; *)
   | MatrixAccess of string * expr * expr (* mat[2][3+i] *) (* expr here must be a tuple of int *)
   | MatAssign of string * expr * expr * expr
-  (* | CommaCombine of expr * expr (* 1,2 *) *)
-  (* | Separator of expr * expr (* [1,2,3 | 3,2,1] *) *)
+  (* | TupleAssign of string * expr *)
   | TupleAccess of string * expr
   | Call of string * expr list
   | Noexpr
@@ -90,8 +89,7 @@ let rec string_of_expr = function
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | MatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_expr e1 ^"][" ^string_of_expr e2 ^"]"^ " = " ^ string_of_expr e3
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
-  (* | CommaCombine(e1, e2) -> string_of_expr e1 ^ " , " ^ string_of_expr e2 *)
-  (* | Separator(e1, e2) -> " [ " ^ string_of_expr e1 ^ " | " ^ string_of_expr e2 ^ " ] "(* [1,2,3 | 3,2,1] *) *)
+  (* | TupleAssign (s, e) -> s ^ string_of_expr e *)
   | MatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_expr e1 ^ " ] " ^ " [ " ^ string_of_expr e2 ^ " ] "
   | Call(f, el) -> f ^ " ( " ^ String.concat ", " (List.map string_of_expr el) ^ " ) "
   | TupleAccess(s, e1) -> s ^ "[" ^ string_of_expr e1 ^ "]"

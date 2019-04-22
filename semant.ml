@@ -155,7 +155,20 @@ let check (globals, functions) =
         and (t3, e3') = expr e3
         in
         (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
+(* 
+      | BiTuple (e1, e2) -> 
+        (* let (t1, e1') = expr e1  *)
+        (* and (t2, e2') = expr e2 *)
+        (* in *)
+        (Tuple, SBiTuple ((Float, e1), (Float, e2)))
 
+      | TriTuple (e1, e2, e3) -> 
+        (* let (t1, e1') = expr e1 *)
+        (* and (t2, e2') = expr e2 *)
+        (* and (t3, e3') = expr e3 *)
+        (* in *)
+        (Tuple, STriTuple ((Float, e1), (Float, e2), (Float, e3)))
+ *)
       | TupleAccess(s, e1) ->
         (
           match e1 with
