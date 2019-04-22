@@ -377,7 +377,7 @@ let translate (globals, functions) =
     )
     | SMatAssign (s, e1, e2, e3) ->
     (
-      let e3' = fst (expr (builder, (matrix_map, image_map)) e3) in
+      let e3' = check_and_cast (fst (expr (builder, (matrix_map, image_map)) e3)) builder in
       let (i, j) = StringMap.find s matrix_map
       and row_t = fst (expr (builder, (matrix_map, image_map)) e1)
       and col_t = fst (expr (builder, (matrix_map, image_map)) e2) in
