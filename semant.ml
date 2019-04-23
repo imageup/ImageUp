@@ -50,7 +50,8 @@ let check (globals, functions) =
                                ("read", [(String, "path")], Void);
                                ("save", [(String, "path"); (Image, "image")], Void);
                               ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
-                              ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void)]
+                              ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
+                              ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void)]
   in
 
   (* Add function name to symbol table *)

@@ -1,0 +1,8 @@
+function main() -> int
+{
+        image: a = read("./images/google-chrome1.jpg");
+        adjust_image(a, (0.2,3));
+		save("test.img1.jpg", a);
+        return 0;
+}
+

@@ -61,6 +61,24 @@ double* read_c(char path[]){
     
 }
 
+void adjust_image_c(double *img, double *meta) {
+    double alpha = meta[0];
+    double beta = meta[1];
+    int tmp = 0;
+    for (int i = 0; i < IMAGE_SIZE; i++) {
+        for (int j = 0; j < IMAGE_SIZE; j++) {
+            for (int k = 0; k < 3; k++) {
+                tmp = alpha * img[3 * (i * IMAGE_SIZE + j) + k] + beta;
+                if (tmp > 255)
+                    tmp = 255;
+                if (tmp < 0)
+                    tmp = 0;
+                img[3 * (i * IMAGE_SIZE + j) + k] = tmp;
+            }
+        }
+    }
+}
+
 double *get_pixel_c(double *img, double *pos) {
 
     int row = (int) pos[0];

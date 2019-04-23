@@ -399,6 +399,19 @@ let translate (globals, functions) =
       ignore(L.build_call func_decl_write_pixel [| img;pos; rgb|] "" builder);
       (L.const_int i32_t 0,(matrix_map, image_map))
     )
+    |SCall("adjust_image", vars) ->
+    (
+        let name = match vars with mm::_ -> match mm with (_, SId s) -> s in
+        let img = L.build_load (lookup name) "image" builder in
+        let meta_tuple = match vars with _::rimg -> List.hd rimg in
+        let meta_tup = fst (expr (builder, (matrix_map, image_map)) meta_tuple) in
+        let ptr_typ = L.pointer_type (array_t image_size) in
+        let tuple_p_typ = L.pointer_type (array_t 3) in
+        let func_def_adjust_image = L.function_type void_t [| ptr_typ; tuple_p_typ|] in
+        let func_decl_adjust_image = L.declare_function "adjust_image_c" func_def_adjust_image the_module in
+        ignore(L.build_call func_decl_adjust_image [|img; meta_tup |] "" builder);
+        (L.const_int i32_t 0,(matrix_map, image_map))
+    )
     | SCall ("rotate", e)       ->
     (
       let args = e
