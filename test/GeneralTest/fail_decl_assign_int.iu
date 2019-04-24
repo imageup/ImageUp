@@ -1,0 +1,5 @@
+function main() -> int
+{
+	int: i = 1.888;
+	return 0;
+}

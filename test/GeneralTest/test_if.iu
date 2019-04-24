@@ -1,0 +1,8 @@
+function main() -> int
+{
+	int: i = 0;
+	if (i < 20){
+		prints("pass test");
+	}
+	return 0;
+}

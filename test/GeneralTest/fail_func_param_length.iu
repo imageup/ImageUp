@@ -1,0 +1,10 @@
+function add(int:x, int:y) -> int
+{
+	return x+y;
+}
+
+function main() -> int
+{
+	int: res = add(1);
+	return 0;
+}

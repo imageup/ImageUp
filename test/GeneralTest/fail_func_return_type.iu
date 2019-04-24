@@ -1,0 +1,11 @@
+function add(int:x, int:y) -> int
+{
+	float: f = 2.3;
+	return f;
+}
+
+function main() -> int
+{
+	int: i = add(1,2);
+	return 0;
+}

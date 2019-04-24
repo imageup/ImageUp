@@ -1,0 +1,5 @@
+function main() -> int
+{
+	float: f = 1;
+	return 0;
+}

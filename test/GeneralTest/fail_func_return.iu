@@ -1,0 +1,13 @@
+function add(int:x, int:y) -> int
+{
+	return x+y;
+}
+
+
+
+
+function main() -> int
+{
+	float: i = add(2,3);
+	return 0;
+}

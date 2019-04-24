@@ -1,0 +1,5 @@
+function main() -> int
+{
+	string: s = 1.23;
+	return 0;
+}

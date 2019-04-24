@@ -1,0 +1,10 @@
+function add(float:x) -> float
+{
+	return x + 1.0;
+}
+
+function main() -> int
+{
+	float: f = add(1);
+	return 0;
+}
