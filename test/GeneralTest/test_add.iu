@@ -1,0 +1,8 @@
+function main() -> int
+{
+    int: a = 1 + 3;
+    float: b = 1.2 + 3.4;
+    print(a);
+    printf(b);
+    return 0;
+}

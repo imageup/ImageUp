@@ -1,0 +1,7 @@
+function main() -> int
+{
+	string: s;
+	s = "this is a test";
+	prints(s);
+	return 0;
+}

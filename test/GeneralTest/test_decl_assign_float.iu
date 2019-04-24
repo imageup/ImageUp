@@ -1,0 +1,7 @@
+function main() -> int
+{
+	float: f;
+	f = 2.2;
+	printf(f);
+	return 0;
+}
