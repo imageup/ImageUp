@@ -113,6 +113,15 @@ char * float_to_string(double number)
     return buff;
 }
 
+char * string_concact(char str1[], char str2[])
+{
+    char* dest = malloc(40);
+    dest[0]='\0';
+    strcat(dest, str1);
+    strcat(dest, str2);
+    return dest;
+}
+
 
 double *smooth_c(double *image, double *pos, double rowss, double colss) {
     //CvMat *img = cvLoadImageM("./images/face1.jpg", CV_LOAD_IMAGE_COLOR);
