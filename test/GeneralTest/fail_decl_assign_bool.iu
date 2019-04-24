@@ -1,0 +1,5 @@
+function main() -> int
+{
+	bool: b = "true";
+	return 0;
+}
