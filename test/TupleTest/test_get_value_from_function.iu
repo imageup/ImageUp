@@ -1,0 +1,26 @@
+function adder(int : x) -> int
+{
+	return (x + 1);
+}
+
+function multiply_f(float : y) -> float
+{
+	return (y * 2.0);
+}
+
+function main() -> int
+{
+	int : a = 0;
+	tuple : tu = (0, adder(a));
+	printf(tu[0]);
+	printf(tu[1]);
+	prints("correct output should be: 0, 1");
+
+	float : b = 2.0;
+	tuple : tu1 = (3, multiply_f(b) * 2.0);
+	printf(tu1[0]);
+	printf(tu1[1]);
+	prints("correct output should be 3, 8");
+
+	return 0;
+}

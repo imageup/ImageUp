@@ -1,0 +1,15 @@
+function main() -> int
+{
+	tuple : tu;
+	int : i = 0;
+	for(i = 0; i < 3; i=i+1)
+	{
+		tu = (i, i+1, i+2);
+		prints("tuple value: ");
+		printf(tu[0]);
+		printf(tu[1]);
+		printf(tu[2]);
+	}
+	prints("correct output: (0, 1, 2), (1, 2, 3), (2, 3, 4)");
+	return 0;
+}

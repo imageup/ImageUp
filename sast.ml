@@ -21,7 +21,6 @@ and sx =
   | STupleAccess of string * sexpr
   | SCall of string * sexpr list
   | SNoexpr
-  | SMatLit of sexpr list list
   | SMatLitDim of sexpr list list * int * int
 
 type sstmt =
@@ -56,7 +55,6 @@ let rec string_of_sexpr (t, e) =
   | SBoolLit(false) -> "false"
   | SCliteral(c) -> String.make 1 c
   | SSliteral(s) -> s
-  | SMatLit (el) -> "[" ^ String.concat "; " (List.map (fun e2 -> String.concat ", " (List.map string_of_sexpr e2)) el) ^ ";]"
   | SBiTuple(e1, e2) -> "(" ^ string_of_sexpr e1 ^ "," ^ string_of_sexpr e2 ^ ")"
   | STriTuple(e1, e2, e3) -> "(" ^ string_of_sexpr e1 ^","^ string_of_sexpr e2 ^","^
         string_of_sexpr e3^")"
@@ -68,8 +66,6 @@ let rec string_of_sexpr (t, e) =
   | STupleAccess (s, e1) -> s ^ "[" ^ string_of_sexpr e1 ^ "]"
   | SMatAssign(v, e1, e2, e3) -> v ^ "[" ^ string_of_sexpr e1 ^"][" ^string_of_sexpr e2 ^"]"^ " = " ^ string_of_sexpr e3
   | SAssign(v, e) -> v ^ " = " ^ string_of_sexpr e
-  (* | SCommaCombine(e1, e2) -> string_of_sexpr e1 ^ " , " ^ string_of_sexpr e2 *)
-  (* | SSeparator(e1, e2) -> " [ " ^ string_of_sexpr e1 ^ " | " ^ string_of_sexpr e2 ^ " ] "(* [1,2,3 | 3,2,1] *) *)
   | SMatrixAccess(s, e1, e2) -> s ^ "[" ^ string_of_sexpr e1 ^ " ] " ^ " [ " ^ string_of_sexpr e2 ^ " ] "
   | SMatLitDim (el, i, j) -> "[" ^ String.concat "; " (List.map (fun e2 -> String.concat ", " (List.map string_of_sexpr e2)) el) ^ ";]"
   | SCall(f, el) ->

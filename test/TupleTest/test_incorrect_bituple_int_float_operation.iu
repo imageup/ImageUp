@@ -1,0 +1,9 @@
+function main() -> int
+{
+	int : a = 1;
+	int : b = 2;
+	float : c = 3.0;
+	float : d = 4.0;
+	tuple : x = (a * c, b+d);
+	return 0;
+}

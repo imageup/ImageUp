@@ -1,0 +1,9 @@
+function main() -> int
+{
+	matrix : x(2, 2) = [1, 2| 3, 4];
+	tuple : a = (x[0][0], x[1][1]);
+	printf(a[0]);
+	printf(a[1]);
+	prints("correct output should be: 1, 4");
+	return 0;
+}

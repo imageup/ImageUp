@@ -1,0 +1,13 @@
+function main() -> int
+{
+    int : x = 1;
+    int : y = 2;
+    float : a = 3.0;
+    float : b = 4.0;
+    tuple:tu = (x*y-2, a+b*2.0, 0.5*b+3.0);
+    printf(tu[0]);
+    printf(tu[1]);
+    printf(tu[2]);
+    prints("trituple output should be: 0, 11, 5");
+    return 0;
+}
