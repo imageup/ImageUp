@@ -61,6 +61,83 @@ double* read_c(char path[]){
     
 }
 
+
+double *smooth_c(double *image, double *pos, double rowss, double colss) {
+    //CvMat *img = cvLoadImageM("./images/face1.jpg", CV_LOAD_IMAGE_COLOR);
+   //xIplImage *dst=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+
+    double r,g,b;
+    int h = (int)rowss; //20
+    int w = (int)colss; //30
+
+    double *data =(double *) malloc((3 * h * w) * sizeof(double));
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
+    for (int i = 0; i < w; i++) {
+        for (int j = 0; j < h; j++) {
+            data[3*(w*j+i)] = image[3*(IMAGE_SIZE*j+i)];
+            data[3*(w*j+i)+1] = image[3*(IMAGE_SIZE*j+i)+1];
+            data[3*(w*j+i)+2] = image[3*(IMAGE_SIZE*j+i)+2];
+        }
+    }
+    CvMat tmp_image = cvMat(h, w, CV_64FC3, data);
+    cvSaveImage("tmp.jpg", &tmp_image, 0);
+    CvMat *img = cvLoadImageM("tmp.jpg", CV_LOAD_IMAGE_COLOR);
+
+    IplImage *temp1=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+    IplImage *temp2=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+    IplImage *temp3=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+    IplImage *temp4=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+    IplImage *dst=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+    //CvMat dst = cvMat(h, w, CV_8UC3, data);
+
+    int rows = (int)rowss; //20
+    int cols = (int)colss; //30
+
+
+    int value1 = 3.5, value2 = 1;   
+
+    int dx = value1 * 5;   
+    double fc = value1*12.5; 
+    int p = 95;  
+
+
+    cvSmooth(img, temp1, CV_BILATERAL, dx, dx, fc, fc);
+    cvAddWeighted(temp1, 1.0,img, -1.0, 138.0, temp2);
+
+    cvSmooth(temp2, temp3, CV_GAUSSIAN, 2 * value2 - 1, 2 * value2 - 1, 0, 0);
+
+    cvAddWeighted(img, 1.0, temp3, 2.0, -255.0, temp4);
+    cvAddWeighted(img, (100-p)/100.0, temp4, p/100.0, 0.0, dst);
+
+
+    unsigned char* input = (unsigned char*)(dst->imageData);
+    int k = 0;
+    for(int i = 0; i < IMAGE_SIZE; i++){
+        for(int j = 0; j < IMAGE_SIZE; j++){
+            if ( i >= rows || j >= cols ) {
+                b = 0;
+                output[k++] = b;
+                g = 0;
+                output[k++] = g;
+                r = 0;
+                output[k++] = r;
+               } else {
+                b = input[img->step * i + j*3] ;
+                output[k++]=b;
+                g = input[img->step * i + j*3 + 1];
+                output[k++]=g;
+                r = input[img->step * i + j*3 + 2];
+                output[k++]=r;
+               }
+
+        }
+    }
+
+    //CvMat dst = cvMat(rows, cols, CV_64FC3, data);
+    return output;
+
+}
+
 void adjust_image_c(double *img, double *meta) {
     double alpha = meta[0];
     double beta = meta[1];

@@ -10,17 +10,17 @@ int main( int argc, char** argv )
 
 
 
-    CvMat *img = cvLoadImageM("./images/face1.jpg", CV_LOAD_IMAGE_COLOR);
+    CvMat *img = cvLoadImageM("./images/face2.jpg", CV_LOAD_IMAGE_COLOR);
    //xIplImage *dst=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     int rows = img->rows;
     int cols = img->cols;
 
 
-    int value1 = 3.5, value2 = 1;   
+    int value1 = 3, value2 = 1;   
 
     int dx = value1 * 5;   
     double fc = value1*12.5; 
-    int p = 95;  
+    int p = 55;  
     IplImage *dst=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     IplImage *temp1=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     IplImage *temp2=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);

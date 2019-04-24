@@ -133,6 +133,26 @@ let translate (globals, functions) =
       in (read_return, (builder, (matrix_map, new_image_map))) 
     in    
 
+    let smooth_body new_name args builder matrix_map image_map=
+      let timg = List.hd args in 
+      let name = 
+      (
+        match timg with 
+        | (_, SId s) -> s 
+        | _ -> raise(Failure("incorrect parameter"))
+      )
+      in let ptr_typ = L.pointer_type (array_t image_size)
+      in let func_def_smooth = L.function_type ptr_typ [| ptr_typ; float_t; float_t|]
+      in let func_decl_smooth = L.declare_function "smooth_c" func_def_smooth the_module
+      in let img = L.build_load (lookup name) "image" builder
+
+      in let (row, col) = StringMap.find name image_map 
+
+      in let new_image_map = StringMap.add new_name (row, col) image_map
+      in let smooth_return = L.build_call func_decl_smooth [| img; row; col|] "" builder
+      in (smooth_return, (matrix_map, new_image_map))
+    in    
+
     let save_body args builder matrix_map image_map=
       let path = match args with mm::_ -> match mm with (_, SSliteral s) -> L.build_global_stringptr s "path_name" builder in 
       let timg = match args with _::rimg -> List.hd rimg in 
@@ -144,6 +164,7 @@ let translate (globals, functions) =
       )
       in 
       let (row, col) = StringMap.find name image_map in 
+
       let img = L.build_load (lookup name) "image" builder in 
       let ptr_typ = L.pointer_type (array_t image_size) in 
       let func_def_save = L.function_type void_t [| string_t; ptr_typ; float_t; float_t|] in 
@@ -276,6 +297,12 @@ let translate (globals, functions) =
       | (_, SCall("read", vars)) -> 
       (
         let (img, (_,(new_matrix_map, new_image_map))) = read_body s vars builder matrix_map image_map in 
+        ignore(L.build_store img (lookup s) builder); 
+        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
+      )
+      | (_, SCall("smooth", vars)) -> 
+      (
+        let (img, (new_matrix_map, new_image_map)) = smooth_body s vars builder matrix_map image_map in 
         ignore(L.build_store img (lookup s) builder); 
         (L.const_int i32_t 0,(new_matrix_map, new_image_map))
       )
@@ -479,7 +506,12 @@ let translate (globals, functions) =
         
         |(_, SCall("read", vars)) -> let (img, (_,(new_matrix_map, new_image_map))) = read_body id vars builder matrix_map image_map in 
                                     ignore(L.build_store img (lookup id) builder); (builder,(new_matrix_map, new_image_map))
-        
+        |(_, SCall("smooth", vars)) -> 
+        (
+          let (img, (new_matrix_map, new_image_map)) = smooth_body id vars builder matrix_map image_map in 
+          ignore(L.build_store img (lookup id) builder); 
+          (builder,(new_matrix_map, new_image_map))
+        )
 
         |(_, SCall("get_pixel", vars)) -> 
                                           let name = match vars with mm::_ -> match mm with (_, SId s) -> s in
@@ -497,7 +529,7 @@ let translate (globals, functions) =
         |_ -> let (e', _) = expr (builder, (matrix_map, image_map)) exprs in
                         ignore(L.build_store e' (lookup id) builder); (builder, (matrix_map, image_map))
       )
-      | SExpr e -> let (_, (new_matrix_map, _)) = expr (builder, (matrix_map, image_map)) e in (builder, (new_matrix_map, image_map))
+      | SExpr e -> let (_, (new_matrix_map, new_image_map)) = expr (builder, (matrix_map, image_map)) e in (builder, (new_matrix_map, new_image_map))
       | SReturn e -> ignore
       (
         match fdecl.styp with
