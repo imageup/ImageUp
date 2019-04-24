@@ -42,17 +42,23 @@ let check (globals, functions) =
                                ("print", [(Int, "x")], Void);
 			                         ("printb", [(Bool, "x")], Void);
 			                         ("printf", [(Float, "x")], Void);
-			                         ("prints", [(String, "x")], Void);
+                               ("prints", [(String, "x")], Void);
+                               ("IntParses", [(String, "x")], Int);
+                               ("IntParsef", [(Float, "x")], Int);
+                               ("StrParsef", [(Float, "x")], String);
+                               ("StrParse", [(Int, "x")], String);
+                               ("FloatParses", [(String, "x")], Float);
+                               ("FloatParse", [(Int, "x")], Float);
                                ("scale", [(Matrix, "matrix"); (Float, "ratio")], Void); 
                                ("transpose", [(Matrix, "matrix")], Void);
                                ("rotate", [(Matrix, "matrix"); (Bool, "direction")], Void);
                                ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")], Void); 
                                ("read", [(String, "path")], Void);
                                ("save", [(String, "path"); (Image, "image")], Void);
-                              ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
-                              ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
-                              ("smooth", [(Image, "image")], Image);
-                              ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void)]
+                               ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
+                               ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
+                               ("smooth", [(Image, "image")], Image);
+                               ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void)]
   in
 
   (* Add function name to symbol table *)
@@ -244,19 +250,21 @@ let check (globals, functions) =
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
 
       | Call(fname, args) as call -> 
-          let fd = find_func fname in
-          let param_length = List.length fd.formals in
-          if List.length args != param_length then
-            raise (Failure ("expecting " ^ string_of_int param_length ^ 
-                            " arguments in " ^ string_of_expr call))
-          else let check_call (ft, _) e = 
-            let (et, e') = expr e in 
-            let err = "illegal argument found " ^ string_of_typ et ^
-              " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
-            in (check_assign ft et err, e')
-          in 
-          let args' = List.map2 check_call fd.formals args
-          in (fd.typ, SCall(fname, args'))
+      (
+        let fd = find_func fname in
+        let param_length = List.length fd.formals in
+        if List.length args != param_length then
+          raise (Failure ("expecting " ^ string_of_int param_length ^ 
+                          " arguments in " ^ string_of_expr call))
+        else let check_call (ft, _) e = 
+          let (et, e') = expr e in 
+          let err = "illegal argument found " ^ string_of_typ et ^
+            " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
+          in (check_assign ft et err, e')
+        in 
+        let args' = List.map2 check_call fd.formals args
+        in (fd.typ, SCall(fname, args'))
+      )
     in
 
     let check_bool_expr e = 
