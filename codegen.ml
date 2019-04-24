@@ -425,29 +425,88 @@ let translate (globals, functions) =
       (L.build_call printf_func [| string_format_str ; (fst (expr (builder, (matrix_map, image_map)) e)) |] 
 	    "printf" builder, (matrix_map, image_map))
     )
-(*     | SCall ("IntParse", e) ->
+    | SCall ("IntParses", e) ->
     (
-      let cast_helper value builder =
+      let arg = 
       (
-        let value_type = L.string_of_lltype (L.type_of value) in 
-        print_string(value_type);
-        match value_type with
-        | "double" -> value
-        | "i32" -> L.build_sitofp value (L.double_type context) "cast_tmp" builder
-        | _ -> raise(Failure("Input to matrix or tuple can only be float or int"))
+        match e with 
+        | mm::_ -> mm
+        | _ -> raise(Failure("scale: argument match failure"))
       )
-      in 
-      let e' = cast_helper (fst (expr (builder, (matrix_map, image_map)) e)) builder
-      in e'
-    ) *)
-(*     | SCall ("FloatParse", e) ->
-    (
-
+      in
+      let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
+      let func_def_cast = L.function_type i32_t [|string_t|] in 
+      let func_decl_cast = L.declare_function "string_to_int" func_def_cast the_module
+      in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
     )
-    | SCall ("StringParse", e) ->
+    | SCall ("IntParsef", e) ->
     (
-
-    ) *)
+      let arg = 
+      (
+        match e with 
+        | mm::_ -> mm
+        | _ -> raise(Failure("scale: argument match failure"))
+      )
+      in
+      let value = fst (expr (builder, (matrix_map, image_map)) arg) in 
+      let e' = L.build_fptosi value (L.i32_type context) "cast_tmp" builder
+      in (e', (matrix_map, image_map))
+    )
+    | SCall ("FloatParse", e) ->
+    (
+      let arg = 
+      (
+        match e with 
+        | mm::_ -> mm
+        | _ -> raise(Failure("scale: argument match failure"))
+      )
+      in
+      let value = fst (expr (builder, (matrix_map, image_map)) arg) in 
+      let e' = L.build_sitofp value (L.double_type context) "cast_tmp" builder
+      in (e', (matrix_map, image_map))
+    )
+    | SCall ("FloatParses", e) ->
+    (
+      let arg = 
+      (
+        match e with 
+        | mm::_ -> mm
+        | _ -> raise(Failure("scale: argument match failure"))
+      )
+      in
+      let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
+      let func_def_cast = L.function_type (L.double_type context) [|string_t|] in 
+      let func_decl_cast = L.declare_function "string_to_float" func_def_cast the_module
+      in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
+    )
+    | SCall ("StrParse", e) ->
+    (
+      let arg = 
+      (
+        match e with 
+        | mm::_ -> mm
+        | _ -> raise(Failure("scale: argument match failure"))
+      )
+      in
+      let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
+      let func_def_cast = L.function_type (string_t) [|i32_t|] in 
+      let func_decl_cast = L.declare_function "int_to_string" func_def_cast the_module
+      in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
+    )
+    | SCall ("StrParsef", e) ->
+    (
+      let arg = 
+      (
+        match e with 
+        | mm::_ -> mm
+        | _ -> raise(Failure("scale: argument match failure"))
+      )
+      in
+      let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
+      let func_def_cast = L.function_type (string_t) [|float_t|] in 
+      let func_decl_cast = L.declare_function "float_to_string" func_def_cast the_module
+      in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
+    )
     | SCall ("scale", e)    ->
     (
       let args = e

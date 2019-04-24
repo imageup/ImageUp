@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/core/core_c.h>
 #include <opencv2/core/types_c.h>
@@ -59,6 +60,57 @@ double* read_c(char path[]){
 
     return output;
     
+}
+
+
+int string_to_int(char str[])
+{
+    int i;
+    sscanf(str, "%d", &i);
+    return i;
+} 
+
+
+double string_to_float(char s[])
+{
+     double val, power;
+     int i, sign;
+     for (i = 0; isspace(s[i]); i++) /* skip white space */
+          ;
+
+     sign = (s[i] == '-') ? -1 : 1;
+
+     if (s[i] == '+' || s[i] == '-')
+          i++;
+
+     for (val = 0.0; isdigit(s[i]); i++)
+          val = 10.0 * val + (s[i] - '0');
+
+     if (s[i] == '.')
+          i++;
+     for (power = 1.0; isdigit(s[i]); i++) 
+     {
+          val = 10.0 * val + (s[i] - '0');
+          power *= 10;
+     }
+
+     return sign * val / power;
+}
+
+
+char * int_to_string(int number)
+{
+    char *buff = malloc(10);
+    snprintf (buff, sizeof(buff), "%d",number);
+    return buff;
+}
+
+
+char * float_to_string(double number)
+{
+    char *buff = malloc(10);
+    snprintf (buff, sizeof(buff), "%f",number);
+    return buff;
 }
 
 

@@ -1,10 +1,8 @@
 function main() -> int
 {
-        image: a = read("./images/face1.jpg");
-        
-        image: b;
-        b = smooth(a);
-		save("test.out.2.jpg", b);
-
-        return 0;
+	float : x = 2.3;
+	string : y = StrParsef(x);
+	prints("output: ");
+	prints(y);
+    return 0;
 }
