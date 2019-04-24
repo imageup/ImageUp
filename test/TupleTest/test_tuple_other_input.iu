@@ -1,0 +1,5 @@
+function main() -> int
+{
+	tuple : x = ("hey", "it's", "incorrect");
+	return 0;
+}

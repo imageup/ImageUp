@@ -9,6 +9,10 @@ imageupmake :
 	ocamlc -o imageup parser.cmo scanner.cmo imageup.cmo	
 test :
 	./imageup.native test.iu > test.ll; llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
+
+testing :
+	llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
+
 t_adj_img:
 	./imageup.native test_adjust_image.iu > test.ll; llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
 imp :

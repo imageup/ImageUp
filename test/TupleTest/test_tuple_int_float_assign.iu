@@ -1,0 +1,12 @@
+function main() -> int
+{
+	tuple : bi = (1, 2.0);
+	tuple : tri = (3, 4.0, 5.0);
+	printf(bi[0]);
+	printf(bi[1]);
+	prints("bituple correct output: 1, 2");
+	printf(tri[0]);
+	printf(tri[1]);
+	printf(tri[2]);
+	prints("trituple correct output: 3, 4, 5");
+}
