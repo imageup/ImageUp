@@ -2,7 +2,6 @@ function main() -> int
 {
 	float : x = 2.3;
 	string : y = StrParsef(x);
-	prints("output: ");
-	prints(y);
+	prints("output: " + y);
     return 0;
 }

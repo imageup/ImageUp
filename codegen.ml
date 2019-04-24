@@ -340,7 +340,14 @@ let translate (globals, functions) =
         (e', (matrix_map, image_map))
       )
     )
-
+    | SBinop ((A.String,_ ) as e1, op, e2) ->
+    (
+      let e1' = fst (expr (builder, (matrix_map, image_map)) e1)
+      and e2' = fst (expr (builder , (matrix_map, image_map)) e2) in
+      let func_def_concact = L.function_type (string_t) [|string_t; string_t|] in 
+      let func_decl_concact = L.declare_function "string_concact" func_def_concact the_module
+      in ((L.build_call func_decl_concact [|e1';e2'|] "tmp" builder), (matrix_map, image_map))
+    )
     | SBinop ((A.Float,_ ) as e1, op, e2) ->
   	(
       let e1' = fst (expr (builder, (matrix_map, image_map)) e1)
