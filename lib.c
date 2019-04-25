@@ -62,26 +62,11 @@ double* read_c(char path[]){
     
 }
 
-double* saturation_c(double *image, double saturation, double rowss, double colss) {
-    int h = (int)rowss; //20
-    int w = (int)colss; //30
-
-    double *data =(double *) malloc((3 * h * w) * sizeof(double));
+double* saturation_c(char path[], double saturation) {
+    CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
     double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
-    for (int i = 0; i < w; i++) {
-        for (int j = 0; j < h; j++) {
-            data[3*(w*j+i)] = image[3*(IMAGE_SIZE*j+i)];
-            data[3*(w*j+i)+1] = image[3*(IMAGE_SIZE*j+i)+1];
-            data[3*(w*j+i)+2] = image[3*(IMAGE_SIZE*j+i)+2];
-        }
-    }
-    CvMat tmp_image = cvMat(h, w, CV_64FC3, data);
-    cvSaveImage("tmp.jpg", &tmp_image, 0);
-    CvMat *img = cvLoadImageM("tmp.jpg", CV_LOAD_IMAGE_COLOR);
-
-
-    int rows = (int)rowss;
-    int cols = (int)colss;
+    int rows = img->rows;
+    int cols = img->cols;
     IplImage *temp1=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     IplImage *temp2=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     cvCvtColor(img, temp1, CV_BGR2HSV);
@@ -112,20 +97,17 @@ double* saturation_c(double *image, double saturation, double rowss, double cols
                }
             }
     }
-    free(data);
     return output;
 }
 
-int string_to_int(char str[])
-{
+int string_to_int(char str[]){
     int i;
     sscanf(str, "%d", &i);
     return i;
 } 
 
 
-double string_to_float(char s[])
-{
+double string_to_float(char s[]){
      double val, power;
      int i, sign;
      for (i = 0; isspace(s[i]); i++) /* skip white space */
@@ -151,23 +133,20 @@ double string_to_float(char s[])
 }
 
 
-char * int_to_string(int number)
-{
+char * int_to_string(int number){
     char *buff = malloc(10);
     snprintf (buff, sizeof(buff), "%d",number);
     return buff;
 }
 
 
-char * float_to_string(double number)
-{
+char * float_to_string(double number){
     char *buff = malloc(10);
     snprintf (buff, sizeof(buff), "%f",number);
     return buff;
 }
 
-char * string_concact(char str1[], char str2[])
-{
+char * string_concact(char str1[], char str2[]){
     char* dest = malloc(40);
     dest[0]='\0';
     strcat(dest, str1);
@@ -246,7 +225,7 @@ double *smooth_c(double *image, double *pos, double rowss, double colss) {
 
         }
     }
-    free(data);
+
     //CvMat dst = cvMat(rows, cols, CV_64FC3, data);
     return output;
 
