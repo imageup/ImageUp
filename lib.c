@@ -77,8 +77,8 @@ double* saturation_c(double *image, double *sat, double rowss, double colss) {
         }
     }
     CvMat tmp_image = cvMat(h, w, CV_64FC3, data);
-    cvSaveImage("tmp_satuation.jpg", &tmp_image, 0);
-    CvMat *img = cvLoadImageM("tmp_saturation.jpg", CV_LOAD_IMAGE_COLOR);
+    cvSaveImage("tmp.jpg", &tmp_image, 0);
+    CvMat *img = cvLoadImageM("tmp.jpg", CV_LOAD_IMAGE_COLOR);
 
 
     int rows = (int)rowss;

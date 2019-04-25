@@ -3,7 +3,7 @@ function main() -> int
         image: a = read("./images/face1.jpg");
         
         image: b;
-        b = smooth(a);
+        b = saturation(a, (1.3));
 		save("test.out.3.jpg", b);
 
         return 0;
