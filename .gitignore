@@ -11,3 +11,5 @@ a.out
 smooth.c
 saturation.c
 *.swp
+*.jpg
+*.png
