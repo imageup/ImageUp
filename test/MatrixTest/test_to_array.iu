@@ -1,0 +1,14 @@
+function main() -> int
+{
+	matrix : arr(10, 1);
+	int : i;
+	for(i = 0; i < RowLen(arr); i=i+1)
+	{
+		arr[i][0] = i;
+	}
+	for(i = 0; i < RowLen(arr); i=i+1)
+	{
+		printf(arr[i][0]);
+	}
+	return 0;
+}

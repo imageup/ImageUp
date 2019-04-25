@@ -1,0 +1,7 @@
+function main() -> int
+{
+	matrix : x(4, 5);
+	print(RowLen(x));
+	print(ColLen(x));
+	return 0;	
+}
