@@ -62,11 +62,27 @@ double* read_c(char path[]){
     
 }
 
-double* saturation_c(char path[], double saturation) {
-    CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
+double* saturation_c(double *image, double *sat, double rowss, double colss) {
+    double saturation = sat[0];
+    int h = (int)rowss; //20
+    int w = (int)colss; //30
+
+    double *data =(double *) malloc((3 * h * w) * sizeof(double));
     double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
-    int rows = img->rows;
-    int cols = img->cols;
+    for (int i = 0; i < w; i++) {
+        for (int j = 0; j < h; j++) {
+            data[3*(w*j+i)] = image[3*(IMAGE_SIZE*j+i)];
+            data[3*(w*j+i)+1] = image[3*(IMAGE_SIZE*j+i)+1];
+            data[3*(w*j+i)+2] = image[3*(IMAGE_SIZE*j+i)+2];
+        }
+    }
+    CvMat tmp_image = cvMat(h, w, CV_64FC3, data);
+    cvSaveImage("tmp_satuation.jpg", &tmp_image, 0);
+    CvMat *img = cvLoadImageM("tmp_saturation.jpg", CV_LOAD_IMAGE_COLOR);
+
+
+    int rows = rowss;
+    int cols = colss;
     IplImage *temp1=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     IplImage *temp2=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     cvCvtColor(img, temp1, CV_BGR2HSV);
@@ -97,6 +113,7 @@ double* saturation_c(char path[], double saturation) {
                }
             }
     }
+    free(data);
     return output;
 }
 

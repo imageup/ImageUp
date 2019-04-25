@@ -338,6 +338,37 @@ let translate (globals, functions) =
         ignore(L.build_store img (lookup s) builder); 
         (L.const_int i32_t 0,(new_matrix_map, new_image_map))
       )
+      | (_, SCall("saturation", vars)) ->
+      (
+        let timg = List.hd vars in
+        let name =
+        (
+            match timg with
+            | (_, SId sn) -> sn
+            | _ -> raise(Failure("incorrect parameter"))
+        )
+        in 
+        let sat_tup =
+        (
+            match vars with
+            | _::vv -> List.hd vv
+            | _ -> raise(Failure("write_pixel: match failure"))
+        )
+        in
+        let sat = fst (expr (builder, (matrix_map, image_map)) sat_tup) in 
+        let tuple_p_typ = L.pointer_type (array_t 3) in
+        let ptr_typ = L.pointer_type (array_t image_size)
+        in let func_def_saturation = L.function_type ptr_typ [|ptr_typ; tuple_p_typ; float_t; float_t|]
+        in let func_decl_saturation = L.declare_function "saturation_c" func_def_saturation the_module
+        in let img = L.build_load (lookup name) "image" builder
+        in let (row, col) = StringMap.find name image_map
+        in let new_image_map = StringMap.add s (row, col) image_map
+        in let saturation_ret = L.build_call func_decl_saturation [|img;sat; row; col|] "" builder
+        in let (sat_ret, (new_mat, new_img)) = (saturation_ret, (matrix_map, new_image_map))
+        in
+    ignore(L.build_store sat_ret (lookup s) builder);
+    (L.const_int i32_t 0, (new_mat, new_img))
+      )
       | _ ->
       ( 
         let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); 
