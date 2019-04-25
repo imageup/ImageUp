@@ -1,0 +1,5 @@
+function main() -> int
+{
+	printf(1 - 4.5);
+	return 0;
+}

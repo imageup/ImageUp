@@ -1,7 +1,7 @@
 function main() -> int
-{	
+{
 	int: i;
-	for(i = 0; i < 20; i = i+1){
+	for(i = 0; i < 5.0; i = i + 1.0){
 		print(i);
 	}
 

@@ -1,0 +1,7 @@
+function main() -> int
+{
+	int: i = 3;
+	float: f = 1.0;
+	i / f;
+	return 0;
+}

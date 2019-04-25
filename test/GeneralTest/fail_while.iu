@@ -1,0 +1,8 @@
+function main() -> int
+{
+	while (1) {
+		prints("expected bool");
+	}
+
+	return 0;
+}

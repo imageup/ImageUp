@@ -1,0 +1,7 @@
+function main() -> int
+{
+	int: i = 3;
+	float: f = 6.6;
+	printb(i <= f);
+	return 0;
+}

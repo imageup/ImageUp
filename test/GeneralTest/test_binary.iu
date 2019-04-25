@@ -1,0 +1,28 @@
+function main() -> int
+{
+	print(1 + 2);
+	print(3 - 2);
+	print(4 * 2);
+	print(5 / 2);
+	printf(1.0 + 2.3);
+	printf(4.0 * 3.2);
+	printb(4 > 3);
+	printb(3 < 4);
+	printb(7.0 <= 23.4);
+	printb(7.0 >= 23.4);
+	printb( 4 == 2);
+	
+	bool: b1 = true;
+	bool: b2 = true;
+	if (b1 && b2){
+		prints("and works");
+	}
+
+	bool: b3 = false;
+	if (b1 || b3){
+		prints("or works");
+	}
+
+
+	return 0;
+}

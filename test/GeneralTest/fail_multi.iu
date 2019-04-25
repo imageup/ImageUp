@@ -1,0 +1,7 @@
+function main() -> int
+{
+	int: i = 4;
+	float: f = 5.6;
+	i * f;
+	return 0;
+}
