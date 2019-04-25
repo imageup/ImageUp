@@ -2,6 +2,11 @@ function main() -> int
 {
 	matrix : x(2, 2);
 	x = [1, 2 | 3, 4];
+	int i = 0;
+	for(i = 0; i < )
+	printf(x[0][0]);
+	printf(x[0][1]);
+	printf(x[0][0]);
 	printf(x[0][0]);
 	return 0;
 }

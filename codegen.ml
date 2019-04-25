@@ -100,6 +100,10 @@ let translate (globals, functions) =
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
+      | SMatDecl(t, n, i, j) ->
+      (
+        let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
+      ) 
       | SMatDeclAsn(t, n, i, j, valuex) ->
       (
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
