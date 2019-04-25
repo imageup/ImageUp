@@ -1,10 +1,6 @@
 function main() -> int
 {
         image: a = read("./images/google-chrome.jpg");
-        
-
-
-
 
 		write_pixel(a, (0,1), (7,8,9));
 		write_pixel(a, (1,2), (7,8,9));
@@ -14,5 +10,19 @@ function main() -> int
 		write_pixel(a, (5,6), (7,8,9));
 		write_pixel(a, (6,7), (7,8,9));
 		save("test.out.jpg", a);
+		tuple: t1 = get_pixel(a,(0,1));
+		prints("Pixel Written: " + StrParsef(t1[0]) + " " + StrParsef(t1[1]) + " " + StrParsef(t1[2]));
+		tuple: t1 = get_pixel(a,(1,2));
+		prints("Pixel Written: " + StrParsef(t1[0]) + " " + StrParsef(t1[1]) + " " + StrParsef(t1[2]));
+		tuple: t1 = get_pixel(a,(2,3));
+		prints("Pixel Written: " + StrParsef(t1[0]) + " " + StrParsef(t1[1]) + " " + StrParsef(t1[2]));
+		tuple: t1 = get_pixel(a,(3,4));
+		prints("Pixel Written: " + StrParsef(t1[0]) + " " + StrParsef(t1[1]) + " " + StrParsef(t1[2]));
+		tuple: t1 = get_pixel(a,(4,5));
+		prints("Pixel Written: " + StrParsef(t1[0]) + " " + StrParsef(t1[1]) + " " + StrParsef(t1[2]));
+		tuple: t1 = get_pixel(a,(5,6));
+		prints("Pixel Written: " + StrParsef(t1[0]) + " " + StrParsef(t1[1]) + " " + StrParsef(t1[2]));
+		tuple: t1 = get_pixel(a,(6,7));
+		prints("Pixel Written: " + StrParsef(t1[0]) + " " + StrParsef(t1[1]) + " " + StrParsef(t1[2]));
         return 0;
 }
