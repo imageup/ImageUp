@@ -796,7 +796,8 @@ let translate (globals, functions) =
         let size = (e1', e2') in
         let e' = fst (expr (builder, (matrix_map, image_map)) exprs) in
         let new_matrix_map = StringMap.add s size matrix_map in
-        ignore(L.build_store e' (lookup s) builder); (builder, (new_matrix_map, image_map))
+        ignore(L.build_store e' (lookup s) builder); 
+        (builder, (new_matrix_map, image_map))
       )
       | SMatDecl(ty, s, e1, e2) ->
       (
@@ -804,6 +805,8 @@ let translate (globals, functions) =
         let e2' = fst (expr (builder, (matrix_map, image_map)) e2) in
         let size = (e1', e2') in
         let new_matrix_map = StringMap.add s size matrix_map in
+        let matrix = L.build_malloc (matrix_t 200 200) "matres" builder in
+        ignore(L.build_store matrix (lookup s) builder);
         (builder, (new_matrix_map, image_map))
       )
       | SWhile (predicate, body) ->

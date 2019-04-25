@@ -1,2 +1,11 @@
 llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
-Makefile:14: recipe for target 'testing' failed
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
