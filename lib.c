@@ -62,8 +62,7 @@ double* read_c(char path[]){
     
 }
 
-double* saturation_c(double *image, double *sat, double rowss, double colss) {
-    double saturation = sat[0];
+double* saturation_c(double *image, double saturation, double rowss, double colss) {
     int h = (int)rowss; //20
     int w = (int)colss; //30
 

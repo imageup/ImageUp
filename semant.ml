@@ -60,7 +60,7 @@ let check (globals, functions) =
                                ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
                                ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
                                ("smooth", [(Image, "image")], Image);
-                               ("saturation", [(Image, "image"); (Tuple, "tuple")], Image);
+                               ("saturation", [(Image, "image"); (Float, "sat")], Image);
                                ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void)]
   in
 
