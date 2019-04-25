@@ -1,0 +1,9 @@
+llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
+matrix before
+row 0:  1.00000 2.00000 3.00000 4.00000
+row 1:  5.00000 6.00000 7.00000 8.00000
+row 2:  9.00000 10.0000 11.0000 12.0000
+matrix after
+row 0:  2.40000 4.80000 7.20000 9.60000
+row 1:  5.00000 6.00000 7.00000 8.00000
+row 2:  9.00000 10.0000 11.0000 12.0000

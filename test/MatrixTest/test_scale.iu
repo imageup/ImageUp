@@ -1,0 +1,29 @@
+function main() -> int
+{
+    matrix: arr(3,4) = [1,2,3,4|5,6,7,8|9,10,11,12];
+    int : i;
+    int : j;
+    prints("matrix before");
+    string : out;
+    for(i = 0; i < RowLen(arr); i=i+1)
+    {
+        out = "row " + StrParse(i) + ": ";
+        for(j = 0; j < ColLen(arr); j=j+1)
+        {
+            out = out + " " + StrParsef(arr[i][j]);
+        }
+        prints(out);
+    }
+    scale(arr, 2.4);
+    prints("matrix after");
+    for(i = 0; i < RowLen(arr); i=i+1)
+    {
+        out = "row " + StrParse(i) + ": ";
+        for(j = 0; j < ColLen(arr); j=j+1)
+        {
+            out = out + " " + StrParsef(arr[i][j]);
+        }
+        prints(out);
+    }
+    return 0;
+}

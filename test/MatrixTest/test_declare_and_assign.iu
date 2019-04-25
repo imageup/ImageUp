@@ -1,4 +1,27 @@
 function main() -> int
 {
+	matrix : arr(10, 3);
+	int : i;
+	int : j;
+	for(i = 0; i < RowLen(arr); i=i+1)
+	{
+		for(j = 0; j < ColLen(arr); j=j+1)
+		{
+			arr[i][j] = i*j;
+		}
+	}
+
+	string : out;
+	for(i = 0; i < RowLen(arr); i=i+1)
+	{
+		out = "row " + StrParse(i) + ": ";
+		for(j = 0; j < ColLen(arr); j=j+1)
+		{
+			arr[i][j] = i*j;
+			out = out + " " + StrParsef(arr[i][j]);
+		}
+		prints(out);
+	}
+
 	return 0;
 }

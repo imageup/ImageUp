@@ -1,16 +1,14 @@
 function main() -> int
 {
-
-        matrix: mat(3,4) = [1,2,3,4|5,6,7,8|9,10,11,12];
-        printf(mat[0][0]);
-        printf(mat[0][1]);
-        printf(mat[0][2]);
-        printf(mat[0][3]);
-        transpose(mat);
-        printf(mat[0][0]);
-
-        printf(mat[1][0]);
-        printf(mat[2][0]);
-        printf(mat[3][0]);
-        return 0;
+    matrix: mat(3,4) = [1,2,3,4|5,6,7,8|9,10,11,12];
+    printf(mat[0][0]);
+    printf(mat[0][1]);
+    printf(mat[0][2]);
+    printf(mat[0][3]);
+    transpose(mat);
+    printf(mat[0][0]);
+    printf(mat[1][0]);
+    printf(mat[2][0]);
+    printf(mat[3][0]);
+    return 0;
 }
