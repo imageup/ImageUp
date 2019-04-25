@@ -1,0 +1,14 @@
+llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
+tuple value: 
+0
+1
+2
+tuple value: 
+1
+2
+3
+tuple value: 
+2
+3
+4
+correct output: (0, 1, 2), (1, 2, 3), (2, 3, 4)

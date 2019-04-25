@@ -7,10 +7,8 @@ function main() -> int
     tuple:tu = (x*y, a+b);
     printf(tu[0]);
     printf(tu[1]);
-    prints("first bituple output should be: 2, 7");
     tuple:tu1 = (x*4, a+5.0);
     printf(tu1[0]);
     printf(tu1[1]);
-    prints("second bituple output should be: 4, 8");
     return 0;
 }

@@ -1,0 +1,7 @@
+function main() -> int
+{
+	matrix : x(2, 2);
+	x = [1, 2 | 3, 4];
+	printf(x[0][0]);
+	return 0;
+}

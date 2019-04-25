@@ -1,0 +1,8 @@
+llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
+1
+2
+bituple correct output: 1, 2
+3
+4
+5
+trituple correct output: 3, 4, 5

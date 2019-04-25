@@ -1,0 +1,7 @@
+llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
+0
+1
+correct output should be: 0, 1
+3
+8
+correct output should be 3, 8
