@@ -62,6 +62,43 @@ double* read_c(char path[]){
     
 }
 
+double* saturation_c(char path[], double saturation) {
+    CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
+    int rows = img->rows;
+    int cols = img->cols;
+    IplImage *temp1=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+    IplImage *temp2=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
+    cvCvtColor(img, temp1, CV_BGR2HSV);
+    double tmp;
+    unsigned char* input = (unsigned char*)(temp1->imageData);
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            tmp = saturation * input[img->step * i + j*3 + 1];
+            if (tmp > 360) tmp = 360;
+            if (tmp < 0) tmp = 0;
+            input[img->step * i + j*3 + 1] = tmp ;
+        }
+    }
+    cvCvtColor(temp1, temp2, CV_HSV2BGR);
+
+    unsigned char* input2 = (unsigned char*)(temp2->imageData);
+    int k = 0;
+    for(int i = 0; i < IMAGE_SIZE; i++){
+        for(int j = 0; j < IMAGE_SIZE; j++){
+            if ( i >= rows || j >= cols ) {
+                output[k++] = 0;
+                output[k++] = 0;
+                output[k++] = 0;
+               } else {
+                output[k++] = input2[img->step * i + j*3] ;
+                output[k++] = input2[img->step * i + j*3 + 1];
+                output[k++] = input2[img->step * i + j*3 + 2];
+               }
+            }
+    }
+    return output;
+}
 
 int string_to_int(char str[])
 {

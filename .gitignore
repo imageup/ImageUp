@@ -7,3 +7,6 @@ parser.output
 _build/
 test.ll
 test.s
+a.out
+smooth.c
+saturation.c
