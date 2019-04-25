@@ -49,6 +49,8 @@ let check (globals, functions) =
                                ("StrParse", [(Int, "x")], String);
                                ("FloatParses", [(String, "x")], Float);
                                ("FloatParse", [(Int, "x")], Float);
+                               ("RowLen", [(Matrix, "matrix")], Int);
+                               ("ColLen", [(Matrix, "matrix")], Int);
                                ("scale", [(Matrix, "matrix"); (Float, "ratio")], Void); 
                                ("transpose", [(Matrix, "matrix")], Void);
                                ("rotate", [(Matrix, "matrix"); (Bool, "direction")], Void);

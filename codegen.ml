@@ -438,13 +438,7 @@ let translate (globals, functions) =
     )
     | SCall ("IntParses", e) ->
     (
-      let arg = 
-      (
-        match e with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("scale: argument match failure"))
-      )
-      in
+      let arg = List.hd e in
       let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
       let func_def_cast = L.function_type i32_t [|string_t|] in 
       let func_decl_cast = L.declare_function "string_to_int" func_def_cast the_module
@@ -452,39 +446,21 @@ let translate (globals, functions) =
     )
     | SCall ("IntParsef", e) ->
     (
-      let arg = 
-      (
-        match e with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("scale: argument match failure"))
-      )
-      in
+      let arg = List.hd e in
       let value = fst (expr (builder, (matrix_map, image_map)) arg) in 
       let e' = L.build_fptosi value (L.i32_type context) "cast_tmp" builder
       in (e', (matrix_map, image_map))
     )
     | SCall ("FloatParse", e) ->
     (
-      let arg = 
-      (
-        match e with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("scale: argument match failure"))
-      )
-      in
+      let arg = List.hd e in
       let value = fst (expr (builder, (matrix_map, image_map)) arg) in 
       let e' = L.build_sitofp value (L.double_type context) "cast_tmp" builder
       in (e', (matrix_map, image_map))
     )
     | SCall ("FloatParses", e) ->
     (
-      let arg = 
-      (
-        match e with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("scale: argument match failure"))
-      )
-      in
+      let arg = List.hd e in
       let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
       let func_def_cast = L.function_type (L.double_type context) [|string_t|] in 
       let func_decl_cast = L.declare_function "string_to_float" func_def_cast the_module
@@ -492,13 +468,7 @@ let translate (globals, functions) =
     )
     | SCall ("StrParse", e) ->
     (
-      let arg = 
-      (
-        match e with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("scale: argument match failure"))
-      )
-      in
+      let arg = List.hd e in
       let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
       let func_def_cast = L.function_type (string_t) [|i32_t|] in 
       let func_decl_cast = L.declare_function "int_to_string" func_def_cast the_module
@@ -506,28 +476,35 @@ let translate (globals, functions) =
     )
     | SCall ("StrParsef", e) ->
     (
-      let arg = 
-      (
-        match e with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("scale: argument match failure"))
-      )
-      in
+      let arg = List.hd e in
       let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
       let func_def_cast = L.function_type (string_t) [|float_t|] in 
       let func_decl_cast = L.declare_function "float_to_string" func_def_cast the_module
       in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
     )
+    | SCall("RowLen", e) ->
+    (
+      let (ty, arg) = List.hd e in 
+      let (i, j) = match arg with
+      | (SId s) -> StringMap.find s matrix_map
+      | _ -> raise(Failure("type mismatch for rowlen input"))
+      in
+      (i, (matrix_map, image_map))
+    )
+    | SCall("ColLen", e) ->
+    (
+      let (ty, arg) = List.hd e in 
+      let (i, j) = match arg with
+      | (SId s) -> StringMap.find s matrix_map
+      | _ -> raise(Failure("type mismatch for rowlen input"))
+      in
+      (j, (matrix_map, image_map))
+    )
     | SCall ("scale", e)    ->
     (
-      let args = e
-      in let m = 
-      (
-        match args with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("scale: argument match failure"))
-      )
-      in let (row, col) = 
+      let args = e in
+      let m = List.hd e in
+      let (row, col) = 
       (
         match m with 
         | (_, SId s) -> StringMap.find s matrix_map
@@ -652,14 +629,9 @@ let translate (globals, functions) =
     )
     | SCall ("rotate", e)       ->
     (
-      let args = e
-      in let m = 
-      (
-        match args with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("rotate: match failure"))
-      )
-      in let s = 
+      let args = e in
+      let m = List.hd e in
+      let s = 
       (
         match m with 
         | (_, SId s) -> s
@@ -684,14 +656,8 @@ let translate (globals, functions) =
     )
     | SCall ("transpose", e)     ->
     (
-      let args = e
-      in let m = 
-      (
-        match args with 
-        | mm::_ -> mm
-        | _ -> raise(Failure("transpose: match failure"))
-      )
-      in let s = 
+      let m = List.hd e in
+      let s = 
       (
         match m with 
         | (_, SId s) -> s
