@@ -1,0 +1,10 @@
+function main() -> int
+{
+        image: a = read("./images/face1.jpg");
+        
+        image: b;
+        b = smooth(a);
+		save("test.out.3.jpg", b);
+
+        return 0;
+}

@@ -81,8 +81,8 @@ double* saturation_c(double *image, double *sat, double rowss, double colss) {
     CvMat *img = cvLoadImageM("tmp_saturation.jpg", CV_LOAD_IMAGE_COLOR);
 
 
-    int rows = rowss;
-    int cols = colss;
+    int rows = (int)rowss;
+    int cols = (int)colss;
     IplImage *temp1=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     IplImage *temp2=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     cvCvtColor(img, temp1, CV_BGR2HSV);
@@ -247,7 +247,7 @@ double *smooth_c(double *image, double *pos, double rowss, double colss) {
 
         }
     }
-
+    free(data);
     //CvMat dst = cvMat(rows, cols, CV_64FC3, data);
     return output;
 
