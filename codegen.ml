@@ -58,7 +58,8 @@ let translate (globals, functions) =
       let printf_t : L.lltype = 
           L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
       let printf_func : L.llvalue = 
-          L.declare_function "printf" printf_t the_module in
+          L.declare_function "printf" printf_t the_module 
+  in
 
   (* Define each function (arguments and return type) so we can 
      call it even before we've created its body *)
@@ -69,7 +70,8 @@ let translate (globals, functions) =
       in 
       let ftype = L.function_type (ltype_of_typ fdecl.styp) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
-      List.fold_left function_decl StringMap.empty functions in
+      List.fold_left function_decl StringMap.empty functions 
+  in
   
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
@@ -77,7 +79,8 @@ let translate (globals, functions) =
     let builder = L.builder_at_end context (L.entry_block the_function) in
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder 
-    and	string_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
+    and	string_format_str = L.build_global_stringptr "%s\n" "fmt" builder 
+  in
 
   let rec range i j = if i > j then [] else i :: (range (i+1) j) in
 
@@ -109,12 +112,11 @@ let translate (globals, functions) =
         let local = L.build_alloca (ltype_of_typ t) n builder in StringMap.add n local m
       )
       | _ -> m
-    in
+      in
 
-    let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals
-        (Array.to_list (L.params the_function)) 
-    in
-    List.fold_left add_local formals fdecl.sbody
+      let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals
+          (Array.to_list (L.params the_function)) 
+      in List.fold_left add_local formals fdecl.sbody
     in
 
     (* Return the value for a variable or formal argument.
@@ -122,6 +124,7 @@ let translate (globals, functions) =
     let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
     in
+
     let read_body name args builder matrix_map image_map =
       let path = 
       (
@@ -134,17 +137,18 @@ let translate (globals, functions) =
         )
         | _ -> raise(Failure("read body unmatched path"))
       )
-      in let func_def_read = L.function_type (L.pointer_type (array_t image_size)) [| string_t |]
-      in let func_decl_read = L.declare_function "read_c" func_def_read the_module
-      in let func_def_dim = L.function_type (L.pointer_type (array_t 2)) [| string_t |]
-      in let func_decl_dim = L.declare_function "dim_c" func_def_dim the_module
-      in let read_return = L.build_call func_decl_read [| path|] "" builder
-      in let dim_return = L.build_call func_decl_dim [| path|] "" builder
-      in let row_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 0|] "row_size" builder) "number" builder
-      in let col_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 1|] "col_size" builder) "number" builder
-      in let size = (row_size, col_size) 
-      in let new_image_map = StringMap.add name size image_map
-      in (read_return, (builder, (matrix_map, new_image_map))) 
+      in 
+      let func_def_read = L.function_type (L.pointer_type (array_t image_size)) [| string_t |] in
+      let func_decl_read = L.declare_function "read_c" func_def_read the_module in 
+      let func_def_dim = L.function_type (L.pointer_type (array_t 2)) [| string_t |] in
+      let func_decl_dim = L.declare_function "dim_c" func_def_dim the_module in
+      let read_return = L.build_call func_decl_read [| path|] "" builder in
+      let dim_return = L.build_call func_decl_dim [| path|] "" builder in
+      let row_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 0|] "row_size" builder) "number" builder in
+      let col_size = L.build_load (L.build_gep dim_return [|L.const_int i32_t 0;L.const_int i32_t 1|] "col_size" builder) "number" builder in
+      let size = (row_size, col_size)  in
+      let new_image_map = StringMap.add name size image_map in
+      (read_return, (builder, (matrix_map, new_image_map))) 
     in    
 
     let smooth_body new_name args builder matrix_map image_map=
@@ -155,16 +159,15 @@ let translate (globals, functions) =
         | (_, SId s) -> s 
         | _ -> raise(Failure("incorrect parameter"))
       )
-      in let ptr_typ = L.pointer_type (array_t image_size)
-      in let func_def_smooth = L.function_type ptr_typ [| ptr_typ; float_t; float_t|]
-      in let func_decl_smooth = L.declare_function "smooth_c" func_def_smooth the_module
-      in let img = L.build_load (lookup name) "image" builder
-
-      in let (row, col) = StringMap.find name image_map 
-
-      in let new_image_map = StringMap.add new_name (row, col) image_map
-      in let smooth_return = L.build_call func_decl_smooth [| img; row; col|] "" builder
-      in (smooth_return, (matrix_map, new_image_map))
+      in 
+      let ptr_typ = L.pointer_type (array_t image_size) in
+      let func_def_smooth = L.function_type ptr_typ [| ptr_typ; float_t; float_t|] in
+      let func_decl_smooth = L.declare_function "smooth_c" func_def_smooth the_module in
+      let img = L.build_load (lookup name) "image" builder in
+      let (row, col) = StringMap.find name image_map in
+      let new_image_map = StringMap.add new_name (row, col) image_map in
+      let smooth_return = L.build_call func_decl_smooth [| img; row; col|] "" builder in
+      (smooth_return, (matrix_map, new_image_map))
     in    
 
     let save_body args builder matrix_map image_map=
@@ -254,8 +257,7 @@ let translate (globals, functions) =
       let value = L.build_load (StringMap.find s local_vars) "tuple8" builder in
       (
         (* let res = L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) "tuple9" builder *)
-        let res = L.build_load (L.build_gep (value) [| L.const_int i32_t 0; e1'|] s builder) "tuple9" builder
-        in
+        let res = L.build_load (L.build_gep (value) [| L.const_int i32_t 0; e1'|] s builder) "tuple9" builder in
         (res, (matrix_map, image_map))
       ) 
     )
@@ -337,37 +339,6 @@ let translate (globals, functions) =
         let (img, (new_matrix_map, new_image_map)) = smooth_body s vars builder matrix_map image_map in 
         ignore(L.build_store img (lookup s) builder); 
         (L.const_int i32_t 0,(new_matrix_map, new_image_map))
-      )
-      | (_, SCall("saturation", vars)) ->
-      (
-        let timg = List.hd vars in
-        let name =
-        (
-            match timg with
-            | (_, SId sn) -> sn
-            | _ -> raise(Failure("incorrect parameter"))
-        )
-        in 
-        let sat_tup =
-        (
-            match vars with
-            | _::vv -> List.hd vv
-            | _ -> raise(Failure("write_pixel: match failure"))
-        )
-        in
-        let sat = fst (expr (builder, (matrix_map, image_map)) sat_tup) in 
-        let tuple_p_typ = L.pointer_type (array_t 3) in
-        let ptr_typ = L.pointer_type (array_t image_size)
-        in let func_def_saturation = L.function_type ptr_typ [|ptr_typ; float_t; float_t; float_t|]
-        in let func_decl_saturation = L.declare_function "saturation_c" func_def_saturation the_module
-        in let img = L.build_load (lookup name) "image" builder
-        in let (row, col) = StringMap.find name image_map
-        in let new_image_map = StringMap.add s (row, col) image_map
-        in let saturation_ret = L.build_call func_decl_saturation [|img;sat; row; col|] "" builder
-        in let (sat_ret, (new_mat, new_img)) = (saturation_ret, (matrix_map, new_image_map))
-        in
-    ignore(L.build_store sat_ret (lookup s) builder);
-    (L.const_int i32_t 0, (new_mat, new_img))
       )
       | _ ->
       ( 
@@ -494,40 +465,46 @@ let translate (globals, functions) =
       let arg = List.hd e in
       let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
       let func_def_cast = L.function_type (L.double_type context) [|string_t|] in 
-      let func_decl_cast = L.declare_function "string_to_float" func_def_cast the_module
-      in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
+      let func_decl_cast = L.declare_function "string_to_float" func_def_cast the_module in
+      ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
     )
     | SCall ("StrParse", e) ->
     (
       let arg = List.hd e in
       let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
       let func_def_cast = L.function_type (string_t) [|i32_t|] in 
-      let func_decl_cast = L.declare_function "int_to_string" func_def_cast the_module
-      in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
+      let func_decl_cast = L.declare_function "int_to_string" func_def_cast the_module in
+      ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
     )
     | SCall ("StrParsef", e) ->
     (
       let arg = List.hd e in
       let value = (fst (expr (builder, (matrix_map, image_map)) arg)) in
       let func_def_cast = L.function_type (string_t) [|float_t|] in 
-      let func_decl_cast = L.declare_function "float_to_string" func_def_cast the_module
-      in ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
+      let func_decl_cast = L.declare_function "float_to_string" func_def_cast the_module in 
+      ((L.build_call func_decl_cast [|value|] "tmp" builder), (matrix_map, image_map))
     )
     | SCall("RowLen", e) ->
     (
       let (ty, arg) = List.hd e in 
-      let (i, j) = match arg with
-      | (SId s) -> StringMap.find s matrix_map
-      | _ -> raise(Failure("type mismatch for rowlen input"))
+      let (i, j) = 
+      (
+        match arg with
+        | (SId s) -> StringMap.find s matrix_map
+        | _ -> raise(Failure("type mismatch for rowlen input"))
+      )
       in
       (i, (matrix_map, image_map))
     )
     | SCall("ColLen", e) ->
     (
       let (ty, arg) = List.hd e in 
-      let (i, j) = match arg with
-      | (SId s) -> StringMap.find s matrix_map
-      | _ -> raise(Failure("type mismatch for rowlen input"))
+      let (i, j) = 
+      (
+        match arg with
+        | (SId s) -> StringMap.find s matrix_map
+        | _ -> raise(Failure("type mismatch for rowlen input"))
+      )
       in
       (j, (matrix_map, image_map))
     )
@@ -547,14 +524,14 @@ let translate (globals, functions) =
         | _::rratio ->List.hd rratio
         | _ -> raise(Failure("scale: ratio match failure"))
       )
-      in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
-      in let rat = fst (expr (builder, (matrix_map, image_map)) ratio)  
-      in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
-      in let ptr_typ = ltype_of_typ A.Matrix
-      in let func_def_scale = L.function_type i32_t [| ptr_typ; i32_t; i32_t; float_t |]
-      in let func_decl_scale = L.declare_function "scale_c" func_def_scale the_module
-
-      in ignore(L.build_call func_decl_scale [| mat_ptr;row; col;rat |] "" builder);
+      in 
+      let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m) in
+      let rat = fst (expr (builder, (matrix_map, image_map)) ratio) in
+      let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder in
+      let ptr_typ = ltype_of_typ A.Matrix in
+      let func_def_scale = L.function_type i32_t [| ptr_typ; i32_t; i32_t; float_t |] in
+      let func_decl_scale = L.declare_function "scale_c" func_def_scale the_module in
+      ignore(L.build_call func_decl_scale [| mat_ptr;row; col;rat |] "" builder);
       (L.const_int i32_t 0, (matrix_map, image_map)) 
     )
     |SCall("save", vars) -> 
@@ -675,14 +652,15 @@ let translate (globals, functions) =
         | _::rdirection -> List.hd rdirection
         | _ -> raise(Failure("rotate: match failure"))
       )
-      in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
-      in let dir = fst (expr (builder, (matrix_map, image_map)) direction)
-      in let mat_ptr = L.build_gep stored_matrix [|L.const_int i32_t 0 |] "ptr_matrix" builder
-      in let ptr_typ = ltype_of_typ A.Matrix
-      in let func_def_rotate = L.function_type i32_t [| ptr_typ; i32_t; i32_t; i1_t |]
-      in let func_decl_rotate = L.declare_function "rotate_c" func_def_rotate the_module
-      in let new_matrix_map = StringMap.add s (col, row) matrix_map
-      in ignore(L.build_call func_decl_rotate [| mat_ptr; row; col; dir|] "" builder);
+      in 
+      let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m) in
+      let dir = fst (expr (builder, (matrix_map, image_map)) direction) in
+      let mat_ptr = L.build_gep stored_matrix [|L.const_int i32_t 0 |] "ptr_matrix" builder in
+      let ptr_typ = ltype_of_typ A.Matrix in
+      let func_def_rotate = L.function_type i32_t [| ptr_typ; i32_t; i32_t; i1_t |] in
+      let func_decl_rotate = L.declare_function "rotate_c" func_def_rotate the_module in
+      let new_matrix_map = StringMap.add s (col, row) matrix_map in
+      ignore(L.build_call func_decl_rotate [| mat_ptr; row; col; dir|] "" builder);
       (L.const_int i32_t 0, (new_matrix_map, image_map))
     )
     | SCall ("transpose", e)     ->
@@ -694,14 +672,15 @@ let translate (globals, functions) =
         | (_, SId s) -> s
         | _ -> raise(Failure("transpose: match failure"))
       )
-      in let (row, col) = StringMap.find s matrix_map
-      in let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m)
-      in let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder
-      in let ptr_typ = ltype_of_typ A.Matrix
-      in let func_def_transpose = L.function_type i32_t [| ptr_typ ; i32_t; i32_t; |]
-      in let func_decl_transpose = L.declare_function "transpose_c" func_def_transpose the_module
-      in let new_matrix_map = StringMap.add s (col, row) matrix_map
-      in ignore(L.build_call func_decl_transpose [| mat_ptr; row; col |] "" builder);
+      in 
+      let (row, col) = StringMap.find s matrix_map in
+      let stored_matrix = fst (expr (builder, (matrix_map, image_map)) m) in
+      let mat_ptr = L.build_gep stored_matrix [| L.const_int i32_t 0 |] "ptr_matrix" builder in
+      let ptr_typ = ltype_of_typ A.Matrix in
+      let func_def_transpose = L.function_type i32_t [| ptr_typ ; i32_t; i32_t; |] in
+      let func_decl_transpose = L.declare_function "transpose_c" func_def_transpose the_module in
+      let new_matrix_map = StringMap.add s (col, row) matrix_map in
+      ignore(L.build_call func_decl_transpose [| mat_ptr; row; col |] "" builder);
       (L.const_int i32_t 0, (new_matrix_map, image_map)) 
     )
     | SCall (f, args) ->
@@ -752,35 +731,6 @@ let translate (globals, functions) =
           let (img, (new_matrix_map, new_image_map)) = smooth_body id vars builder matrix_map image_map in 
           ignore(L.build_store img (lookup id) builder); 
           (builder,(new_matrix_map, new_image_map))
-        )
-        | (_, SCall("saturation", vars)) ->
-        (
-            let timg = List.hd vars in
-            let name = 
-            (
-                match timg with
-                | (_, SId sn) -> sn
-                | _ -> raise(Failure("incorrect parameter"))
-            )
-            in let sat_tup = 
-            (
-                match vars with
-                | _::vv -> List.hd vv
-                | _ -> raise(Failure("write_pixel: match failure"))
-            )
-            in let sat = fst (expr (builder, (matrix_map, image_map)) sat_tup)
-            in let tuple_p_typ = L.pointer_type (array_t 3) 
-            in let ptr_typ = L.pointer_type (array_t image_size)
-            in let func_def_saturation = L.function_type ptr_typ [| ptr_typ; float_t; float_t; float_t |]
-            in let func_decl_saturation = L.declare_function "saturation_c" func_def_saturation the_module
-            in let img = L.build_load (lookup name) "image" builder
-            in let (row, col) = StringMap.find name image_map
-            in let new_image_map = StringMap.add id (row, col) image_map
-            in let sat_ret = L.build_call func_decl_saturation [|img; sat; row; col|] "" builder
-            in let (img, (new_mat, new_img)) = (sat_ret, (matrix_map, new_image_map))
-            in 
-            ignore(L.build_store img (lookup id) builder);
-            (builder, (new_mat, new_img))
         )
         |(_, SCall("get_pixel", vars)) -> 
         (

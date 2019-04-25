@@ -38,30 +38,31 @@ let check (globals, functions) =
       fname = name; 
       formals = formals;
        body = [] } map
-    in List.fold_left add_bind StringMap.empty [ 
-                               ("print", [(Int, "x")], Void);
-			                         ("printb", [(Bool, "x")], Void);
-			                         ("printf", [(Float, "x")], Void);
-                               ("prints", [(String, "x")], Void);
-                               ("IntParses", [(String, "x")], Int);
-                               ("IntParsef", [(Float, "x")], Int);
-                               ("StrParsef", [(Float, "x")], String);
-                               ("StrParse", [(Int, "x")], String);
-                               ("FloatParses", [(String, "x")], Float);
-                               ("FloatParse", [(Int, "x")], Float);
-                               ("RowLen", [(Matrix, "matrix")], Int);
-                               ("ColLen", [(Matrix, "matrix")], Int);
-                               ("scale", [(Matrix, "matrix"); (Float, "ratio")], Void); 
-                               ("transpose", [(Matrix, "matrix")], Void);
-                               ("rotate", [(Matrix, "matrix"); (Bool, "direction")], Void);
-                               ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")], Void); 
-                               ("read", [(String, "path")], Image);
-                               ("save", [(String, "path"); (Image, "image")], Void);
-                               ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
-                               ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
-                               ("smooth", [(Image, "image")], Image);
-                               ("saturation", [(Image, "image"); (Float, "sat")], Image);
-                               ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void)]
+    in List.fold_left add_bind StringMap.empty 
+    [ 
+      ("print", [(Int, "x")], Void);
+      ("printb", [(Bool, "x")], Void);
+      ("printf", [(Float, "x")], Void);
+      ("prints", [(String, "x")], Void);
+      ("IntParses", [(String, "x")], Int);
+      ("IntParsef", [(Float, "x")], Int);
+      ("StrParsef", [(Float, "x")], String);
+      ("StrParse", [(Int, "x")], String);
+      ("FloatParses", [(String, "x")], Float);
+      ("FloatParse", [(Int, "x")], Float);
+      ("RowLen", [(Matrix, "matrix")], Int);
+      ("ColLen", [(Matrix, "matrix")], Int);
+      ("scale", [(Matrix, "matrix"); (Float, "ratio")], Void); 
+      ("transpose", [(Matrix, "matrix")], Void);
+      ("rotate", [(Matrix, "matrix"); (Bool, "direction")], Void);
+      ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")], Void); 
+      ("read", [(String, "path")], Void);
+      ("save", [(String, "path"); (Image, "image")], Void);
+      ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
+      ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
+      ("smooth", [(Image, "image")], Image);
+      ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void)
+    ]
   in
 
   (* Add function name to symbol table *)
@@ -70,10 +71,11 @@ let check (globals, functions) =
     and dup_err = "duplicate function " ^ fd.fname
     and make_err er = raise (Failure er)
     and n = fd.fname (* Name of the function *)
-    in match fd with (* No duplicate functions or redefinitions of built-ins *)
-         _ when StringMap.mem n built_in_decls -> make_err built_in_err
-       | _ when StringMap.mem n map -> make_err dup_err  
-       | _ ->  StringMap.add n fd map 
+    in 
+    match fd with (* No duplicate functions or redefinitions of built-ins *)
+      _ when StringMap.mem n built_in_decls -> make_err built_in_err
+    | _ when StringMap.mem n map -> make_err dup_err  
+    | _ ->  StringMap.add n fd map 
   in
 
   (* Collect all function names into one symbol table *)
@@ -135,8 +137,11 @@ let check (globals, functions) =
     in   
 
     (* Build local symbol table of variables for this function *)
-    let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
-	                StringMap.empty (globals @ func.formals @ local_vars)
+    let symbols = 
+    (
+      List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
+      StringMap.empty (globals @ func.formals @ local_vars)
+    )
     in
 
     (* Return a variable from our local symbol table *)
@@ -159,34 +164,18 @@ let check (globals, functions) =
         and (t2, e2') = expr e2
         in
         (Tuple, SBiTuple ((t1, e1'), (t2, e2')))
-
       | TriTuple (e1, e2, e3) -> 
         let (t1, e1') = expr e1
         and (t2, e2') = expr e2
         and (t3, e3') = expr e3
         in
         (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
-(* 
-      | BiTuple (e1, e2) -> 
-        (* let (t1, e1') = expr e1  *)
-        (* and (t2, e2') = expr e2 *)
-        (* in *)
-        (Tuple, SBiTuple ((Float, e1), (Float, e2)))
-
-      | TriTuple (e1, e2, e3) -> 
-        (* let (t1, e1') = expr e1 *)
-        (* and (t2, e2') = expr e2 *)
-        (* and (t3, e3') = expr e3 *)
-        (* in *)
-        (Tuple, STriTuple ((Float, e1), (Float, e2), (Float, e3)))
- *)
       | TupleAccess(s, e1) ->
         (
           match e1 with
           | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
           | _ -> raise(Failure("Tuple can only be accessed by integer index"))
         )
-
       | MatLit el  ->  
         let rec parse_expr = function
           | [] -> []
@@ -213,57 +202,58 @@ let check (globals, functions) =
         (Float, SMatrixAccess (s, e1', e2'))
       )
       | MatAssign (s, e1, e2, e3) ->
+      (
         let e1' = expr e1
         and e2' = expr e2
         and e3' = expr e3 in
         (Float, SMatAssign (s, e1', e2', e3'))
-      
+      )
       | Assign(var, e) as ex -> 
-          let lt = type_of_identifier var
-          and (rt, e') = expr e in
-          let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
-            string_of_typ rt ^ " in " ^ string_of_expr ex
-          in (check_assign lt rt err, SAssign(var, (rt, e')))
+      (
+        let lt = type_of_identifier var
+        and (rt, e') = expr e in
+        let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ string_of_typ rt ^ " in " ^ string_of_expr ex
+        in (check_assign lt rt err, SAssign(var, (rt, e')))
+      )
       | Unop(op, e) as ex -> 
-          let (t, e') = expr e in
-          let ty = match op with
-            Neg when t = Int || t = Float -> t
-          | Not when t = Bool -> Bool
-          | _ -> raise (Failure ("illegal unary operator " ^ 
-                                 string_of_uop op ^ string_of_typ t ^
-                                 " in " ^ string_of_expr ex))
-          in (ty, SUnop(op, (t, e')))
+      (
+        let (t, e') = expr e in
+        let ty = match op with
+          Neg when t = Int || t = Float -> t
+        | Not when t = Bool -> Bool
+        | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^ string_of_typ t ^ " in " ^ string_of_expr ex))
+        in (ty, SUnop(op, (t, e')))
+      )
       | Binop(e1, op, e2) as e -> 
-          let (t1, e1') = expr e1 
-          and (t2, e2') = expr e2 in
-          (* All binary operators require operands of the same type *)
-          let same = t1 = t2 in
-          (* Determine expression type based on operator and operand types *)
-          let ty = match op with
-            Add | Sub | Mult | Div when same && t1 = Int   -> Int
-          | Add | Sub | Mult | Div when same && t1 = Float -> Float
-          | Add | Sub | Mult | Div when same && t1 = String-> String
-          | Equal | Neq            when same               -> Bool
-          | Less | Leq | Greater | Geq
-                     when same && (t1 = Int || t1 = Float) -> Bool
-          | And | Or when same && t1 = Bool -> Bool
-          | _ -> raise (
-	      Failure ("illegal binary operator " ^
-                       string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
-                       string_of_typ t2 ^ " in " ^ string_of_expr e))
-          in (ty, SBinop((t1, e1'), op, (t2, e2')))
-
+      (
+        let (t1, e1') = expr e1 
+        and (t2, e2') = expr e2 in
+        (* All binary operators require operands of the same type *)
+        let same = t1 = t2 in
+        (* Determine expression type based on operator and operand types *)
+        let ty = match op with
+          Add | Sub | Mult | Div when same && t1 = Int   -> Int
+        | Add | Sub | Mult | Div when same && t1 = Float -> Float
+        | Add | Sub | Mult | Div when same && t1 = String-> String
+        | Equal | Neq            when same               -> Bool
+        | Less | Leq | Greater | Geq
+                   when same && (t1 = Int || t1 = Float) -> Bool
+        | And | Or when same && t1 = Bool -> Bool
+        | _ -> raise (Failure ("illegal binary operator " ^
+                     string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
+                     string_of_typ t2 ^ " in " ^ string_of_expr e))
+        in (ty, SBinop((t1, e1'), op, (t2, e2')))
+      )
       | Call(fname, args) as call -> 
       (
         let fd = find_func fname in
         let param_length = List.length fd.formals in
         if List.length args != param_length then
-          raise (Failure ("expecting " ^ string_of_int param_length ^ 
-                          " arguments in " ^ string_of_expr call))
-        else let check_call (ft, _) e = 
+          raise (Failure ("expecting " ^ string_of_int param_length ^ " arguments in " ^ string_of_expr call))
+        else 
+          let check_call (ft, _) e = 
           let (et, e') = expr e in 
-          let err = "illegal argument found " ^ string_of_typ et ^
-            " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
+          let err = "illegal argument found " ^ string_of_typ et ^ " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
           in (check_assign ft et err, e')
         in 
         let args' = List.map2 check_call fd.formals args
@@ -272,9 +262,11 @@ let check (globals, functions) =
     in
 
     let check_bool_expr e = 
+    (
       let (t', e') = expr e
       and err = "expected Boolean expression in " ^ string_of_expr e
       in if t' != Bool then raise (Failure err) else (t', e') 
+    )
     in
 
     (* Return a semantically-checked statement i.e. containing sexprs *)
@@ -282,55 +274,59 @@ let check (globals, functions) =
         Expr e -> SExpr (expr e)
       | If(p, b1, b2) -> SIf(check_bool_expr p, check_stmt b1, check_stmt b2)
       | DeclAsn((t, s), e) -> 
-        let (rt, e') = expr e in
-        let err = "illegal assignment " ^ string_of_typ t ^ " = " ^ 
-          string_of_typ rt ^ " in " ^ string_of_expr e
-        in if rt = t then SDeclAsn((t, s), expr e)
-        else raise(Failure err)
-
-      (* (match t with
+      (
+        match t with
         | Matrix -> raise(Failure("Matrix declare assignment format wrong format"))
         | _ -> SDeclAsn((t, s), expr e)
-      ) *)
+      )
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak
       | Conti -> SConti
       | MatDecl(ty, s, e1, e2) -> SMatDecl(ty, s, expr e1, expr e2)
-      | MatDeclAsn(ty, s, e1, e2, e3) -> (match expr e3 with
-        |(Matrix, SMatLitDim (_, r, c))  -> let d1 = SBinop(expr e1, Mult, expr e2) in
-                                            let r' = (Int, SLiteral r) in
-                                            let c' = (Int, SLiteral c) in
-                                            let d2 = SBinop(r', Mult, c') in
-                                            if d1 = d2 then SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
-                                            else raise(Failure("Matrix error: Declared dimension does not match with actual matrix's dimension"))
+      | MatDeclAsn(ty, s, e1, e2, e3) -> 
+      (
+        match expr e3 with
+        |(Matrix, SMatLitDim (_, r, c))  -> 
+        (
+          let d1 = SBinop(expr e1, Mult, expr e2) in
+          let r' = (Int, SLiteral r) in
+          let c' = (Int, SLiteral c) in
+          let d2 = SBinop(r', Mult, c') in
+          if d1 = d2 then SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
+          else raise(Failure("Matrix error: Declared dimension does not match with actual matrix's dimension"))
+        )
         |_ -> raise(Failure("Illegal Matrix declaration format"))
       )
-
-      (* (
-        SMatDeclAsn(ty, s, expr e1, expr e2, expr e3)
-      ) *)
       | For(e1, e2, e3, st) -> SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
-      | Return e -> let (t, e') = expr e in
+      | Return e -> 
+      (
+        let (t, e') = expr e in
         if t = func.typ then SReturn (t, e') 
         else raise ( Failure ("return gives " ^ string_of_typ t ^ " expected " ^string_of_typ func.typ ^ " in " ^ string_of_expr e))
+      )
 	    (* A block is correct if each statement is correct and nothing
 	       follows any Return statement.  Nested blocks are flattened. *)
       | Block sl -> 
-          let rec check_stmt_list = function
-              [Return _ as s] -> [check_stmt s]
-            | Return _ :: _   -> raise (Failure "nothing may follow a return")
-            | Block sl :: ss  -> check_stmt_list (sl @ ss) (* Flatten blocks *)
-            | s :: ss         -> check_stmt s :: check_stmt_list ss
-            | []              -> []
-          in SBlock(check_stmt_list sl)
+      (
+        let rec check_stmt_list = function
+            [Return _ as s] -> [check_stmt s]
+          | Return _ :: _   -> raise (Failure "nothing may follow a return")
+          | Block sl :: ss  -> check_stmt_list (sl @ ss) (* Flatten blocks *)
+          | s :: ss         -> check_stmt s :: check_stmt_list ss
+          | []              -> []
+        in SBlock(check_stmt_list sl)
+      )
 
     in (* body of check_function *)
     { styp = func.typ;
       sfname = func.fname;
       sformals = func.formals;
-      sbody = match check_stmt (Block func.body) with
-	SBlock(sl) -> sl
-      | _ -> raise (Failure ("internal error: block didn't become a block?"))
+      sbody = 
+      (
+        match check_stmt (Block func.body) with
+  	    | SBlock(sl) -> sl
+        | _ -> raise (Failure ("internal error: block didn't become a block?"))
+      )
     }
   in (globals, List.map check_function functions)
