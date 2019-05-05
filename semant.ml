@@ -184,6 +184,7 @@ let check (globals, functions) =
         (
           match e1 with
           | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
+          | Id id -> (Float, STupleAccess(s, (type_of_identifier id, SId id)))
           | _ -> raise(Failure("Tuple can only be accessed by integer index"))
         )
 
