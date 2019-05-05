@@ -3,7 +3,12 @@ function main() -> int
         image: a = read("./images/face1.jpg");
         
         image: b;
+        prints("No change to pixel (0,1)");
+        tuple: x = get_pixel(a, (0,1));
+        prints("Before: " + StrParsef(x[0]) + " " + StrParsef(x[1]) + " " + StrParsef(x[2]));
         b = smooth(a);
+        tuple: y = get_pixel(a, (0,1));
+        prints("After: " + StrParsef(y[0]) + " " + StrParsef(y[1]) + " " + StrParsef(y[2]));
 		save("test.out.2.jpg", b);
 
         return 0;

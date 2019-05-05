@@ -2,6 +2,8 @@ function main() -> int
 {
 
         image: a = read("./images/tiny.jpg");
+        prints("Done reading image");
         save("test.jpg", a);
+        prints("Done saving image");
         return 0;
 }

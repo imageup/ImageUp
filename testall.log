@@ -1,236 +1,56 @@
 /usr/bin/lli
 
-###### Testing test_add
-./imageup.native ./test/GeneralTest/test_add.iu > test_add.ll
-llc -relocation-model=pic test_add.ll > test_add.s
-gcc -o test_add.exe test_add.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_add.exe
-diff -b test_add.out ./test/GeneralTest/test_add.out > test_add.diff
+###### Testing test_adjust_image
+./imageup.native ./test/ImageTest/test_adjust_image.iu > test_adjust_image.ll
+llc -relocation-model=pic test_adjust_image.ll > test_adjust_image.s
+gcc -o test_adjust_image.exe test_adjust_image.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
+./test_adjust_image.exe
+diff -b test_adjust_image.out ./test/ImageTest/test_adjust_image.out > test_adjust_image.diff
 ###### SUCCESS
 
-###### Testing test_assign_bool
-./imageup.native ./test/GeneralTest/test_assign_bool.iu > test_assign_bool.ll
-llc -relocation-model=pic test_assign_bool.ll > test_assign_bool.s
-gcc -o test_assign_bool.exe test_assign_bool.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_assign_bool.exe
-diff -b test_assign_bool.out ./test/GeneralTest/test_assign_bool.out > test_assign_bool.diff
+###### Testing test_get_pixel
+./imageup.native ./test/ImageTest/test_get_pixel.iu > test_get_pixel.ll
+llc -relocation-model=pic test_get_pixel.ll > test_get_pixel.s
+gcc -o test_get_pixel.exe test_get_pixel.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
+./test_get_pixel.exe
+diff -b test_get_pixel.out ./test/ImageTest/test_get_pixel.out > test_get_pixel.diff
 ###### SUCCESS
 
-###### Testing test_assign_float
-./imageup.native ./test/GeneralTest/test_assign_float.iu > test_assign_float.ll
-llc -relocation-model=pic test_assign_float.ll > test_assign_float.s
-gcc -o test_assign_float.exe test_assign_float.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_assign_float.exe
-diff -b test_assign_float.out ./test/GeneralTest/test_assign_float.out > test_assign_float.diff
+###### Testing test_read_save
+./imageup.native ./test/ImageTest/test_read_save.iu > test_read_save.ll
+llc -relocation-model=pic test_read_save.ll > test_read_save.s
+gcc -o test_read_save.exe test_read_save.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
+./test_read_save.exe
+diff -b test_read_save.out ./test/ImageTest/test_read_save.out > test_read_save.diff
 ###### SUCCESS
 
-###### Testing test_assign_int
-./imageup.native ./test/GeneralTest/test_assign_int.iu > test_assign_int.ll
-llc -relocation-model=pic test_assign_int.ll > test_assign_int.s
-gcc -o test_assign_int.exe test_assign_int.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_assign_int.exe
-diff -b test_assign_int.out ./test/GeneralTest/test_assign_int.out > test_assign_int.diff
+###### Testing test_smooth
+./imageup.native ./test/ImageTest/test_smooth.iu > test_smooth.ll
+llc -relocation-model=pic test_smooth.ll > test_smooth.s
+gcc -o test_smooth.exe test_smooth.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
+./test_smooth.exe
+diff -b test_smooth.out ./test/ImageTest/test_smooth.out > test_smooth.diff
 ###### SUCCESS
 
-###### Testing test_assign_string
-./imageup.native ./test/GeneralTest/test_assign_string.iu > test_assign_string.ll
-llc -relocation-model=pic test_assign_string.ll > test_assign_string.s
-gcc -o test_assign_string.exe test_assign_string.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_assign_string.exe
-diff -b test_assign_string.out ./test/GeneralTest/test_assign_string.out > test_assign_string.diff
+###### Testing test_write_pixel
+./imageup.native ./test/ImageTest/test_write_pixel.iu > test_write_pixel.ll
+llc -relocation-model=pic test_write_pixel.ll > test_write_pixel.s
+gcc -o test_write_pixel.exe test_write_pixel.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
+./test_write_pixel.exe
+diff -b test_write_pixel.out ./test/ImageTest/test_write_pixel.out > test_write_pixel.diff
 ###### SUCCESS
 
-###### Testing test_binary
-./imageup.native ./test/GeneralTest/test_binary.iu > test_binary.ll
-llc -relocation-model=pic test_binary.ll > test_binary.s
-gcc -o test_binary.exe test_binary.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_binary.exe
-diff -b test_binary.out ./test/GeneralTest/test_binary.out > test_binary.diff
+###### Testing test_write_pixel1
+./imageup.native ./test/ImageTest/test_write_pixel1.iu > test_write_pixel1.ll
+llc -relocation-model=pic test_write_pixel1.ll > test_write_pixel1.s
+gcc -o test_write_pixel1.exe test_write_pixel1.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
+./test_write_pixel1.exe
+diff -b test_write_pixel1.out ./test/ImageTest/test_write_pixel1.out > test_write_pixel1.diff
 ###### SUCCESS
 
-###### Testing test_call
-./imageup.native ./test/GeneralTest/test_call.iu > test_call.ll
-llc -relocation-model=pic test_call.ll > test_call.s
-gcc -o test_call.exe test_call.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_call.exe
-diff -b test_call.out ./test/GeneralTest/test_call.out > test_call.diff
-###### SUCCESS
-
-###### Testing test_decl_assign_bool
-./imageup.native ./test/GeneralTest/test_decl_assign_bool.iu > test_decl_assign_bool.ll
-llc -relocation-model=pic test_decl_assign_bool.ll > test_decl_assign_bool.s
-gcc -o test_decl_assign_bool.exe test_decl_assign_bool.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_decl_assign_bool.exe
-diff -b test_decl_assign_bool.out ./test/GeneralTest/test_decl_assign_bool.out > test_decl_assign_bool.diff
-###### SUCCESS
-
-###### Testing test_decl_assign_float
-./imageup.native ./test/GeneralTest/test_decl_assign_float.iu > test_decl_assign_float.ll
-llc -relocation-model=pic test_decl_assign_float.ll > test_decl_assign_float.s
-gcc -o test_decl_assign_float.exe test_decl_assign_float.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_decl_assign_float.exe
-diff -b test_decl_assign_float.out ./test/GeneralTest/test_decl_assign_float.out > test_decl_assign_float.diff
-###### SUCCESS
-
-###### Testing test_decl_assign_int
-./imageup.native ./test/GeneralTest/test_decl_assign_int.iu > test_decl_assign_int.ll
-llc -relocation-model=pic test_decl_assign_int.ll > test_decl_assign_int.s
-gcc -o test_decl_assign_int.exe test_decl_assign_int.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_decl_assign_int.exe
-diff -b test_decl_assign_int.out ./test/GeneralTest/test_decl_assign_int.out > test_decl_assign_int.diff
-###### SUCCESS
-
-###### Testing test_decl_assign_string
-./imageup.native ./test/GeneralTest/test_decl_assign_string.iu > test_decl_assign_string.ll
-llc -relocation-model=pic test_decl_assign_string.ll > test_decl_assign_string.s
-gcc -o test_decl_assign_string.exe test_decl_assign_string.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_decl_assign_string.exe
-diff -b test_decl_assign_string.out ./test/GeneralTest/test_decl_assign_string.out > test_decl_assign_string.diff
-###### SUCCESS
-
-###### Testing test_for
-./imageup.native ./test/GeneralTest/test_for.iu > test_for.ll
-llc -relocation-model=pic test_for.ll > test_for.s
-gcc -o test_for.exe test_for.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_for.exe
-diff -b test_for.out ./test/GeneralTest/test_for.out > test_for.diff
-###### SUCCESS
-
-###### Testing test_if
-./imageup.native ./test/GeneralTest/test_if.iu > test_if.ll
-llc -relocation-model=pic test_if.ll > test_if.s
-gcc -o test_if.exe test_if.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_if.exe
-diff -b test_if.out ./test/GeneralTest/test_if.out > test_if.diff
-###### SUCCESS
-
-###### Testing test_unop
-./imageup.native ./test/GeneralTest/test_unop.iu > test_unop.ll
-llc -relocation-model=pic test_unop.ll > test_unop.s
-gcc -o test_unop.exe test_unop.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_unop.exe
-diff -b test_unop.out ./test/GeneralTest/test_unop.out > test_unop.diff
-###### SUCCESS
-
-###### Testing test_while
-./imageup.native ./test/GeneralTest/test_while.iu > test_while.ll
-llc -relocation-model=pic test_while.ll > test_while.s
-gcc -o test_while.exe test_while.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_while.exe
-diff -b test_while.out ./test/GeneralTest/test_while.out > test_while.diff
-###### SUCCESS
-
-###### Testing fail_add
-./imageup.native < ./test/GeneralTest/fail_add.iu 2> fail_add.err
-diff -b fail_add.err ./test/GeneralTest/fail_add.err > fail_add.diff
-###### SUCCESS
-
-###### Testing fail_assign_bool
-./imageup.native < ./test/GeneralTest/fail_assign_bool.iu 2> fail_assign_bool.err
-diff -b fail_assign_bool.err ./test/GeneralTest/fail_assign_bool.err > fail_assign_bool.diff
-###### SUCCESS
-
-###### Testing fail_assign_float
-./imageup.native < ./test/GeneralTest/fail_assign_float.iu 2> fail_assign_float.err
-diff -b fail_assign_float.err ./test/GeneralTest/fail_assign_float.err > fail_assign_float.diff
-###### SUCCESS
-
-###### Testing fail_assign_int
-./imageup.native < ./test/GeneralTest/fail_assign_int.iu 2> fail_assign_int.err
-diff -b fail_assign_int.err ./test/GeneralTest/fail_assign_int.err > fail_assign_int.diff
-###### SUCCESS
-
-###### Testing fail_assign_string
-./imageup.native < ./test/GeneralTest/fail_assign_string.iu 2> fail_assign_string.err
-diff -b fail_assign_string.err ./test/GeneralTest/fail_assign_string.err > fail_assign_string.diff
-###### SUCCESS
-
-###### Testing fail_call
-./imageup.native < ./test/GeneralTest/fail_call.iu 2> fail_call.err
-diff -b fail_call.err ./test/GeneralTest/fail_call.err > fail_call.diff
-###### SUCCESS
-
-###### Testing fail_comp
-./imageup.native < ./test/GeneralTest/fail_comp.iu 2> fail_comp.err
-diff -b fail_comp.err ./test/GeneralTest/fail_comp.err > fail_comp.diff
-###### SUCCESS
-
-###### Testing fail_decl_assign_bool
-./imageup.native < ./test/GeneralTest/fail_decl_assign_bool.iu 2> fail_decl_assign_bool.err
-diff -b fail_decl_assign_bool.err ./test/GeneralTest/fail_decl_assign_bool.err > fail_decl_assign_bool.diff
-###### SUCCESS
-
-###### Testing fail_decl_assign_float
-./imageup.native < ./test/GeneralTest/fail_decl_assign_float.iu 2> fail_decl_assign_float.err
-diff -b fail_decl_assign_float.err ./test/GeneralTest/fail_decl_assign_float.err > fail_decl_assign_float.diff
-###### SUCCESS
-
-###### Testing fail_decl_assign_int
-./imageup.native < ./test/GeneralTest/fail_decl_assign_int.iu 2> fail_decl_assign_int.err
-diff -b fail_decl_assign_int.err ./test/GeneralTest/fail_decl_assign_int.err > fail_decl_assign_int.diff
-###### SUCCESS
-
-###### Testing fail_decl_assign_string
-./imageup.native < ./test/GeneralTest/fail_decl_assign_string.iu 2> fail_decl_assign_string.err
-diff -b fail_decl_assign_string.err ./test/GeneralTest/fail_decl_assign_string.err > fail_decl_assign_string.diff
-###### SUCCESS
-
-###### Testing fail_divid
-./imageup.native < ./test/GeneralTest/fail_divid.iu 2> fail_divid.err
-diff -b fail_divid.err ./test/GeneralTest/fail_divid.err > fail_divid.diff
-###### SUCCESS
-
-###### Testing fail_for
-./imageup.native < ./test/GeneralTest/fail_for.iu 2> fail_for.err
-diff -b fail_for.err ./test/GeneralTest/fail_for.err > fail_for.diff
-###### SUCCESS
-
-###### Testing fail_func_param
-./imageup.native < ./test/GeneralTest/fail_func_param.iu 2> fail_func_param.err
-diff -b fail_func_param.err ./test/GeneralTest/fail_func_param.err > fail_func_param.diff
-###### SUCCESS
-
-###### Testing fail_func_param_length
-./imageup.native < ./test/GeneralTest/fail_func_param_length.iu 2> fail_func_param_length.err
-diff -b fail_func_param_length.err ./test/GeneralTest/fail_func_param_length.err > fail_func_param_length.diff
-###### SUCCESS
-
-###### Testing fail_func_return
-./imageup.native < ./test/GeneralTest/fail_func_return.iu 2> fail_func_return.err
-diff -b fail_func_return.err ./test/GeneralTest/fail_func_return.err > fail_func_return.diff
-###### SUCCESS
-
-###### Testing fail_func_return_type
-./imageup.native < ./test/GeneralTest/fail_func_return_type.iu 2> fail_func_return_type.err
-diff -b fail_func_return_type.err ./test/GeneralTest/fail_func_return_type.err > fail_func_return_type.diff
-###### SUCCESS
-
-###### Testing fail_if
-./imageup.native < ./test/GeneralTest/fail_if.iu 2> fail_if.err
-diff -b fail_if.err ./test/GeneralTest/fail_if.err > fail_if.diff
-###### SUCCESS
-
-###### Testing fail_minus
-./imageup.native < ./test/GeneralTest/fail_minus.iu 2> fail_minus.err
-diff -b fail_minus.err ./test/GeneralTest/fail_minus.err > fail_minus.diff
-###### SUCCESS
-
-###### Testing fail_multi
-./imageup.native < ./test/GeneralTest/fail_multi.iu 2> fail_multi.err
-diff -b fail_multi.err ./test/GeneralTest/fail_multi.err > fail_multi.diff
-###### SUCCESS
-
-###### Testing fail_times
-./imageup.native < ./test/GeneralTest/fail_times.iu 2> fail_times.err
-diff -b fail_times.err ./test/GeneralTest/fail_times.err > fail_times.diff
-###### SUCCESS
-
-###### Testing fail_unop
-./imageup.native < ./test/GeneralTest/fail_unop.iu 2> fail_unop.err
-diff -b fail_unop.err ./test/GeneralTest/fail_unop.err > fail_unop.diff
-###### SUCCESS
-
-###### Testing fail_while
-./imageup.native < ./test/GeneralTest/fail_while.iu 2> fail_while.err
-diff -b fail_while.err ./test/GeneralTest/fail_while.err > fail_while.diff
-###### SUCCESS
+###### Testing fail_*
+./imageup.native < ./test/ImageTest/fail_*.iu 2> fail_*.err
+testall.sh: 1: eval: cannot open ./test/ImageTest/fail_*.iu: No such file
+diff -b fail_*.err ./test/ImageTest/fail_*.err > fail_*.diff
+FAILED fail_*.err differs from ./test/ImageTest/fail_*.err
+###### FAILED
