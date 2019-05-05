@@ -2,7 +2,9 @@ function main() -> int
 {
 	tuple : x = (1, 2, 3);
 	int : i = 0;
-	float : y = x[i];
+	float : y = x[i+1];
 	printf(y);
+	x = (x[0], i*6+3, x[1]);
+	printf(x[1]);
 	return 0;
 }

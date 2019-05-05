@@ -182,10 +182,12 @@ let check (globals, functions) =
  *)
       | TupleAccess(s, e1) ->
         (
-          match e1 with
+          let e1' = expr e1 in
+          (Float, STupleAccess(s, e1'))
+(*           match e1 with
           | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
           | Id id -> (Float, STupleAccess(s, (type_of_identifier id, SId id)))
-          | _ -> raise(Failure("Tuple can only be accessed by integer index"))
+          | _ -> raise(Failure("Tuple can only be accessed by integer index")) *)
         )
 
       | MatLit el  ->  
