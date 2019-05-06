@@ -174,9 +174,14 @@ let check (globals, functions) =
         (Tuple, STriTuple ((t1, e1'), (t2, e2'), (t3, e3')))
       | TupleAccess(s, e1) ->
         (
-          match e1 with
-          | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
+          let e1' = expr e1 in
+          match e1' with
+          | (Int, _) -> (Float, STupleAccess(s, e1'))
           | _ -> raise(Failure("Tuple can only be accessed by integer index"))
+(*           match e1 with
+          | Literal i -> (Float, STupleAccess(s, (Int, SLiteral i)))
+          | Id id -> (Float, STupleAccess(s, (type_of_identifier id, SId id)))
+          | _ -> raise(Failure("Tuple can only be accessed by integer index")) *)
         )
       | MatLit el  ->  
         let rec parse_expr = function
