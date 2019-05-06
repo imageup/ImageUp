@@ -24,6 +24,15 @@ double* dim_c(char path[]){
     return output;
 }
 
+double* copy_c(double *image) {
+
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
+    for (int i = 0; i < 3 * IMAGE_SIZE * IMAGE_SIZE; i++){
+        output[i] = image[i];
+    }
+ 
+    return output;
+}
 
 double* read_c(char path[]){
 

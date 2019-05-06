@@ -1,0 +1,15 @@
+function main() -> int
+{
+        image: a = read("./images/face1.jpg");
+        
+	    int :tmp = 0;
+	    float: alpha = 0.2;
+	    float: beta = 0.3;
+	    tuple: shape = size(a);
+	    int: i=0;
+	    int: j=0;
+	    int: k=0;
+	    tuple:b=(i,j,k);
+
+        return 0;
+}

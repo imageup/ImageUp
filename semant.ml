@@ -56,12 +56,14 @@ let check (globals, functions) =
       ("transpose", [(Matrix, "matrix")], Void);
       ("rotate", [(Matrix, "matrix"); (Bool, "direction")], Void);
       ("multiply", [(Matrix, "matrix1"); (Matrix, "matrix2"); (Matrix, "matrix")], Void); 
-      ("read", [(String, "path")], Void);
+      ("read", [(String, "path")], Image);
       ("save", [(String, "path"); (Image, "image")], Void);
       ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
       ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
       ("smooth", [(Image, "image")], Image);
-      ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void)
+      ("adjust_image", [(Image, "image"); (Tuple, "tuple")], Void);
+      ("copy", [(Image, "image")], Image);
+      ("size", [(Image, "image")], Tuple)
     ]
   in
 

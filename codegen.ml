@@ -170,6 +170,26 @@ let translate (globals, functions) =
       (smooth_return, (matrix_map, new_image_map))
     in    
 
+
+    let copy_body new_name args builder matrix_map image_map=
+      let timg = List.hd args in 
+      let name = 
+      (
+        match timg with 
+        | (_, SId s) -> s 
+        | _ -> raise(Failure("incorrect parameter"))
+      )
+      in 
+      let ptr_typ = L.pointer_type (array_t image_size) in
+      let func_def_copy = L.function_type ptr_typ [| ptr_typ|] in
+      let func_decl_copy = L.declare_function "copy_c" func_def_copy the_module in
+      let img = L.build_load (lookup name) "image" builder in
+      let (row, col) = StringMap.find name image_map in
+      let new_image_map = StringMap.add new_name (row, col) image_map in
+      let copy_return = L.build_call func_decl_copy [| img|] "" builder in
+      (copy_return, (matrix_map, new_image_map))
+    in    
+
     let save_body args builder matrix_map image_map=
       let path = 
       (
@@ -340,6 +360,12 @@ let translate (globals, functions) =
         ignore(L.build_store img (lookup s) builder); 
         (L.const_int i32_t 0,(new_matrix_map, new_image_map))
       )
+      | (_, SCall("copy", vars)) -> 
+      (
+        let (img, (new_matrix_map, new_image_map)) = copy_body s vars builder matrix_map image_map in 
+        ignore(L.build_store img (lookup s) builder); 
+        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
+      )
       | _ ->
       ( 
         let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); 
@@ -507,6 +533,26 @@ let translate (globals, functions) =
       )
       in
       (j, (matrix_map, image_map))
+    )
+    | SCall("size", e) ->
+    (
+      let (ty, arg) = List.hd e in 
+      let (row, col) = 
+      (
+        match arg with
+        | (SId s) -> StringMap.find s image_map
+        | _ -> raise(Failure("type mismatch for size() input"))
+      )
+      in 
+      let e1_t = check_and_cast row builder
+      and e2_t = check_and_cast col builder
+      and e3_t = L.const_float_of_string float_t (string_of_int 0)
+      in
+      let tuple_x = L.build_malloc (array_t 3) "tuple0" builder in
+      ignore(L.build_store e1_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 0;|] "tuple1" builder) builder);
+      ignore(L.build_store e2_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 1;|] "tuple2" builder) builder);
+      ignore(L.build_store e3_t (L.build_gep tuple_x [|L.const_int i32_t 0; L.const_int i32_t 2;|] "tuple3" builder) builder);
+      (tuple_x, (matrix_map, image_map))
     )
     | SCall ("scale", e)    ->
     (
@@ -729,6 +775,12 @@ let translate (globals, functions) =
         |(_, SCall("smooth", vars)) -> 
         (
           let (img, (new_matrix_map, new_image_map)) = smooth_body id vars builder matrix_map image_map in 
+          ignore(L.build_store img (lookup id) builder); 
+          (builder,(new_matrix_map, new_image_map))
+        )
+        |(_, SCall("copy", vars)) -> 
+        (
+          let (img, (new_matrix_map, new_image_map)) = copy_body id vars builder matrix_map image_map in 
           ignore(L.build_store img (lookup id) builder); 
           (builder,(new_matrix_map, new_image_map))
         )
