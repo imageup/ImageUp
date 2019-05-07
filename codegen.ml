@@ -84,12 +84,12 @@ let translate (globals, functions) =
 
   let rec range i j = if i > j then [] else i :: (range (i+1) j) in
 
-  let init_map (matrix_map, image_map) (t, n) = raise(Failure("catch"))
-    (*match t with
+  let init_map (matrix_map, image_map) (t, n) =
+    match t with
     | A.Image -> raise(Failure("catch"))
     (* (matrix_map, StringMap.add n (L.const_int i32_t 0, L.const_int i32_t 0) image_map) *)
     | A.Matrix -> (StringMap.add n (L.const_int i32_t 0, L.const_int i32_t 0) matrix_map, image_map)
-    | _ -> (matrix_map, image_map)*)
+    | _ -> (matrix_map, image_map)
   in
   let (initialized_matrix_map, initialized_image_map) = List.fold_left init_map (matrix_map, image_map) fdecl.sformals
   in

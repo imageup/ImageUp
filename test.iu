@@ -1,27 +1,17 @@
-function adjust_image(image : input, float : alpha, float : beta) -> image
+function adjust_image(float : alpha, float : beta) -> float
 {
 	
-	float: r;
-	float: g;
-	float: b;
-	int: i;
-	int: j;
-	int: k;
-	return input;
+	return (alpha + 1.0);
 
 }
 
-
-
-
 function main() -> int
 {
-        image: a = read("./images/face1.jpg");
-        
 
-        image: output = adjust_image(a, 5.0,1.0);
+        
+        adjust_image(5.0,1.0);
 	    
-	    save("test.out.jpg", output);
+
 
         return 0;
 }
