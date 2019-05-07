@@ -74,7 +74,7 @@ let translate (globals, functions) =
   in
   
   (* Fill in the body of the given function *)
-  let build_function_body fdecl =
+  let build_function_body (matrix_map, image_map) fdecl =
     let (the_function, _) = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
@@ -84,6 +84,15 @@ let translate (globals, functions) =
 
   let rec range i j = if i > j then [] else i :: (range (i+1) j) in
 
+  let init_map (matrix_map, image_map) (t, n) = raise(Failure("catch"))
+    (*match t with
+    | A.Image -> raise(Failure("catch"))
+    (* (matrix_map, StringMap.add n (L.const_int i32_t 0, L.const_int i32_t 0) image_map) *)
+    | A.Matrix -> (StringMap.add n (L.const_int i32_t 0, L.const_int i32_t 0) matrix_map, image_map)
+    | _ -> (matrix_map, image_map)*)
+  in
+  let (initialized_matrix_map, initialized_image_map) = List.fold_left init_map (matrix_map, image_map) fdecl.sformals
+  in
   let local_vars =
     let add_formal m (t, n) p = 
       L.set_value_name n p;
@@ -651,7 +660,7 @@ let translate (globals, functions) =
       ignore(L.build_call func_decl_write_pixel [| img;pos; rgb|] "" builder);
       (L.const_int i32_t 0,(matrix_map, image_map))
     )
-    |SCall("adjust_image", vars) ->
+(*    |SCall("adjust_image", vars) ->
     (
         let name = 
         (
@@ -681,6 +690,7 @@ let translate (globals, functions) =
         ignore(L.build_call func_decl_adjust_image [|img; meta_tup |] "" builder);
         (L.const_int i32_t 0,(matrix_map, image_map))
     )
+  *)
     | SCall ("rotate", e)       ->
     (
       let args = e in
@@ -894,7 +904,7 @@ let translate (globals, functions) =
       )
       in
       (* Build the code for each statement in the function *)
-      let builder_and_maps = stmt (builder, (StringMap.empty, StringMap.empty)) (SBlock fdecl.sbody) in
+      let builder_and_maps = stmt (builder, (initialized_matrix_map, initialized_image_map)) (SBlock fdecl.sbody) in
 
       (* Add a return if the last block falls off the end *)
       add_terminal builder_and_maps 
@@ -903,10 +913,10 @@ let translate (globals, functions) =
           A.Void -> L.build_ret_void
         | A.Float -> L.build_ret (L.const_float float_t 0.0)
         | t -> L.build_ret (L.const_int (ltype_of_typ t) 0)
-      )
+      ); snd builder_and_maps
     in
 
-  List.iter build_function_body functions;
+  ignore(List.fold_left build_function_body (StringMap.empty, StringMap.empty) functions);
   the_module
 
 

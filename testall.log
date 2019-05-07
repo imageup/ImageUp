@@ -1,56 +1,53 @@
 /usr/bin/lli
 
 ###### Testing test_adjust_image
-./imageup.native ./test/ImageTest/test_adjust_image.iu > test_adjust_image.ll
-llc -relocation-model=pic test_adjust_image.ll > test_adjust_image.s
-gcc -o test_adjust_image.exe test_adjust_image.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
-./test_adjust_image.exe
-diff -b test_adjust_image.out ./test/ImageTest/test_adjust_image.out > test_adjust_image.diff
-###### SUCCESS
+./imageup.native ./test/ImageTest//test_adjust_image.iu > test_adjust_image.ll
+Fatal error: exception Failure("unrecognized function adjust_image")
+###### FAILED
 
 ###### Testing test_get_pixel
-./imageup.native ./test/ImageTest/test_get_pixel.iu > test_get_pixel.ll
+./imageup.native ./test/ImageTest//test_get_pixel.iu > test_get_pixel.ll
 llc -relocation-model=pic test_get_pixel.ll > test_get_pixel.s
 gcc -o test_get_pixel.exe test_get_pixel.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_get_pixel.exe
-diff -b test_get_pixel.out ./test/ImageTest/test_get_pixel.out > test_get_pixel.diff
+diff -b test_get_pixel.out ./test/ImageTest//test_get_pixel.out > test_get_pixel.diff
 ###### SUCCESS
 
 ###### Testing test_read_save
-./imageup.native ./test/ImageTest/test_read_save.iu > test_read_save.ll
+./imageup.native ./test/ImageTest//test_read_save.iu > test_read_save.ll
 llc -relocation-model=pic test_read_save.ll > test_read_save.s
 gcc -o test_read_save.exe test_read_save.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_read_save.exe
-diff -b test_read_save.out ./test/ImageTest/test_read_save.out > test_read_save.diff
+diff -b test_read_save.out ./test/ImageTest//test_read_save.out > test_read_save.diff
 ###### SUCCESS
 
 ###### Testing test_smooth
-./imageup.native ./test/ImageTest/test_smooth.iu > test_smooth.ll
+./imageup.native ./test/ImageTest//test_smooth.iu > test_smooth.ll
 llc -relocation-model=pic test_smooth.ll > test_smooth.s
 gcc -o test_smooth.exe test_smooth.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_smooth.exe
-diff -b test_smooth.out ./test/ImageTest/test_smooth.out > test_smooth.diff
+diff -b test_smooth.out ./test/ImageTest//test_smooth.out > test_smooth.diff
 ###### SUCCESS
 
 ###### Testing test_write_pixel
-./imageup.native ./test/ImageTest/test_write_pixel.iu > test_write_pixel.ll
+./imageup.native ./test/ImageTest//test_write_pixel.iu > test_write_pixel.ll
 llc -relocation-model=pic test_write_pixel.ll > test_write_pixel.s
 gcc -o test_write_pixel.exe test_write_pixel.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_write_pixel.exe
-diff -b test_write_pixel.out ./test/ImageTest/test_write_pixel.out > test_write_pixel.diff
+diff -b test_write_pixel.out ./test/ImageTest//test_write_pixel.out > test_write_pixel.diff
 ###### SUCCESS
 
 ###### Testing test_write_pixel1
-./imageup.native ./test/ImageTest/test_write_pixel1.iu > test_write_pixel1.ll
+./imageup.native ./test/ImageTest//test_write_pixel1.iu > test_write_pixel1.ll
 llc -relocation-model=pic test_write_pixel1.ll > test_write_pixel1.s
 gcc -o test_write_pixel1.exe test_write_pixel1.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_write_pixel1.exe
-diff -b test_write_pixel1.out ./test/ImageTest/test_write_pixel1.out > test_write_pixel1.diff
+diff -b test_write_pixel1.out ./test/ImageTest//test_write_pixel1.out > test_write_pixel1.diff
 ###### SUCCESS
 
 ###### Testing fail_*
-./imageup.native < ./test/ImageTest/fail_*.iu 2> fail_*.err
-testall.sh: 1: eval: cannot open ./test/ImageTest/fail_*.iu: No such file
-diff -b fail_*.err ./test/ImageTest/fail_*.err > fail_*.diff
-FAILED fail_*.err differs from ./test/ImageTest/fail_*.err
+./imageup.native < ./test/ImageTest//fail_*.iu 2> fail_*.err
+testall.sh: 1: eval: cannot open ./test/ImageTest//fail_*.iu: No such file
+diff -b fail_*.err ./test/ImageTest//fail_*.err > fail_*.diff
+FAILED fail_*.err differs from ./test/ImageTest//fail_*.err
 ###### FAILED

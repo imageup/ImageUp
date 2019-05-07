@@ -1,2 +1,2 @@
 diff: fail_*.err: No such file or directory
-diff: ./test/ImageTest/fail_*.err: No such file or directory
+diff: ./test/ImageTest//fail_*.err: No such file or directory
