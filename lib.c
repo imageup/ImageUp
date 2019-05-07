@@ -9,25 +9,23 @@
 #define MATRIX_SIZE 200
 #define IMAGE_SIZE 1000
 
-
-double* dim_c(char path[]){
-
-    CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
-    unsigned char* input = (unsigned char*)(img->data.ptr);
-    double *output =(double *) malloc(2 * sizeof(double));
-
-
-    int rows = img->rows;
-    int cols = img->cols;
-    output[0] = rows;
-    output[1] = cols;
+double* size_c(double *image){
+    int h = (int)image[3*IMAGE_SIZE*IMAGE_SIZE]; //20
+    int w = (int)image[3*IMAGE_SIZE*IMAGE_SIZE+1]; //30
+    double *output = (double *) malloc(2 * sizeof(double));
+    output[0] = h;
+    output[1] = w;
     return output;
 }
 
+
 double* copy_c(double *image) {
 
-    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
-    for (int i = 0; i < 3 * IMAGE_SIZE * IMAGE_SIZE; i++){
+
+
+
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE + 2) * sizeof(double));
+    for (int i = 0; i < 3 * IMAGE_SIZE * IMAGE_SIZE + 2; i++){
         output[i] = image[i];
     }
  
@@ -38,11 +36,14 @@ double* read_c(char path[]){
 
     CvMat *img = cvLoadImageM(path, CV_LOAD_IMAGE_COLOR);
     unsigned char* input = (unsigned char*)(img->data.ptr);
-    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE + 2) * sizeof(double));
+
 
     double r,g,b;
     int rows = img->rows;
     int cols = img->cols;
+
+
 
 
     int k = 0;
@@ -66,6 +67,8 @@ double* read_c(char path[]){
 
         }
     }
+    output[k++] = (double) rows;
+    output[k++] = (double) cols;
 
     return output;
     
@@ -164,16 +167,16 @@ char * string_concact(char str1[], char str2[]){
 }
 
 
-double *smooth_c(double *image, double *pos, double rowss, double colss) {
+double *smooth_c(double *image, double *pos) {
     //CvMat *img = cvLoadImageM("./images/face1.jpg", CV_LOAD_IMAGE_COLOR);
    //xIplImage *dst=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
 
     double r,g,b;
-    int h = (int)rowss; //20
-    int w = (int)colss; //30
+    int h = (int)image[3*IMAGE_SIZE*IMAGE_SIZE]; //20
+    int w = (int)image[3*IMAGE_SIZE*IMAGE_SIZE+1]; //30
 
     double *data =(double *) malloc((3 * h * w) * sizeof(double));
-    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE) * sizeof(double));
+    double *output =(double *) malloc((3 * IMAGE_SIZE * IMAGE_SIZE + 2) * sizeof(double));
     for (int i = 0; i < w; i++) {
         for (int j = 0; j < h; j++) {
             data[3*(w*j+i)] = image[3*(IMAGE_SIZE*j+i)];
@@ -192,8 +195,6 @@ double *smooth_c(double *image, double *pos, double rowss, double colss) {
     IplImage *dst=cvCreateImage(cvGetSize(img), IPL_DEPTH_8U,3);
     //CvMat dst = cvMat(h, w, CV_8UC3, data);
 
-    int rows = (int)rowss; //20
-    int cols = (int)colss; //30
 
 
     int value1 = 3.5, value2 = 1;   
@@ -216,7 +217,7 @@ double *smooth_c(double *image, double *pos, double rowss, double colss) {
     int k = 0;
     for(int i = 0; i < IMAGE_SIZE; i++){
         for(int j = 0; j < IMAGE_SIZE; j++){
-            if ( i >= rows || j >= cols ) {
+            if ( i >= h || j >= w ) {
                 b = 0;
                 output[k++] = b;
                 g = 0;
@@ -234,6 +235,8 @@ double *smooth_c(double *image, double *pos, double rowss, double colss) {
 
         }
     }
+    output[k++] = h;
+    output[k++] = w;
 
     //CvMat dst = cvMat(rows, cols, CV_64FC3, data);
     return output;
@@ -290,10 +293,10 @@ void write_pixel_c(double *img, double *pos, double *value) {
 
 }
 
-void save_c(char outname[], double *img, double rows, double cols) {
+void save_c(char outname[], double *img) {
 
-    int h = (int)rows; //20
-    int w = (int)cols; //30
+    int h = (int)img[3*IMAGE_SIZE*IMAGE_SIZE]; //20
+    int w = (int)img[3*IMAGE_SIZE*IMAGE_SIZE+1]; //30
     double *data =(double *) malloc((3 * h * w) * sizeof(double));
 
     for (int i = 0; i < w; i++) {
