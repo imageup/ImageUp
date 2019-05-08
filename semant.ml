@@ -277,9 +277,11 @@ let check (globals, functions) =
       | If(p, b1, b2) -> SIf(check_bool_expr p, check_stmt b1, check_stmt b2)
       | DeclAsn((t, s), e) -> 
       (
-        match t with
-        | Matrix -> raise(Failure("Matrix declare assignment format wrong format"))
-        | _ -> SDeclAsn((t, s), expr e)
+        let (rt, e') = expr e in
+        let err = "illegal assignment " ^ string_of_typ t ^ " = " ^ 
+          string_of_typ rt ^ " in " ^ string_of_expr e
+        in if rt = t then SDeclAsn((t, s), expr e)
+        else raise(Failure err)
       )
       | TypeAsn((t, e)) -> STypeAsn((t, e))
       | Break -> SBreak

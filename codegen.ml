@@ -127,7 +127,7 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
-    let read_body name args builder matrix_map image_map =
+    let read_body args builder matrix_map image_map =
       let path = 
       (
         match args with
@@ -146,7 +146,7 @@ let translate (globals, functions) =
       (read_return, (builder, (matrix_map, image_map))) 
     in    
 
-    let smooth_body new_name args builder matrix_map image_map=
+    let smooth_body args builder matrix_map image_map=
       let timg = List.hd args in 
       let name = 
       (
@@ -174,7 +174,7 @@ let translate (globals, functions) =
       let smooth_return = L.build_call func_decl_smooth [| img; rat|] "" builder in
       (smooth_return, (matrix_map, image_map))
     in    
-    let saturation_body new_name args builder matrix_map image_map=
+    let saturation_body args builder matrix_map image_map=
       let timg = List.hd args in 
       let name = 
       (
@@ -203,7 +203,7 @@ let translate (globals, functions) =
     in  
 
 
-    let copy_body new_name args builder matrix_map image_map=
+    let copy_body args builder matrix_map image_map=
       let timg = List.hd args in 
       let name = 
       (
@@ -375,36 +375,8 @@ let translate (globals, functions) =
     )
     | SAssign (s, e) ->
     (
-      match e with
-      | (_, SCall("read", vars)) -> 
-      (
-        let (img, (_,(new_matrix_map, new_image_map))) = read_body s vars builder matrix_map image_map in 
-        ignore(L.build_store img (lookup s) builder); 
-        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
-      )
-      | (_, SCall("smooth", vars)) -> 
-      (
-        let (img, (new_matrix_map, new_image_map)) = smooth_body s vars builder matrix_map image_map in 
-        ignore(L.build_store img (lookup s) builder); 
-        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
-      )
-      | (_, SCall("adjust_saturation", vars)) ->
-      (
-        let (img, (new_matrix_map, new_image_map)) = saturation_body s vars builder matrix_map image_map in 
-        ignore(L.build_store img (lookup s) builder); 
-        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
-      )
-      | (_, SCall("copy", vars)) -> 
-      (
-        let (img, (new_matrix_map, new_image_map)) = copy_body s vars builder matrix_map image_map in 
-        ignore(L.build_store img (lookup s) builder); 
-        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
-      )
-      | _ ->
-      ( 
-        let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); 
-        (e', (matrix_map, image_map))
-      )
+      let e' = fst (expr (builder, (matrix_map, image_map)) e) in ignore(L.build_store e' (lookup s) builder); 
+      (e', (matrix_map, image_map))
     )
     | SBinop ((A.String,_ ) as e1, op, e2) ->
     (
@@ -740,6 +712,26 @@ let translate (globals, functions) =
       ignore(L.build_call func_decl_transpose [| mat_ptr; row; col |] "" builder);
       (L.const_int i32_t 0, (new_matrix_map, image_map)) 
     )
+    | SCall("read", vars) -> 
+    (
+      let (img, (_,(new_matrix_map, new_image_map))) = read_body vars builder matrix_map image_map in 
+      (img, (new_matrix_map, new_image_map))
+    )
+    | SCall("smooth", vars) -> 
+    (
+      let (img, (new_matrix_map, new_image_map)) = smooth_body vars builder matrix_map image_map in 
+      (img, (new_matrix_map, new_image_map))
+    )
+    | SCall("adjust_saturation", vars) ->
+    (
+      let (img, (new_matrix_map, new_image_map)) = saturation_body vars builder matrix_map image_map in 
+      (img, (new_matrix_map, new_image_map))
+    )
+    | SCall("copy", vars) -> 
+    (
+      let (img, (new_matrix_map, new_image_map)) = copy_body vars builder matrix_map image_map in 
+      (img, (new_matrix_map, new_image_map))
+    )
     | SCall (f, args) ->
     (
       let (fdef, fdecl) = StringMap.find f function_decls in
@@ -777,65 +769,8 @@ let translate (globals, functions) =
       )
       | SDeclAsn ((type_of_id, id), exprs) ->
       (
-        match exprs with
-        |(_, SCall("read", vars)) -> 
-        (
-          let (img, (_,(new_matrix_map, new_image_map))) = read_body id vars builder matrix_map image_map in 
-          ignore(L.build_store img (lookup id) builder); (builder,(new_matrix_map, new_image_map))
-        )
-        |(_, SCall("smooth", vars)) -> 
-        (
-          let (img, (new_matrix_map, new_image_map)) = smooth_body id vars builder matrix_map image_map in 
-          ignore(L.build_store img (lookup id) builder); 
-          (builder,(new_matrix_map, new_image_map))
-        )
-        |(_, SCall("adjust_saturation", vars)) -> 
-        (
-          let (img, (new_matrix_map, new_image_map)) = saturation_body id vars builder matrix_map image_map in 
-          ignore(L.build_store img (lookup id) builder); 
-          (builder,(new_matrix_map, new_image_map))
-        )
-        |(_, SCall("copy", vars)) -> 
-        (
-          let (img, (new_matrix_map, new_image_map)) = copy_body id vars builder matrix_map image_map in 
-          ignore(L.build_store img (lookup id) builder); 
-          (builder,(new_matrix_map, new_image_map))
-        )
-        |(_, SCall("get_pixel", vars)) -> 
-        (
-          let name = 
-          (
-            match vars with 
-            | mm::_ -> 
-            (
-              match mm with 
-              | (_, SId s) -> s
-              | _ -> raise(Failure("get_pixel: match failure"))
-            )
-            | _ -> raise(Failure("get_pixel: match failure"))
-          )
-          in
-          let img = L.build_load (lookup name) "image" builder in 
-          let pos = 
-          (
-            match vars with 
-            | _::rimg -> List.hd rimg 
-            | _ -> raise(Failure("get_pixel: match failure"))
-          )
-          in 
-          let size = fst (expr (builder, (matrix_map, image_map)) pos) in
-          let ptr_typ = L.pointer_type (array_t image_size) in 
-          let tuple_p_typ = L.pointer_type (array_t 3) in 
-          let func_def_get_pixel = L.function_type (L.pointer_type (array_t 3)) [| ptr_typ; tuple_p_typ|] in 
-          let func_decl_get_pixel = L.declare_function "get_pixel_c" func_def_get_pixel the_module in
-          let return_tuple = L.build_call func_decl_get_pixel [| img;size|] "" builder in
-          ignore(L.build_store return_tuple (lookup id) builder); (builder,(matrix_map, image_map))
-        )
-        |_ -> 
-        ( 
-          let (e', _) = expr (builder, (matrix_map, image_map)) exprs in
-          ignore(L.build_store e' (lookup id) builder); (builder, (matrix_map, image_map))
-        )
+        let (e', _) = expr (builder, (matrix_map, image_map)) exprs in
+        ignore(L.build_store e' (lookup id) builder); (builder, (matrix_map, image_map))
       )
       | SExpr e -> 
       (

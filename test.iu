@@ -2,8 +2,11 @@ function main() -> int
 {
         image: a = read("./images/face1.jpg");
         
-
-        image: output = beautify(a, 0.95, 20.0, 1.0, 1.1);
+        image: output;
+        ##output = adjust_contrast(a, 1.1);
+        ##output = to_gray(a);
+		##output = adjust_brightness(a, 20.0);
+		output = adjust_saturation(a, 1.1);
 	    
 	    save("test.out.jpg", output);
 

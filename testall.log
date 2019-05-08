@@ -23,8 +23,11 @@ diff -b test_read_save.out ./test/ImageTest//test_read_save.out > test_read_save
 
 ###### Testing test_smooth
 cat library.iu ./test/ImageTest//test_smooth.iu | ./imageup.native > test_smooth.ll
-Fatal error: exception Failure("expecting 2 arguments in smooth ( a ) ")
-###### FAILED
+llc -relocation-model=pic test_smooth.ll > test_smooth.s
+gcc -o test_smooth.exe test_smooth.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
+./test_smooth.exe
+diff -b test_smooth.out ./test/ImageTest//test_smooth.out > test_smooth.diff
+###### SUCCESS
 
 ###### Testing test_write_pixel
 cat library.iu ./test/ImageTest//test_write_pixel.iu | ./imageup.native > test_write_pixel.ll
@@ -43,8 +46,8 @@ diff -b test_write_pixel1.out ./test/ImageTest//test_write_pixel1.out > test_wri
 ###### SUCCESS
 
 ###### Testing fail_*
-cat library.iu ./test/ImageTest//fail_*.iu | ./imageup.native 2> fail_decl_assign_bool.err fail_decl_assign_float.err fail_decl_assign_int.err fail_decl_assign_string.err fail_func_return.err fail_trituple_string_input.err
+cat library.iu ./test/ImageTest//fail_*.iu | ./imageup.native 2> fail_*.err
 cat: './test/ImageTest//fail_*.iu': No such file or directory
-diff -b fail_decl_assign_bool.err fail_decl_assign_float.err > fail_decl_assign_int.err
-FAILED fail_decl_assign_bool.err differs from fail_decl_assign_float.err
+diff -b fail_*.err ./test/ImageTest//fail_*.err > fail_*.diff
+FAILED fail_*.err differs from ./test/ImageTest//fail_*.err
 ###### FAILED
