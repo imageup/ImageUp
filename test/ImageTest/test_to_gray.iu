@@ -1,0 +1,11 @@
+function main() -> int
+{
+        image: a = read("./images/face1.jpg");
+        image: output;
+
+        output = to_gray(a);
+    
+	    save("test.out.jpg", output);
+
+        return 0;
+}

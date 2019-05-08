@@ -1,0 +1,10 @@
+function main() -> int
+{
+        image: a = read("./images/face1.jpg");
+        image: output;
+		output = adjust_brightness(a, 20.0);
+
+	    save("test.out.jpg", output);
+
+        return 0;
+}

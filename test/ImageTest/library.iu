@@ -1,0 +1,80 @@
+function adjust_image(image : input, float : alpha, float : beta) -> image
+{
+	
+	float: r;
+	float: g;
+	float: b;
+	int: i;
+	int: j;
+	tuple: shape = size(input);
+	tuple: tmp_pixel;
+	image: output = copy(input);
+
+	for (i = 0; i < IntParsef(shape[0]); i=i+1) {
+		for (j = 0; j < IntParsef(shape[1]); j=j+1) {
+			tmp_pixel = get_pixel(input, (i, j));
+
+			r = alpha * tmp_pixel[2] + beta;
+			if (r > 255.0)
+				r = 255.0;
+			if (r < 0.0)
+				r = 0.0;
+
+			g = alpha * tmp_pixel[1] + beta;
+			if (g > 255.0)
+				g = 255.0;
+			if (g < 0.0)
+				g = 0.0;
+
+			b = alpha * tmp_pixel[0] + beta;
+			if (b > 255.0)
+				b= 255.0;
+			if (b < 0.0)
+				b = 0.0;
+
+			write_pixel(output, (i, j), (r, g, b));
+
+	    }
+	}	
+	return output;
+}
+
+function adjust_brightness(image : input, float : ratio) -> image
+{
+	return adjust_image(input, 1.0, ratio);
+}	
+
+function adjust_contrast(image : input, float : ratio) -> image
+{
+	return adjust_image(input, ratio, 0.0);
+}	
+
+function to_gray(image : input) -> image
+{
+	float: gray;
+	int: i;
+	int: j;
+	tuple: shape = size(input);
+	tuple: tmp_pixel;
+	image: output = copy(input);
+
+	for (i = 0; i < IntParsef(shape[0]); i=i+1) {
+		for (j = 0; j < IntParsef(shape[1]); j=j+1) {
+			tmp_pixel = get_pixel(input, (i, j));
+			gray = tmp_pixel[0] * 0.3 + tmp_pixel[1] * 0.59 + tmp_pixel[2] * 0.11;
+
+			write_pixel(output, (i, j), (gray, gray, gray));
+
+	    }
+	}	
+	return output;	
+}
+
+function beautify(image: input, float : sm_ratio, float : br_ratio, float : con_ratio, float : sa_ratio) -> image
+{
+	input = smooth(input, sm_ratio);
+	input = adjust_brightness(input, br_ratio);
+	input = adjust_contrast(input, con_ratio);
+	input = adjust_saturation(input, sa_ratio);
+	return input;
+}
