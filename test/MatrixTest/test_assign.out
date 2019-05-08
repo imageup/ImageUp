@@ -1,3 +1,2 @@
-llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
 2
 6

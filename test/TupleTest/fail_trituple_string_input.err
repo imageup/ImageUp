@@ -1,1 +1,1 @@
-Fatal error: exception Sys_error("test/TupleTest/test_incorrect_string_input.iu: No such file or directory")
+Fatal error: exception Failure("Input to matrix or tuple can only be float or int")
