@@ -1,63 +1,9 @@
-function adjust_image(image : input, float : alpha, float : beta) -> image
-{
-	
-	float: r;
-	float: g;
-	float: b;
-	int: i;
-	int: j;
-	int: k;
-	tuple: shape = size(input);
-	tuple: tmp_pixel;
-	tuple: rgb;
-	image: output = copy(input);
-
-	for (i = 0; i < IntParsef(shape[0]); i=i+1) {
-		for (j = 0; j < IntParsef(shape[1]); j=j+1) {
-			tmp_pixel = get_pixel(input, (i, j));
-
-			r = alpha * tmp_pixel[0] + beta;
-			if (r > 255.0)
-				r = 255.0;
-			if (r < 0.0)
-				r = 0.0;
-
-			g = alpha * tmp_pixel[1] + beta;
-			if (g > 255.0)
-				g = 255.0;
-			if (g < 0.0)
-				g = 0.0;
-
-			b = alpha * tmp_pixel[2] + beta;
-			if (b > 255.0)
-				b= 255.0;
-			if (b < 0.0)
-				b = 0.0;
-
-			write_pixel(output, (i, j), (r, g, b));
-
-	    }
-	}	
-	return output;
-}
-
-function adjust_brightness(image : input, float : ratio) -> image
-{
-	return adjust_image(input, 1.0, ratio);
-}	
-
-function adjust_contrast(image : input, float : ratio) -> image
-{
-	return adjust_image(input, ratio, 0.0);
-}	
-
-
 function main() -> int
 {
         image: a = read("./images/face1.jpg");
         
 
-        image: output = adjust_brightness(a, 5.0);
+        image: output = beautify(a, 0.95, 20.0, 1.0, 1.1);
 	    
 	    save("test.out.jpg", output);
 

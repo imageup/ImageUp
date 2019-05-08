@@ -74,7 +74,7 @@ let translate (globals, functions) =
   in
   
   (* Fill in the body of the given function *)
-  let build_function_body (matrix_map, image_map) fdecl =
+  let build_function_body fdecl =
     let (the_function, _) = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
@@ -82,16 +82,10 @@ let translate (globals, functions) =
     and	string_format_str = L.build_global_stringptr "%s\n" "fmt" builder 
   in
 
-  let rec range i j = if i > j then [] else i :: (range (i+1) j) in
+  let rec range i j = if i > j then [] else i :: (range (i+1) j) 
 
-  let init_map (matrix_map, image_map) (t, n) =
-    match t with
-    | A.Image ->(matrix_map, StringMap.add n (L.const_int i32_t 5, L.const_int i32_t 5) image_map) 
-    | A.Matrix -> (StringMap.add n (L.const_int i32_t 0, L.const_int i32_t 0) matrix_map, image_map)
-    | _ -> (matrix_map, image_map)
   in
-  let (initialized_matrix_map, initialized_image_map) = List.fold_left init_map (matrix_map, image_map) fdecl.sformals
-  in
+  
   let local_vars =
     let add_formal m (t, n) p = 
       L.set_value_name n p;
@@ -160,16 +154,53 @@ let translate (globals, functions) =
         | (_, SId s) -> s 
         | _ -> raise(Failure("incorrect parameter"))
       )
+      in
+      let ratio = 
+      (
+        match args with
+        | _::rratio ->List.hd rratio
+        | _ -> raise(Failure("smooth: ratio match failure"))
+      ) 
       in 
+      let rat = match ratio with 
+       | (_, SFliteral l) -> L.const_float_of_string float_t l 
+       | (_, SId s)       -> L.build_load (lookup s) s builder
+       | _ -> raise(Failure("smooth: ratio should be a float")) in 
       let ptr_typ = L.pointer_type (array_t image_size) in
-      let func_def_smooth = L.function_type ptr_typ [| ptr_typ; float_t; float_t|] in
+      let func_def_smooth = L.function_type ptr_typ [| ptr_typ; float_t|] in
       let func_decl_smooth = L.declare_function "smooth_c" func_def_smooth the_module in
       let img = L.build_load (lookup name) "image" builder in
-      let (row, col) = StringMap.find name image_map in
-      let new_image_map = StringMap.add new_name (row, col) image_map in
-      let smooth_return = L.build_call func_decl_smooth [| img; row; col|] "" builder in
-      (smooth_return, (matrix_map, new_image_map))
+
+      let smooth_return = L.build_call func_decl_smooth [| img; rat|] "" builder in
+      (smooth_return, (matrix_map, image_map))
     in    
+    let saturation_body new_name args builder matrix_map image_map=
+      let timg = List.hd args in 
+      let name = 
+      (
+        match timg with 
+        | (_, SId s) -> s 
+        | _ -> raise(Failure("incorrect parameter"))
+      )
+      in
+      let ratio = 
+      (
+        match args with
+        | _::rratio ->List.hd rratio
+        | _ -> raise(Failure("saturation: ratio match failure"))
+      ) in 
+      let rat = match ratio with 
+       | (_, SFliteral l) -> L.const_float_of_string float_t l
+       | (_, SId s)       -> L.build_load (lookup s) s builder 
+       | _ -> raise(Failure("saturation: ratio should be a float")) in 
+      let ptr_typ = L.pointer_type (array_t image_size) in
+      let func_def_saturation = L.function_type ptr_typ [| ptr_typ; float_t|] in
+      let func_decl_saturation = L.declare_function "saturation_c" func_def_saturation the_module in
+      let img = L.build_load (lookup name) "image" builder in
+
+      let saturation_return = L.build_call func_decl_saturation [| img; rat|] "" builder in
+      (saturation_return, (matrix_map, image_map))
+    in  
 
 
     let copy_body new_name args builder matrix_map image_map=
@@ -185,10 +216,8 @@ let translate (globals, functions) =
       let func_def_copy = L.function_type ptr_typ [| ptr_typ|] in
       let func_decl_copy = L.declare_function "copy_c" func_def_copy the_module in
       let img = L.build_load (lookup name) "image" builder in
-      let (row, col) = StringMap.find name image_map in
-      let new_image_map = StringMap.add new_name (row, col) image_map in
       let copy_return = L.build_call func_decl_copy [| img|] "" builder in
-      (copy_return, (matrix_map, new_image_map))
+      (copy_return, (matrix_map, image_map))
     in    
     let save_body args builder matrix_map image_map=
       let path = 
@@ -272,17 +301,17 @@ let translate (globals, functions) =
     | STupleAccess(s, e1) ->
     (
       let e1' = fst (expr (builder, (matrix_map, image_map)) e1) in
-      (* let s' = L.build_load (lookup s) s builder in *)
+
       let value = L.build_load (StringMap.find s local_vars) "tuple8" builder in
       (
-        (* let res = L.build_load (L.build_gep (value) [| L.const_int i32_t 0; L.const_int i32_t l|] s builder) "tuple9" builder *)
+
         let res = L.build_load (L.build_gep (value) [| L.const_int i32_t 0; e1'|] s builder) "tuple9" builder in
         (res, (matrix_map, image_map))
       ) 
     )
     | SMatLitDim (s, m, n) -> 
     (
-      (* let m = row and n = Array.length (Array.get s 0) in *)
+
       let rec recompute_in = function
         | [] -> []
         | head :: tail -> let res = fst (expr (builder, (matrix_map, image_map)) head) in res :: recompute_in tail 
@@ -356,6 +385,12 @@ let translate (globals, functions) =
       | (_, SCall("smooth", vars)) -> 
       (
         let (img, (new_matrix_map, new_image_map)) = smooth_body s vars builder matrix_map image_map in 
+        ignore(L.build_store img (lookup s) builder); 
+        (L.const_int i32_t 0,(new_matrix_map, new_image_map))
+      )
+      | (_, SCall("adjust_saturation", vars)) ->
+      (
+        let (img, (new_matrix_map, new_image_map)) = saturation_body s vars builder matrix_map image_map in 
         ignore(L.build_store img (lookup s) builder); 
         (L.const_int i32_t 0,(new_matrix_map, new_image_map))
       )
@@ -657,37 +692,6 @@ let translate (globals, functions) =
       ignore(L.build_call func_decl_write_pixel [| img;pos; rgb|] "" builder);
       (L.const_int i32_t 0,(matrix_map, image_map))
     )
-(*    |SCall("adjust_image", vars) ->
-    (
-        let name = 
-        (
-          match vars with 
-          | mm::_ -> 
-          (
-            match mm with 
-            | (_, SId s) -> s 
-            | _ -> raise(Failure("adjust_image: match failure"))
-          )
-          | _ -> raise(Failure("adjust_image: match failure"))
-        )
-        in
-        let img = L.build_load (lookup name) "image" builder in
-        let meta_tuple = 
-        (
-          match vars with 
-          | _::rimg -> List.hd rimg 
-          | _ -> raise(Failure("adjust_image: match failure"))
-        )
-        in
-        let meta_tup = fst (expr (builder, (matrix_map, image_map)) meta_tuple) in
-        let ptr_typ = L.pointer_type (array_t image_size) in
-        let tuple_p_typ = L.pointer_type (array_t 3) in
-        let func_def_adjust_image = L.function_type void_t [| ptr_typ; tuple_p_typ|] in
-        let func_decl_adjust_image = L.declare_function "adjust_image_c" func_def_adjust_image the_module in
-        ignore(L.build_call func_decl_adjust_image [|img; meta_tup |] "" builder);
-        (L.const_int i32_t 0,(matrix_map, image_map))
-    )
-  *)
     | SCall ("rotate", e)       ->
     (
       let args = e in
@@ -785,6 +789,12 @@ let translate (globals, functions) =
           ignore(L.build_store img (lookup id) builder); 
           (builder,(new_matrix_map, new_image_map))
         )
+        |(_, SCall("adjust_saturation", vars)) -> 
+        (
+          let (img, (new_matrix_map, new_image_map)) = saturation_body id vars builder matrix_map image_map in 
+          ignore(L.build_store img (lookup id) builder); 
+          (builder,(new_matrix_map, new_image_map))
+        )
         |(_, SCall("copy", vars)) -> 
         (
           let (img, (new_matrix_map, new_image_map)) = copy_body id vars builder matrix_map image_map in 
@@ -838,12 +848,7 @@ let translate (globals, functions) =
         (* Special "return nothing" instr *)
         | A.Void -> L.build_ret_void builder 
         (* Build return statement *)
-        (*| A.Image -> (match e with 
-                     (_, SId s) -> let (row, col) = StringMap.find s image_map in
-                                   magic_row := (L.const_float float_t 22.); magic_col := (L.const_float float_t 22.);
-                                   L.build_ret (fst (expr (builder, (matrix_map, image_map)) e)) builder
 
-                     | _ -> raise(Failure("catch"))) *)
         | _ -> L.build_ret (fst (expr (builder, (matrix_map, image_map)) e)) builder );
         (builder, (matrix_map, image_map))
       | SIf (predicate, then_stmt, else_stmt) ->
@@ -906,7 +911,7 @@ let translate (globals, functions) =
       )
       in
       (* Build the code for each statement in the function *)
-      let builder_and_maps = stmt (builder, (initialized_matrix_map, initialized_image_map)) (SBlock fdecl.sbody) in
+      let builder_and_maps = stmt (builder, (StringMap.empty, StringMap.empty)) (SBlock fdecl.sbody) in
 
       (* Add a return if the last block falls off the end *)
       add_terminal builder_and_maps 
@@ -915,10 +920,10 @@ let translate (globals, functions) =
           A.Void -> L.build_ret_void
         | A.Float -> L.build_ret (L.const_float float_t 0.0)
         | t -> L.build_ret (L.const_int (ltype_of_typ t) 0)
-      ); snd builder_and_maps
+      )
     in
 
-  ignore(List.fold_left build_function_body (StringMap.empty, StringMap.empty) functions);
+  ignore(List.iter build_function_body functions);
   the_module
 
 

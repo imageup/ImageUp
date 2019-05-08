@@ -8,7 +8,7 @@ imageupmake :
 	ocamlc -c imageup.ml
 	ocamlc -o imageup parser.cmo scanner.cmo imageup.cmo	
 test :
-	./imageup.native test.iu > test.ll; llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
+	cat library.iu test.iu | ./imageup.native > test.ll; llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe
 
 testing :
 	llc -relocation-model=pic test.ll > test.s ;gcc -o test.exe test.s lib.c `pkg-config --cflags --libs opencv`;./test.exe

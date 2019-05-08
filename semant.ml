@@ -60,7 +60,8 @@ let check (globals, functions) =
       ("save", [(String, "path"); (Image, "image")], Void);
       ("get_pixel", [(Image, "image"); (Tuple, "tuple")], Tuple);
       ("write_pixel", [(Image, "image"); (Tuple, "tuple");(Tuple, "tuple")], Void);
-      ("smooth", [(Image, "image")], Image);
+      ("smooth", [(Image, "image"); (Float, "ratio")], Image);
+      ("adjust_saturation", [(Image, "image"); (Float, "ratio")], Image);
       ("copy", [(Image, "image")], Image);
       ("size", [(Image, "image")], Tuple)
     ]

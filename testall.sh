@@ -90,7 +90,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${basename}.out" &&
-    Run "$IMAGEUP" "$1" ">" "${basename}.ll" &&
+    Run "cat library.iu" "$1" " | ""$IMAGEUP"  ">" "${basename}.ll" &&
     Run "$LLC" "-relocation-model=pic" "${basename}.ll" ">" "${basename}.s" &&
     Run "$CC" "-o" "${basename}.exe" "${basename}.s" "lib.c" "`pkg-config --cflags --libs opencv`" &&
     Run "./${basename}.exe" > "${basename}.out" &&
@@ -125,7 +125,7 @@ CheckFail() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.err ${basename}.diff" &&
-    RunFail "$IMAGEUP" "<" $1 "2>" "${basename}.err" &&
+    RunFail "cat library.iu" $1 " | " "$IMAGEUP" "2>" "${basename}.err" &&
     Compare ${basename}.err ${reffile}.err ${basename}.diff
 
     # Report the status and clean up the generated files
