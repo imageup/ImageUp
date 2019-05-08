@@ -6,8 +6,7 @@ llc -relocation-model=pic test_adj_brightness.ll > test_adj_brightness.s
 gcc -o test_adj_brightness.exe test_adj_brightness.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_adj_brightness.exe
 diff -b test_adj_brightness.out ./test/ImageTest//test_adj_brightness.out > test_adj_brightness.diff
-FAILED test_adj_brightness.out differs from ./test/ImageTest//test_adj_brightness.out
-###### FAILED
+###### SUCCESS
 
 ###### Testing test_adj_contrast
 cat library.iu ./test/ImageTest//test_adj_contrast.iu | ./imageup.native > test_adj_contrast.ll
@@ -15,8 +14,7 @@ llc -relocation-model=pic test_adj_contrast.ll > test_adj_contrast.s
 gcc -o test_adj_contrast.exe test_adj_contrast.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_adj_contrast.exe
 diff -b test_adj_contrast.out ./test/ImageTest//test_adj_contrast.out > test_adj_contrast.diff
-FAILED test_adj_contrast.out differs from ./test/ImageTest//test_adj_contrast.out
-###### FAILED
+###### SUCCESS
 
 ###### Testing test_adj_saturation
 cat library.iu ./test/ImageTest//test_adj_saturation.iu | ./imageup.native > test_adj_saturation.ll
@@ -56,8 +54,7 @@ llc -relocation-model=pic test_to_gray.ll > test_to_gray.s
 gcc -o test_to_gray.exe test_to_gray.s lib.c -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab -lrt -lpthread -lm -ldl
 ./test_to_gray.exe
 diff -b test_to_gray.out ./test/ImageTest//test_to_gray.out > test_to_gray.diff
-FAILED test_to_gray.out differs from ./test/ImageTest//test_to_gray.out
-###### FAILED
+###### SUCCESS
 
 ###### Testing test_write_pixel
 cat library.iu ./test/ImageTest//test_write_pixel.iu | ./imageup.native > test_write_pixel.ll
@@ -75,9 +72,7 @@ gcc -o test_write_pixel1.exe test_write_pixel1.s lib.c -I/usr/local/include/open
 diff -b test_write_pixel1.out ./test/ImageTest//test_write_pixel1.out > test_write_pixel1.diff
 ###### SUCCESS
 
-###### Testing fail_*
-cat library.iu ./test/ImageTest//fail_*.iu | ./imageup.native 2> fail_*.err
-cat: './test/ImageTest//fail_*.iu': No such file or directory
-diff -b fail_*.err ./test/ImageTest//fail_*.err > fail_*.diff
-FAILED fail_*.err differs from ./test/ImageTest//fail_*.err
-###### FAILED
+###### Testing fail_no_image_function
+cat library.iu ./test/ImageTest//fail_no_image_function.iu | ./imageup.native 2> fail_no_image_function.err
+diff -b fail_no_image_function.err ./test/ImageTest//fail_no_image_function.err > fail_no_image_function.diff
+###### SUCCESS

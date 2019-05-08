@@ -1,0 +1,12 @@
+function main() -> int
+{
+        image: a = read("./images/face1.jpg");
+    
+        image: output;
+
+        output = to_red(a);
+        
+	    save("test_gold.out.jpg", output);
+
+        return 0;
+}
