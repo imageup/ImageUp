@@ -311,6 +311,19 @@ double *get_pixel_c(double *img, double *pos)
     return output;
 }
 
+double* multiply_c(double *mat1, double *mat2, double *mat3, int r, int c) {
+    for (int i = 0; i < c; i++) {
+        for (int j = 0; j < r; j++) {
+            double tmp = 0.0;
+            for (int k = 0; k < c; k++) {
+                tmp += mat1[j * MATRIX_SIZE + k] * mat2[k * MATRIX_SIZE + i];
+            }
+            mat3[j * MATRIX_SIZE + i] = tmp;
+        }
+    }
+    return mat3;
+}
+
 void write_pixel_c(double *img, double *pos, double *value)
 {
 
