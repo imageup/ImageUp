@@ -3,8 +3,8 @@ function main() -> int
     int : i;
     int : j;
 	matrix: mat1(2,3) = [1,2,3|4,5,6];
-	matrix: mat2(3,2) = [1,2|3,4|5,6];
-	##matrix: mat2(2,3) = [1,2,3|4,5,6];
+	##matrix: mat2(3,2) = [1,2|3,4|5,6];
+	matrix: mat2(2,3) = [1,2,3|4,5,6];
 	matrix: mat3(2,2);
 
     prints("matrix 1");

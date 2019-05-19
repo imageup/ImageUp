@@ -1,49 +1,42 @@
-function main() -> int
+function main() -> int ## bubble sort program
 {
-    int : i;
-    int : j;
-	matrix: mat1(2,3) = [1,2,3|4,5,6];
-	matrix: mat2(3,2) = [1,2|3,4|5,6];
-	##matrix: mat2(2,3) = [1,2,3|4,5,6];
-	matrix: mat3(2,2);
 
-    prints("matrix 1");
-    string : out;
-    for(i = 0; i < RowLen(mat1); i=i+1)
+    matrix : arr(1, 5) = [2,5,1,6,3];
+    int : size = ColLen(arr);
+    int : i = 0;
+    int : j = 0;
+    float : tmp;
+    string : out = "";
+
+    for(i = 0; i < size; i = i + 1)
     {
-        out = "row " + StrParse(i) + ": ";
-        for(j = 0; j < ColLen(mat1); j=j+1)
-        {
-            out = out + " " + StrParsef(mat1[i][j]);
-        }
-        prints(out);
-    }
-    prints("matrix 2");
-    string : out;
-    for(i = 0; i < RowLen(mat2); i=i+1)
+
+        printf(arr[0][i]);
+    }    
+
+    prints("Sorted:");
+
+    i = 0;
+    while(i < size)
     {
-        out = "row " + StrParse(i) + ": ";
-        for(j = 0; j < ColLen(mat2); j=j+1)
+        j = 0;
+        while(j < (size - i - 1))
         {
-            out = out + " " + StrParsef(mat2[i][j]);
+            if(arr[0][j] < arr[0][j+1])
+            {
+                tmp = arr[0][j+1]; 
+                arr[0][j+1] = arr[0][j];
+                arr[0][j] = tmp;
+            }
+            j = j + 1;
         }
-        prints(out);
-    }
-
-
-    multiply(mat1, mat2, mat3);
-
-    prints("matrix after multiplication");
-    string : out;
-    for(i = 0; i < RowLen(mat3); i=i+1)
-    {
-        out = "row " + StrParse(i) + ": ";
-        for(j = 0; j < ColLen(mat3); j=j+1)
-        {
-            out = out + " " + StrParsef(mat3[i][j]);
-        }
-        prints(out);
+        i = i + 1;
     }
 
+    for(i = 0; i < size; i = i + 1)
+    {
+
+        printf(arr[0][i]);
+    }    
     return 0;
 }
